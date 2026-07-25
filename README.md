@@ -79,7 +79,8 @@ If you use a local virtual environment or custom installation path, configure th
   ```bash
   uv tool install --force zenzic
   ```
-  Or point `zenzic.executablePath` in `settings.json` to an environment with Zenzic Core `v0.25.0` or higher.
+  Or point `zenzic.executablePath` in `settings.json` to a virtual environment containing Core `v0.25.0` or higher.
+
 
 ### Zenzic: Not Found (ENOENT)
 
