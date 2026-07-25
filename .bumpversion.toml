@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 [tool.bumpversion]
-current_version = "0.24.4"
+current_version = "0.25.0"
 parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
 serialize = ["{major}.{minor}.{patch}"]
 commit = true
@@ -38,8 +38,9 @@ replace = "| **Extension Version** | {new_version} |"
 
 [[tool.bumpversion.files]]
 filename = "RELEASE.md"
-search = "git tag -s v{current_version} -m \"Release v{current_version}\""
-replace = "git tag -s v{new_version} -m \"Release v{new_version}\""
+search = 'git tag -s -S -m "Release v{current_version}" v{current_version}'
+replace = 'git tag -s -S -m "Release v{new_version}" v{new_version}'
+
 
 [[tool.bumpversion.files]]
 filename = "RELEASE.md"
