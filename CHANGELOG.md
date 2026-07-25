@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.25.0] - 2026-07-25
+
 ### Changed
 
 - **Core Parity Alignment (`VSCODE-ALIGN-003`)**: Realigned pinned Zenzic Core baseline to `0.25.0`, delivering LSP fixes for centralized core governance filtering and adapter-driven configuration hot-reloading (`LSP-FIX-009`).
