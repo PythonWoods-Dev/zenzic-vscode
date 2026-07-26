@@ -19,7 +19,7 @@ let statusBarItem: vscode.StatusBarItem | undefined;
 // A2 fix: guard flag prevents concurrent restart calls.
 let restarting = false;
 
-const MIN_CORE_VERSION = '0.25.0';
+const MIN_CORE_VERSION = '0.25.1';
 
 interface DqsUpdateParams {
     score: number;

@@ -39,7 +39,7 @@ Stream Document Quality Score (DQS) updates directly to the status bar, providin
 
 ## Requirements
 
-This extension requires **Zenzic Core v0.25.0 or higher**.
+This extension requires **Zenzic Core v0.25.1 or higher**.
 
 We recommend installing or updating the global binary via `uv`:
 
@@ -74,12 +74,12 @@ If you use a local virtual environment or custom installation path, configure th
 
 ### Zenzic: Outdated Core
 
-- **Cause**: The executable resolved by the extension is older than the minimum required Core version (`v0.25.0`).
+- **Cause**: The executable resolved by the extension is older than the minimum required Core version (`v0.25.1`).
 - **Remediation**: Upgrade your global binary:
   ```bash
   uv tool install --force zenzic
   ```
-  Or point `zenzic.executablePath` in `settings.json` to a virtual environment containing Core `v0.25.0` or higher.
+  Or point `zenzic.executablePath` in `settings.json` to a virtual environment containing Core `v0.25.1` or higher.
 
 
 ### Zenzic: Not Found (ENOENT)

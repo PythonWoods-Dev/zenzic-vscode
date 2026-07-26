@@ -2,7 +2,7 @@
   "name": "zenzic-vscode",
   "displayName": "Zenzic",
   "description": "Deterministic Document Integrity Engine and SAST for Markdown/MDX graphs.",
-  "version": "0.25.0",
+  "version": "0.25.1",
   "publisher": "pythonwoods",
   "engines": {
     "vscode": "^1.125.0"
@@ -71,10 +71,10 @@
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.1.1",
     "@types/vscode": "~1.125.0",
-    "@typescript-eslint/eslint-plugin": "^8.64.0",
-    "@typescript-eslint/parser": "^8.64.0",
+    "@typescript-eslint/eslint-plugin": "^8.65.0",
+    "@typescript-eslint/parser": "^8.65.0",
     "esbuild": "^0.28.1",
-    "eslint": "^10.7.0",
+    "eslint": "^10.8.0",
     "typescript": "~6.0.2"
   }
 }

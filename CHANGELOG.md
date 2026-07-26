@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.25.1] - 2026-07-26
+
+### Changed
+
+- **Core Parity Alignment (`VSCODE-ALIGN-004`)**: Realigned pinned Zenzic Core baseline to `0.25.1`, inheriting LSP fixes for inline suppression parity (`Z603`) and adapter-level `material/blog` plugin recognition (`Z103`/`Z402`).
+
+
 ## [0.25.0] - 2026-07-25
 
 ### Changed
