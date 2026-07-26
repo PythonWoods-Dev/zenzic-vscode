@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.25.4] - 2026-07-26
+
 ### Fixed
 
 - **Status Bar DQS Deprecation (`LSP-FIX-014`)**: Removed misleading DQS Status Bar notification display and listener to preserve the Determinism invariant between incremental LSP mode and CLI batch mode. Restored stable `Zenzic: Running` status indicator.
