@@ -16,6 +16,7 @@ import {
 // A4 fix: typed as | undefined — initialized in activate(), disposed via subscriptions.
 let client: LanguageClient | undefined;
 let statusBarItem: vscode.StatusBarItem | undefined;
+let dqsStatusBarItem: vscode.StatusBarItem | undefined;
 // A2 fix: guard flag prevents concurrent restart calls.
 let restarting = false;
 
@@ -149,6 +150,19 @@ export async function activate(context: vscode.ExtensionContext) {
     statusBarItem.text = '$(sync~spin) Zenzic: Starting';
     statusBarItem.show();
     context.subscriptions.push(statusBarItem);
+
+    // ECOSYSTEM-FEAT-002: DQS Status Bar — separate from the LSP health bar.
+    // Shows the workspace Documentation Quality Score computed on demand by
+    // running the CLI (`zenzic score --json`) asynchronously via execFile.
+    // Visible only when at least one workspace folder is open.
+    dqsStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 99);
+    dqsStatusBarItem.text = '$(sync) Zenzic DQS: --/100';
+    dqsStatusBarItem.command = 'zenzic.computeDQS';
+    dqsStatusBarItem.tooltip = 'Click to compute workspace Documentation Quality Score (runs zenzic score --json)';
+    if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
+        dqsStatusBarItem.show();
+    }
+    context.subscriptions.push(dqsStatusBarItem);
 
     const startServer = async () => {
         const config = vscode.workspace.getConfiguration('zenzic');
@@ -308,6 +322,99 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('zenzic.stopServer', stopServer)
     );
 
+    // ECOSYSTEM-FEAT-002: zenzic.computeDQS
+    // Asynchronous CLI Execution Bridge. Runs `zenzic score --json` as a child
+    // process with the workspace root as cwd. The Core emits a single JSON object
+    // on stdout (Radical Unawareness — ADR-075). The extension parses it and updates
+    // the DQS Status Bar. Determinism is guaranteed: same binary and args as CI/CD.
+    const computeDQS = async () => {
+        if (!dqsStatusBarItem) { return; }
+
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        if (!workspaceFolders || workspaceFolders.length === 0) {
+            vscode.window.showWarningMessage('Zenzic: No workspace folder open. Cannot compute DQS.');
+            return;
+        }
+        const workspaceRoot = workspaceFolders[0].uri.fsPath;
+
+        const config = vscode.workspace.getConfiguration('zenzic');
+        const executablePath = config.get<string>('executablePath') || 'zenzic';
+        const resolvedPath = await resolveExecutablePath(executablePath);
+
+        if (!resolvedPath) {
+            dqsStatusBarItem.text = '$(error) Zenzic DQS: Not Found';
+            dqsStatusBarItem.tooltip = `Zenzic binary not found: '${executablePath}'. Run: uv tool install zenzic`;
+            return;
+        }
+
+        dqsStatusBarItem.text = '$(sync~spin) Zenzic DQS: Computing...';
+        dqsStatusBarItem.tooltip = 'Running zenzic score --json in background...';
+
+        const cp = await import('child_process');
+        await new Promise<void>((resolve) => {
+            cp.execFile(
+                resolvedPath,
+                ['score', '--json'],
+                { cwd: workspaceRoot, timeout: 60000, encoding: 'utf-8' },
+                (err, stdout, stderr) => {
+                    if (!dqsStatusBarItem) { resolve(); return; }
+
+                    if (err && (err as { code?: string }).code === 'ENOENT') {
+                        dqsStatusBarItem.text = '$(error) Zenzic DQS: Not Found';
+                        dqsStatusBarItem.tooltip = `Binary not found at '${resolvedPath}'`;
+                        resolve(); return;
+                    }
+
+                    // Try to parse stdout as JSON regardless of exit code:
+                    // zenzic score exits non-zero when score < fail_under, but still
+                    // emits valid JSON. We surface the score even in "failing" state.
+                    const raw = (stdout || '').trim();
+                    if (!raw) {
+                        const errMsg = (stderr || '').trim().slice(0, 200) || (err?.message ?? 'No output');
+                        dqsStatusBarItem.text = '$(error) Zenzic DQS: Error';
+                        dqsStatusBarItem.tooltip = `zenzic score --json returned no output. ${errMsg}`;
+                        resolve(); return;
+                    }
+
+                    try {
+                        const report = JSON.parse(raw) as {
+                            score: number;
+                            status: string;
+                            suppression_debt_pts?: number;
+                            categories?: Array<{ name: string; issues: number }>;
+                        };
+
+                        const score = report.score ?? 0;
+                        const status = report.status ?? 'unknown';
+                        const debt = report.suppression_debt_pts ?? 0;
+
+                        const icon = score >= 80 ? '$(dashboard)' : score >= 50 ? '$(warning)' : '$(error)';
+                        dqsStatusBarItem.text = `${icon} Zenzic DQS: ${score}/100`;
+
+                        const categoryLines = (report.categories ?? [])
+                            .map(c => `  ${c.name}: ${c.issues === 0 ? '✓' : `${c.issues} issue(s)`}`)
+                            .join('\n');
+                        dqsStatusBarItem.tooltip = [
+                            `Documentation Quality Score: ${score}/100`,
+                            `Status: ${status}`,
+                            debt > 0 ? `Technical Debt: -${debt}pts` : '',
+                            categoryLines ? `\nBreakdown:\n${categoryLines}` : '',
+                        ].filter(Boolean).join('\n');
+
+                    } catch {
+                        dqsStatusBarItem.text = '$(error) Zenzic DQS: Parse Error';
+                        dqsStatusBarItem.tooltip = `Failed to parse JSON output from zenzic score. Raw: ${raw.slice(0, 100)}`;
+                    }
+                    resolve();
+                }
+            );
+        });
+    };
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('zenzic.computeDQS', computeDQS)
+    );
+
     context.subscriptions.push(
         vscode.workspace.onDidChangeConfiguration(async (e) => {
             if (e.affectsConfiguration('zenzic.executablePath')) {
@@ -318,6 +425,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
     await startServer();
 }
+
 
 export function deactivate(): Thenable<void> | undefined {
     if (!client) {

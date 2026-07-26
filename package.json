@@ -44,6 +44,10 @@
       {
         "command": "zenzic.stopServer",
         "title": "Zenzic: Stop Server"
+      },
+      {
+        "command": "zenzic.computeDQS",
+        "title": "Zenzic: Compute Global DQS"
       }
     ],
     "configuration": {
