@@ -19,7 +19,7 @@ let statusBarItem: vscode.StatusBarItem | undefined;
 // A2 fix: guard flag prevents concurrent restart calls.
 let restarting = false;
 
-const MIN_CORE_VERSION = '0.25.3';
+const MIN_CORE_VERSION = '0.25.4';
 
 /**
  * Safely resolve the Zenzic executable path with cross-platform fallback logic.

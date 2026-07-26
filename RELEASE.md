@@ -9,7 +9,7 @@
 | Field | Value |
 | :--- | :--- |
 | **Extension Version** | 0.25.3 |
-| **Pinned Core** | `zenzic>=0.25.3` |
+| **Pinned Core** | `zenzic>=0.25.4` |
 | **Date** | 2026-07-11 |
 
 ## 1. Pre-Flight Checklist
