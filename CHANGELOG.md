@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Core Parity Alignment (`VSCODE-ALIGN-005`)**: Realigned pinned Zenzic Core baseline to `0.25.2`, inheriting the `Z202` (Path Traversal) security fix for `docs_root`-boundary escape detection in editor sessions.
+
+
 ## [0.25.1] - 2026-07-26
 
 ### Changed
