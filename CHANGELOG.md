@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Async DQS Status Bar Bridge (`ECOSYSTEM-FEAT-002`)**: Restored the Documentation Quality Score (DQS) in the VS Code Status Bar (`$(dashboard) Zenzic DQS: {score}/100`) via an asynchronous `child_process.execFile` execution bridge calling `zenzic score --json`, guaranteeing 100% mathematical determinism with CI/CD without blocking LSP performance.
+- **Command Palette Contributed Command**: Added `zenzic.computeDQS` ("Zenzic: Compute Global DQS") command to manually trigger workspace score evaluation on demand.
+
 ## [0.25.4] - 2026-07-26
 
 ### Fixed
