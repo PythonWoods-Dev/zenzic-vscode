@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.25.3] - 2026-07-26
+
+### Changed
+
+- **Core Parity Alignment (`VSCODE-ALIGN-006`)**: Realigned pinned Zenzic Core baseline to `0.25.3`, inheriting fixes for Zensical static asset resolution, dynamic blog route classification, and PolyglotExtractor AST reference link definition extraction (`CORE-FIX-001`).
+
+
 ## [0.25.2] - 2026-07-26
 
 ### Changed

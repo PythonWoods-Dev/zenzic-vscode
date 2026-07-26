@@ -8,8 +8,8 @@
 
 | Field | Value |
 | :--- | :--- |
-| **Extension Version** | 0.25.2 |
-| **Pinned Core** | `zenzic>=0.25.2` |
+| **Extension Version** | 0.25.3 |
+| **Pinned Core** | `zenzic>=0.25.3` |
 | **Date** | 2026-07-11 |
 
 ## 1. Pre-Flight Checklist
@@ -37,16 +37,14 @@ just release <patch|minor|major>
 > unknown to GitHub, which silently skips the `release.yml` trigger.
 
 ```bash
-# 1. Push the bump commit to main (via PR or directly if branch protection allows)
-git push origin main
-
-# 2. MANDATORY: pull to ensure HEAD is in sync with origin before tagging
+# 1. Merge the release branch into main via PR first!
+# 2. Switch to main and pull latest
+git checkout main
 git pull origin main
 
 # 3. Create the immutable signed tag pointing to the HEAD of origin/main
-git tag -s -S -m "Release v0.25.2" v0.25.2
-git push origin v0.25.2
-
+git tag -s -m "Release v0.25.3" v0.25.3
+git push origin v0.25.3
 ```
 
 ## 4. Distribute (Automated)
