@@ -35,6 +35,13 @@ Hover over any diagnostic to view the exact Z-Code, DQS score penalty, and remed
 ### 5. DQS Workspace UI
 Stream Document Quality Score (DQS) updates directly to the status bar, providing real-time visibility into overall repository health.
 
+### Real-Time Diagnostics vs. Global DQS
+
+To guarantee sub-50ms performance, Zenzic operates with a strict separation of concerns in the editor:
+
+- **Real-Time Diagnostics (PROBLEMS Panel):** AST rules (e.g., Z502, Z505) and local topology checks are executed incrementally in memory on every keystroke.
+- **Global DQS (Status Bar):** The Documentation Quality Score requires a full repository audit. To prevent editor lag, the DQS is computed *on-demand*. Click the `Zenzic DQS` item in the Status Bar to execute a background CLI bridge and update the global score.
+
 ---
 
 ## Requirements
