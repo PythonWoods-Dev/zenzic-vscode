@@ -66,14 +66,26 @@ pip install --upgrade zenzic
 
 By default, the extension resolves the `zenzic` executable from your system `$PATH`.
 
-If you use a local virtual environment or custom installation path, configure the executable path in your workspace or user `settings.json`:
+The extension currently contributes one user-facing setting:
+
+- `zenzic.executablePath`: path to the `zenzic` executable or to the virtual-environment binary you want the extension to use.
+
+If you use a local virtual environment or custom installation path, configure it in your workspace or user `settings.json`:
 
 ```json
 {
-  "zenzic.executablePath": "${workspaceFolder}/.venv/bin/zenzic",
-  "zenzic.trace.server": "verbose"
+  "zenzic.executablePath": "${workspaceFolder}/.venv/bin/zenzic"
 }
 ```
+
+## Commands
+
+The extension contributes the following commands to the Command Palette:
+
+- `Zenzic: Start Server`
+- `Zenzic: Stop Server`
+- `Zenzic: Restart Server`
+- `Zenzic: Compute Global DQS`
 
 ---
 
@@ -98,6 +110,10 @@ If you use a local virtual environment or custom installation path, configure th
     "zenzic.executablePath": "/home/user/.local/bin/zenzic"
   }
   ```
+
+### Logs and Observability
+
+The extension creates the `Zenzic Language Server` output channel. Use it to inspect startup failures, transport errors, and language-server logs when diagnostics do not appear as expected.
 
 ---
 

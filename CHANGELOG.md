@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Documentation
+
+- **Workspace UI Clarification (`DOCS-VSCODE-001`)**: Clarified the README architecture split between real-time editor diagnostics and on-demand global DQS computation, documenting that the Status Bar score is produced through a background CLI bridge rather than incremental LSP inference.
+- **README Settings & Observability Audit**: Removed the undocumented `zenzic.trace.server` example, documented the actual contributed commands and `zenzic.executablePath` setting, and added guidance for the `Zenzic Language Server` output channel.
+
 ## [0.26.0] - 2026-07-26
 
 ### Added
