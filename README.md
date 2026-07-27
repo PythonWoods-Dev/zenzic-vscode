@@ -68,13 +68,21 @@ By default, the extension resolves the `zenzic` executable from your system `$PA
 
 The extension currently contributes one user-facing setting:
 
-- `zenzic.executablePath`: path to the `zenzic` executable or to the virtual-environment binary you want the extension to use.
+- `zenzic.executablePath`: path to the `zenzic` executable or to the virtual-environment binary you want the extension to use. The extension expands `${workspaceFolder}` and a leading `~/` or `~\` automatically.
 
 If you use a local virtual environment or custom installation path, configure it in your workspace or user `settings.json`:
 
 ```json
 {
   "zenzic.executablePath": "${workspaceFolder}/.venv/bin/zenzic"
+}
+```
+
+User-scoped home-directory paths are also supported:
+
+```json
+{
+  "zenzic.executablePath": "~/custom_path/.venv/bin/zenzic"
 }
 ```
 
@@ -104,12 +112,13 @@ The extension contributes the following commands to the Command Palette:
 ### Zenzic: Not Found (ENOENT)
 
 - **Cause**: The `zenzic` executable is not present in the system `$PATH`. This commonly occurs in Flatpak, Snap, or isolated terminal environments where user binary directories (`~/.local/bin`) are omitted from process environments.
-- **Remediation**: Specify the absolute path to the binary in `settings.json`:
+- **Remediation**: Specify an explicit path to the binary in `settings.json`. `${workspaceFolder}` and leading `~/` / `~\` are expanded automatically:
   ```json
   {
-    "zenzic.executablePath": "/home/user/.local/bin/zenzic"
+    "zenzic.executablePath": "~/custom_path/.venv/bin/zenzic"
   }
   ```
+- **Null-workspace note**: `${workspaceFolder}` requires an open workspace folder. If you open a standalone file without a workspace, use an absolute path or a `~/...` path instead.
 
 ### Logs and Observability
 

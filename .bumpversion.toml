@@ -63,3 +63,13 @@ replace = "minimum required Core version (`v{new_version}`)"
 filename = "README.md"
 search = "virtual environment containing Core `v{current_version}` or higher"
 replace = "virtual environment containing Core `v{new_version}` or higher"
+
+[[tool.bumpversion.files]]
+filename = "CONTRIBUTING.md"
+search = "**Zenzic Core `v{current_version}`** (`MIN_CORE_VERSION = '{current_version}'` in `src/extension.ts`)."
+replace = "**Zenzic Core `v{new_version}`** (`MIN_CORE_VERSION = '{new_version}'` in `src/extension.ts`)."
+
+[[tool.bumpversion.files]]
+filename = "CONTRIBUTING.md"
+search = "| **Zenzic Core** | ≥ {current_version} |"
+replace = "| **Zenzic Core** | ≥ {new_version} |"

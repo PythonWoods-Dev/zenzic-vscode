@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.26.1] - 2026-07-27
 
+### Fixed
+
+- **Executable Path Expansion (`VSCODE-FIX-006`)**: Expanded `${workspaceFolder}` and a leading `~/` or `~\` in `zenzic.executablePath` before pre-flight existence checks and `execFile` calls, eliminating false `ENOENT` failures for workspace-local and home-relative binaries while preserving safe `execFile` execution.
+
 ### Documentation
 
 - **Workspace UI Clarification (`DOCS-VSCODE-001`)**: Clarified the README architecture split between real-time editor diagnostics and on-demand global DQS computation, documenting that the Status Bar score is produced through a background CLI bridge rather than incremental LSP inference.

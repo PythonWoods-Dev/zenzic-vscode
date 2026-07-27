@@ -25,7 +25,7 @@ Before bumping the version, ensure the workspace is pristine:
 Do not manually edit version strings. Rely on the automated pipeline.
 
 ```bash
-# Automate version bump (updates package.json, CHANGELOG, and this file)
+# Automate version bump (updates package.json, README.md, CHANGELOG, RELEASE.md, and CONTRIBUTING.md)
 just release <patch|minor|major>
 ```
 
