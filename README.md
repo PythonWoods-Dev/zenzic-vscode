@@ -106,7 +106,7 @@ The extension contributes the following commands to the Command Palette:
   ```bash
   uv tool install --force zenzic
   ```
-  Or point `zenzic.executablePath` in `settings.json` to a virtual environment containing Core `v0.26.2` or higher.
+  Or point `zenzic.executablePath` in `settings.json` to a virtual environment containing Core `v0.26.1` or higher.
 
 
 ### Zenzic: Not Found (ENOENT)
