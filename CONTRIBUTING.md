@@ -81,8 +81,9 @@ just verify
 | Core Pin | `just pin-core <ver>` | Realign Zenzic Core version pin across docs & `extension.ts` |
 | Core Pin Dry-Run | `just pin-core-dry <ver>` | Preview file changes for core realignment |
 | Show Versions | `just versions` | Display extension version and pinned core version |
-| Release Dry-Run | `just release-dry minor` | Preview version bump diff |
-| Release | `just release minor` | Increment version, commit, and create release tag |
+| Release Dry-Run | `just release-dry minor 0.26.3` | Preview version bump + core-pin orchestration |
+| Release | `just release minor 0.26.3` | Orchestrate extension bump + core-pin alignment in one signed commit |
+| Release Audit | `just audit-release` | Verify release metadata and core pin alignment |
 | Clean | `just clean` | Remove `out/` and build artifacts |
 
 ---

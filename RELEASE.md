@@ -8,7 +8,7 @@
 
 | Field | Value |
 | :--- | :--- |
-| **Extension Version** | 0.26.2 |
+| **Extension Version** | 0.26.3 |
 | **Pinned Core** | `zenzic>=0.26.3` |
 | **Date** | 2026-07-11 |
 
@@ -25,8 +25,14 @@ Before bumping the version, ensure the workspace is pristine:
 Do not manually edit version strings. Rely on the automated pipeline.
 
 ```bash
-# Automate version bump (updates package.json, README.md, CHANGELOG, RELEASE.md, and CONTRIBUTING.md)
-just release <patch|minor|major>
+# Orchestrated release: bump extension version + align core pin in one flow
+just release <patch|minor|major> <core-version>
+```
+
+Validate before tag/push:
+
+```bash
+just audit-release
 ```
 
 ## 3. Tag & Push
@@ -43,8 +49,8 @@ git checkout main
 git pull origin main
 
 # 3. Create the immutable signed tag pointing to the HEAD of origin/main
-git tag -s -m "Release v0.26.2" v0.26.2
-git push origin v0.26.2
+git tag -s -m "Release v0.26.3" v0.26.3
+git push origin v0.26.3
 ```
 
 ## 4. Distribute (Automated)
