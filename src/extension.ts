@@ -20,7 +20,28 @@ let dqsStatusBarItem: vscode.StatusBarItem | undefined;
 // A2 fix: guard flag prevents concurrent restart calls.
 let restarting = false;
 
-const MIN_CORE_VERSION = '0.26.0';
+const MIN_CORE_VERSION = '0.26.1';
+
+/**
+ * Expand supported user-facing path variables in zenzic.executablePath.
+ * Returns undefined when ${workspaceFolder} is configured but no workspace is open.
+ */
+export function expandConfiguredPath(filePath: string, workspaceRoot?: string): string | undefined {
+    let expandedPath = filePath;
+
+    if (expandedPath.includes('${workspaceFolder}')) {
+        if (!workspaceRoot) {
+            return undefined;
+        }
+        expandedPath = expandedPath.replace(/\$\{workspaceFolder\}/g, workspaceRoot);
+    }
+
+    if (expandedPath.startsWith('~/') || expandedPath.startsWith('~\\')) {
+        expandedPath = path.join(os.homedir(), expandedPath.slice(2));
+    }
+
+    return expandedPath;
+}
 
 /**
  * Safely resolve the Zenzic executable path with cross-platform fallback logic.
@@ -29,7 +50,7 @@ const MIN_CORE_VERSION = '0.26.0';
  * 2. System $PATH
  * 3. Standard user binary fallback directories (~/.local/bin, ~/.cargo/bin, ~/.uv/bin) via os.homedir()
  */
-export async function resolveExecutablePath(cmd: string): Promise<string | undefined> {
+export async function resolveExecutablePath(cmd: string, workspaceRoot?: string): Promise<string | undefined> {
     const isWindows = process.platform === 'win32';
     const exts = isWindows ? ['.exe', '.cmd', '.bat', ''] : [''];
 
@@ -45,8 +66,13 @@ export async function resolveExecutablePath(cmd: string): Promise<string | undef
         return undefined;
     };
 
-    if (path.isAbsolute(cmd) || cmd.includes(path.sep) || (isWindows && cmd.includes('/'))) {
-        return await checkPath(cmd);
+    const expandedCmd = expandConfiguredPath(cmd, workspaceRoot);
+    if (!expandedCmd) {
+        return undefined;
+    }
+
+    if (path.isAbsolute(expandedCmd) || expandedCmd.includes(path.sep) || (isWindows && expandedCmd.includes('/'))) {
+        return await checkPath(expandedCmd);
     }
 
     const home = os.homedir();
@@ -62,7 +88,7 @@ export async function resolveExecutablePath(cmd: string): Promise<string | undef
     const searchDirs = [...systemPaths, ...fallbackPaths];
     for (const dir of searchDirs) {
         if (!dir) continue;
-        const fullPath = path.join(dir, cmd);
+        const fullPath = path.join(dir, expandedCmd);
         const resolved = await checkPath(fullPath);
         if (resolved) {
             return resolved;
@@ -167,8 +193,9 @@ export async function activate(context: vscode.ExtensionContext) {
     const startServer = async () => {
         const config = vscode.workspace.getConfiguration('zenzic');
         const executablePath = config.get<string>('executablePath') || 'zenzic';
+        const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
 
-        const resolvedPath = await resolveExecutablePath(executablePath);
+        const resolvedPath = await resolveExecutablePath(executablePath, workspaceRoot);
 
         if (!resolvedPath) {
             statusBarItem!.text = '$(error) Zenzic: Not Found';
@@ -339,7 +366,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
         const config = vscode.workspace.getConfiguration('zenzic');
         const executablePath = config.get<string>('executablePath') || 'zenzic';
-        const resolvedPath = await resolveExecutablePath(executablePath);
+        const resolvedPath = await resolveExecutablePath(executablePath, workspaceRoot);
 
         if (!resolvedPath) {
             dqsStatusBarItem.text = '$(error) Zenzic DQS: Not Found';

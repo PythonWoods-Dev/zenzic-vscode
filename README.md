@@ -35,11 +35,18 @@ Hover over any diagnostic to view the exact Z-Code, DQS score penalty, and remed
 ### 5. DQS Workspace UI
 Stream Document Quality Score (DQS) updates directly to the status bar, providing real-time visibility into overall repository health.
 
+### Real-Time Diagnostics vs. Global DQS
+
+To guarantee sub-50ms performance, Zenzic operates with a strict separation of concerns in the editor:
+
+- **Real-Time Diagnostics (PROBLEMS Panel):** AST rules (e.g., Z502, Z505) and local topology checks are executed incrementally in memory on every keystroke.
+- **Global DQS (Status Bar):** The Documentation Quality Score requires a full repository audit. To prevent editor lag, the DQS is computed *on-demand*. Click the `Zenzic DQS` item in the Status Bar to execute a background CLI bridge and update the global score.
+
 ---
 
 ## Requirements
 
-This extension requires **Zenzic Core v0.26.0 or higher**.
+This extension requires **Zenzic Core v0.26.1 or higher**.
 
 We recommend installing or updating the global binary via `uv`:
 
@@ -59,14 +66,34 @@ pip install --upgrade zenzic
 
 By default, the extension resolves the `zenzic` executable from your system `$PATH`.
 
-If you use a local virtual environment or custom installation path, configure the executable path in your workspace or user `settings.json`:
+The extension currently contributes one user-facing setting:
+
+- `zenzic.executablePath`: path to the `zenzic` executable or to the virtual-environment binary you want the extension to use. The extension expands `${workspaceFolder}` and a leading `~/` or `~\` automatically.
+
+If you use a local virtual environment or custom installation path, configure it in your workspace or user `settings.json`:
 
 ```json
 {
-  "zenzic.executablePath": "${workspaceFolder}/.venv/bin/zenzic",
-  "zenzic.trace.server": "verbose"
+  "zenzic.executablePath": "${workspaceFolder}/.venv/bin/zenzic"
 }
 ```
+
+User-scoped home-directory paths are also supported:
+
+```json
+{
+  "zenzic.executablePath": "~/custom_path/.venv/bin/zenzic"
+}
+```
+
+## Commands
+
+The extension contributes the following commands to the Command Palette:
+
+- `Zenzic: Start Server`
+- `Zenzic: Stop Server`
+- `Zenzic: Restart Server`
+- `Zenzic: Compute Global DQS`
 
 ---
 
@@ -74,23 +101,28 @@ If you use a local virtual environment or custom installation path, configure th
 
 ### Zenzic: Outdated Core
 
-- **Cause**: The executable resolved by the extension is older than the minimum required Core version (`v0.26.0`).
+- **Cause**: The executable resolved by the extension is older than the minimum required Core version (`v0.26.1`).
 - **Remediation**: Upgrade your global binary:
   ```bash
   uv tool install --force zenzic
   ```
-  Or point `zenzic.executablePath` in `settings.json` to a virtual environment containing Core `v0.26.0` or higher.
+  Or point `zenzic.executablePath` in `settings.json` to a virtual environment containing Core `v0.26.1` or higher.
 
 
 ### Zenzic: Not Found (ENOENT)
 
 - **Cause**: The `zenzic` executable is not present in the system `$PATH`. This commonly occurs in Flatpak, Snap, or isolated terminal environments where user binary directories (`~/.local/bin`) are omitted from process environments.
-- **Remediation**: Specify the absolute path to the binary in `settings.json`:
+- **Remediation**: Specify an explicit path to the binary in `settings.json`. `${workspaceFolder}` and leading `~/` / `~\` are expanded automatically:
   ```json
   {
-    "zenzic.executablePath": "/home/user/.local/bin/zenzic"
+    "zenzic.executablePath": "~/custom_path/.venv/bin/zenzic"
   }
   ```
+- **Null-workspace note**: `${workspaceFolder}` requires an open workspace folder. If you open a standalone file without a workspace, use an absolute path or a `~/...` path instead.
+
+### Logs and Observability
+
+The extension creates the `Zenzic Language Server` output channel. Use it to inspect startup failures, transport errors, and language-server logs when diagnostics do not appear as expected.
 
 ---
 

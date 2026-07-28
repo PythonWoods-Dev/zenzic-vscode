@@ -2,7 +2,7 @@
   "name": "zenzic-vscode",
   "displayName": "Zenzic",
   "description": "Deterministic Document Integrity Engine and SAST for Markdown/MDX graphs.",
-  "version": "0.26.0",
+  "version": "0.26.1",
   "publisher": "pythonwoods",
   "engines": {
     "vscode": "^1.125.0"
@@ -57,7 +57,7 @@
         "zenzic.executablePath": {
           "type": "string",
           "default": "zenzic",
-          "description": "Path to the Zenzic executable or virtual environment binary."
+          "description": "Path to the Zenzic executable or virtual environment binary. Supports ${workspaceFolder} and leading ~/ or ~\\."
         }
       }
     }

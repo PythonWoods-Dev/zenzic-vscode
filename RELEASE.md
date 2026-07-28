@@ -8,8 +8,8 @@
 
 | Field | Value |
 | :--- | :--- |
-| **Extension Version** | 0.26.0 |
-| **Pinned Core** | `zenzic>=0.26.0` |
+| **Extension Version** | 0.26.1 |
+| **Pinned Core** | `zenzic>=0.26.1` |
 | **Date** | 2026-07-11 |
 
 ## 1. Pre-Flight Checklist
@@ -25,7 +25,7 @@ Before bumping the version, ensure the workspace is pristine:
 Do not manually edit version strings. Rely on the automated pipeline.
 
 ```bash
-# Automate version bump (updates package.json, CHANGELOG, and this file)
+# Automate version bump (updates package.json, README.md, CHANGELOG, RELEASE.md, and CONTRIBUTING.md)
 just release <patch|minor|major>
 ```
 
@@ -43,8 +43,8 @@ git checkout main
 git pull origin main
 
 # 3. Create the immutable signed tag pointing to the HEAD of origin/main
-git tag -s -m "Release v0.26.0" v0.26.0
-git push origin v0.26.0
+git tag -s -m "Release v0.26.1" v0.26.1
+git push origin v0.26.1
 ```
 
 ## 4. Distribute (Automated)

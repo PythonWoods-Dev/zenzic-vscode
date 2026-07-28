@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.26.1] - 2026-07-27
+
+### Changed
+
+- **Core Parity Alignment (`VSCODE-ALIGN-007`)**: Realigned the VS Code extension release notes with Zenzic Core `0.26.1`, including adapter contract formalization (`CORE-FIX-005`) and VSM URL route parity improvements (`CORE-FIX-003`).
+
+### Fixed
+- **Tilde Expansion (`VSCODE-FIX-006`)**: Implemented native tilde (`~`) and `${workspaceFolder}` expansion for the `zenzic.executablePath` setting, eradicating `ENOENT` errors when configuring custom binary paths in Unix-like environments.
+- **Documentation (`DOCS-VSCODE-001`)**: Added factual documentation explaining the architectural split between real-time incremental diagnostics (PROBLEMS panel) and the on-demand global DQS computation (Status Bar).
+
 ## [0.26.0] - 2026-07-26
 
 ### Added
