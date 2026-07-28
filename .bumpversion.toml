@@ -47,6 +47,16 @@ filename = "RELEASE.md"
 search = "git push origin v{current_version}"
 replace = "git push origin v{new_version}"
 
+[[tool.bumpversion.files]]
+filename = "RELEASE.md"
+search = "| **Pinned Core** | `zenzic>={current_version}` |"
+replace = "| **Pinned Core** | `zenzic>={new_version}` |"
+
+[[tool.bumpversion.files]]
+filename = "src/extension.ts"
+search = "const MIN_CORE_VERSION = '{current_version}';"
+replace = "const MIN_CORE_VERSION = '{new_version}';"
+
 # ── README.md ─────────────────────────────────────────────────────────────────
 
 [[tool.bumpversion.files]]
