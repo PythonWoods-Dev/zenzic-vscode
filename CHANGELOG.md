@@ -14,13 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Core Parity Alignment (`VSCODE-ALIGN-007`)**: Realigned the VS Code extension release notes with Zenzic Core `0.26.1`, including adapter contract formalization (`CORE-FIX-005`) and VSM URL route parity improvements (`CORE-FIX-003`).
 
 ### Fixed
-
-- **Executable Path Expansion (`VSCODE-FIX-006`)**: Expanded `${workspaceFolder}` and a leading `~/` or `~\` in `zenzic.executablePath` before pre-flight existence checks and `execFile` calls, eliminating false `ENOENT` failures for workspace-local and home-relative binaries while preserving safe `execFile` execution.
-
-### Documentation
-
-- **Workspace UI Clarification (`DOCS-VSCODE-001`)**: Clarified the README architecture split between real-time editor diagnostics and on-demand global DQS computation, documenting that the Status Bar score is produced through a background CLI bridge rather than incremental LSP inference.
-- **README Settings & Observability Audit**: Removed the undocumented `zenzic.trace.server` example, documented the actual contributed commands and `zenzic.executablePath` setting, and added guidance for the `Zenzic Language Server` output channel.
+- **Tilde Expansion (`VSCODE-FIX-006`)**: Implemented native tilde (`~`) and `${workspaceFolder}` expansion for the `zenzic.executablePath` setting, eradicating `ENOENT` errors when configuring custom binary paths in Unix-like environments.
+- **Documentation (`DOCS-VSCODE-001`)**: Added factual documentation explaining the architectural split between real-time incremental diagnostics (PROBLEMS panel) and the on-demand global DQS computation (Status Bar).
 
 ## [0.26.0] - 2026-07-26
 
