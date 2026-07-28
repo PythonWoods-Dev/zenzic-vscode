@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Suppression Code Actions (`LSP-FEAT-003`)**: Added support for automated inline suppressions. You can now use the Quick Fix (Lightbulb) menu to instantly inject `<!-- zenzic:ignore:ZXXX -->` comments above offending lines. This feature is intentionally disabled for Z2xx Security findings.
+
 ### Fixed
 - **DQS Tooltip Rendering (`LSP-FIX-015`)**: Fixed a rendering issue where a `security_breach` status incorrectly displayed green checkmarks in the DQS tooltip. The tooltip now prominently displays a security breach warning.
 - **Core Baseline Alignment**: Realigned pinned Zenzic Core baseline to `0.26.3`.
