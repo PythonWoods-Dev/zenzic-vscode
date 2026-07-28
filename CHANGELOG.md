@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.26.3] - 2026-07-28
+
 ### Added
 - **Suppression Code Actions (`LSP-FEAT-003`)**: Added support for automated inline suppressions. You can now use the Quick Fix (Lightbulb) menu to instantly inject `<!-- zenzic:ignore:ZXXX -->` comments above offending lines. This feature is intentionally disabled for Z2xx Security findings.
 
