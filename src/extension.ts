@@ -20,7 +20,7 @@ let dqsStatusBarItem: vscode.StatusBarItem | undefined;
 // A2 fix: guard flag prevents concurrent restart calls.
 let restarting = false;
 
-const MIN_CORE_VERSION = '0.26.2';
+const MIN_CORE_VERSION = '0.26.3';
 
 /**
  * Expand supported user-facing path variables in zenzic.executablePath.
@@ -415,18 +415,40 @@ export async function activate(context: vscode.ExtensionContext) {
                         const status = report.status ?? 'unknown';
                         const debt = report.suppression_debt_pts ?? 0;
 
-                        const icon = score >= 80 ? '$(dashboard)' : score >= 50 ? '$(warning)' : '$(error)';
-                        dqsStatusBarItem.text = `${icon} Zenzic DQS: ${score}/100`;
+                        // LSP-FIX-015 Fix 3: security_breach (Z201) forces score to 0.
+                        // Do NOT show category checkmarks — they would be misleading.
+                        // A credential was detected; the status bar and tooltip must
+                        // communicate the breach prominently and unambiguously.
+                        const isSecurityBreach = status === 'security_breach';
 
-                        const categoryLines = (report.categories ?? [])
-                            .map(c => `  ${c.name}: ${c.issues === 0 ? '✓' : `${c.issues} issue(s)`}`)
-                            .join('\n');
-                        dqsStatusBarItem.tooltip = [
-                            `Documentation Quality Score: ${score}/100`,
-                            `Status: ${status}`,
-                            debt > 0 ? `Technical Debt: -${debt}pts` : '',
-                            categoryLines ? `\nBreakdown:\n${categoryLines}` : '',
-                        ].filter(Boolean).join('\n');
+                        const icon = isSecurityBreach
+                            ? '$(shield)'
+                            : score >= 80 ? '$(dashboard)' : score >= 50 ? '$(warning)' : '$(error)';
+                        dqsStatusBarItem.text = isSecurityBreach
+                            ? `${icon} Zenzic DQS: SECURITY BREACH`
+                            : `${icon} Zenzic DQS: ${score}/100`;
+
+                        if (isSecurityBreach) {
+                            dqsStatusBarItem.tooltip = [
+                                '🚨 ZENZIC — SECURITY BREACH DETECTED 🚨',
+                                '',
+                                'A credential or hardcoded secret was found in the documentation.',
+                                'Score is forced to 0/100 — Z201 is non-suppressible.',
+                                '',
+                                '⚠️  Rotate the exposed credential immediately.',
+                                'Reference: https://zenzic.dev/docs/reference/finding-codes#Z201',
+                            ].join('\n');
+                        } else {
+                            const categoryLines = (report.categories ?? [])
+                                .map(c => `  ${c.name}: ${c.issues === 0 ? '✓' : `${c.issues} issue(s)`}`)
+                                .join('\n');
+                            dqsStatusBarItem.tooltip = [
+                                `Documentation Quality Score: ${score}/100`,
+                                `Status: ${status}`,
+                                debt > 0 ? `Technical Debt: -${debt}pts` : '',
+                                categoryLines ? `\nBreakdown:\n${categoryLines}` : '',
+                            ].filter(Boolean).join('\n');
+                        }
 
                     } catch {
                         dqsStatusBarItem.text = '$(error) Zenzic DQS: Parse Error';

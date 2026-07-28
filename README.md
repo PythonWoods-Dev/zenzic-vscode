@@ -29,8 +29,8 @@ Modify a heading or link in one file, and Zenzic's Virtual Site Map (VSM) instan
 ### 3. Adapter-Driven Config Hot-Reloading (`v0.25.0`)
 When framework configuration files (e.g. `mkdocs.yml`, `zensical.toml`, `.zenzic.toml`) are modified, the Language Server automatically reloads adapter metadata and rebuilds the Virtual Site Map without requiring an extension or editor restart.
 
-### 4. Inline Diagnostics & Quick Fixes
-Hover over any diagnostic to view the exact Z-Code, DQS score penalty, and remediation guidance. Apply automated Quick Fixes via `textDocument/codeAction` directly from the editor lightbulb menu.
+### 4. Inline Diagnostics, Quick Fixes & Automated Suppressions
+Hover over any diagnostic to view the exact Z-Code, DQS score penalty, and remediation guidance. Apply automated Quick Fixes or insert Automated Inline Suppressions (`<!-- zenzic:ignore:ZXXX -->`, except for `Z2xx` Security findings) via `textDocument/codeAction` directly from the editor lightbulb menu.
 
 ### 5. DQS Workspace UI
 Stream Document Quality Score (DQS) updates directly to the status bar, providing real-time visibility into overall repository health.
@@ -46,7 +46,7 @@ To guarantee sub-50ms performance, Zenzic operates with a strict separation of c
 
 ## Requirements
 
-This extension requires **Zenzic Core v0.26.2 or higher**.
+This extension requires **Zenzic Core v0.26.3 or higher**.
 
 We recommend installing or updating the global binary via `uv`:
 
@@ -101,12 +101,12 @@ The extension contributes the following commands to the Command Palette:
 
 ### Zenzic: Outdated Core
 
-- **Cause**: The executable resolved by the extension is older than the minimum required Core version (`v0.26.2`).
+- **Cause**: The executable resolved by the extension is older than the minimum required Core version (`v0.26.3`).
 - **Remediation**: Upgrade your global binary:
   ```bash
   uv tool install --force zenzic
   ```
-  Or point `zenzic.executablePath` in `settings.json` to a virtual environment containing Core `v0.26.2` or higher.
+  Or point `zenzic.executablePath` in `settings.json` to a virtual environment containing Core `v0.26.3` or higher.
 
 
 ### Zenzic: Not Found (ENOENT)
