@@ -9,8 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.26.2] - 2026-07-28
 
-## [0.26.2] - 2026-07-28
-
 ### Fixed
 
 - **Core Baseline Alignment**: Realigned pinned Zenzic Core baseline to `0.26.2`, inheriting fixes for extensionless static asset resolution.
