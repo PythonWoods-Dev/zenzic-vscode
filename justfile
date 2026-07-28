@@ -4,11 +4,12 @@ set shell := ["bash", "-c"]
 #
 # Quick reference:
 #   just verify          — lint + tsc (pre-push gate)
-#   just release <part>  — bump version (patch|minor|major)
-#   just release-dry <p> — dry-run bump, no file writes
+#   just release <part> <core>  — bump extension version + align core pin
+#   just release-dry <p> <core> — dry-run release orchestration
 #   just pin-core <ver>  — realign Zenzic Core pin in README + RELEASE.md + CONTRIBUTING.md
 #   just pin-core-dry    — show what pin-core would change (no writes)
 #   just versions        — show extension version and pinned core version
+#   just audit-release   — verify release metadata/core pin alignment
 #   just clean           — remove generated artefacts (out/, *.vsix, .tsbuildinfo)
 
 verify:
@@ -20,18 +21,24 @@ verify:
 	fi
 	reuse lint
 
-release part:
+release part core_version:
 	#!/usr/bin/env bash
 	set -euo pipefail
 	case "{{ part }}" in
 		patch|minor|major) ;;
 		*) echo "Invalid part '{{ part }}'. Use patch|minor|major"; exit 2 ;;
 	esac
-	uvx --from "bump-my-version==1.2.6" bump-my-version bump {{ part }}
+	just _validate-semver "{{core_version}}"
+	uvx --from "bump-my-version==1.2.6" bump-my-version bump {{ part }} --no-commit
+	just _pin-core-apply "{{core_version}}"
+	version="$(uvx --from "bump-my-version==1.2.6" bump-my-version show current_version)"
+	git add -u
+	git commit -S -s -m "release: bump version to ${version} (core {{core_version}})"
 
-release-dry part *args:
+release-dry part core_version *args:
 	#!/usr/bin/env bash
 	set -euo pipefail
+	just _validate-semver "{{core_version}}"
 	_short=false
 	for _arg in {{args}}; do [[ "$_arg" == "--short" ]] && _short=true; done
 	if $_short; then
@@ -40,6 +47,8 @@ release-dry part *args:
 	else
 		uvx --from "bump-my-version==1.2.6" bump-my-version bump {{part}} --dry-run --allow-dirty --verbose
 	fi
+	echo ""
+	just pin-core-dry "{{core_version}}"
 
 # Show the current extension version and the pinned Zenzic Core version
 versions:
@@ -51,20 +60,44 @@ versions:
 	echo "core-pinned: $PINNED (RELEASE.md)"
 	echo "min-core-ts: $EXT_MIN (src/extension.ts)"
 
-# Realign the Zenzic Core pin in README.md, RELEASE.md, CONTRIBUTING.md, and src/extension.ts.
-# Usage: just pin-core <version>
-pin-core version:
+audit-release:
+	#!/usr/bin/env bash
+	set -euo pipefail
+	EXT="$(uvx --from 'bump-my-version==1.2.6' bump-my-version show current_version)"
+	PKG="$(grep -oP '"version":\s*"\K[0-9.]+' package.json | head -n1)"
+	LOCK="$(grep -oP '"version":\s*"\K[0-9.]+' package-lock.json | head -n1)"
+	REL="$(grep -oP '\*\*Extension Version\*\* \| \K[0-9.]+' RELEASE.md)"
+	CORE_REL="$(grep -oP '\*\*Pinned Core\*\* \| `zenzic>=\K[0-9.]+' RELEASE.md)"
+	CORE_TS="$(grep -oP "const MIN_CORE_VERSION = '\K[0-9.]+" src/extension.ts)"
+	CORE_CONTRIB="$(grep -oP '\| \*\*Zenzic Core\*\* \| ≥ \K[0-9.]+' CONTRIBUTING.md)"
+	if [[ -z "$PKG" || -z "$LOCK" || -z "$REL" || -z "$CORE_REL" || -z "$CORE_TS" || -z "$CORE_CONTRIB" ]]; then
+		echo "audit-release failed: missing expected release/core markers"
+		exit 1
+	fi
+	if [[ "$EXT" != "$PKG" || "$EXT" != "$LOCK" || "$EXT" != "$REL" ]]; then
+		echo "audit-release failed: extension version mismatch (bump/package/lock/release)"
+		echo "  bump=$EXT package.json=$PKG package-lock.json=$LOCK RELEASE.md=$REL"
+		exit 1
+	fi
+	if [[ "$CORE_REL" != "$CORE_TS" || "$CORE_REL" != "$CORE_CONTRIB" ]]; then
+		echo "audit-release failed: core pin mismatch (RELEASE/TS/CONTRIBUTING)"
+		echo "  RELEASE.md=$CORE_REL extension.ts=$CORE_TS CONTRIBUTING.md=$CORE_CONTRIB"
+		exit 1
+	fi
+	grep -q "Zenzic Core v$CORE_REL or higher" README.md
+	echo "✅ audit-release: release metadata and core pin alignment are coherent."
+
+_validate-semver version:
 	#!/usr/bin/env bash
 	set -euo pipefail
 	if [[ ! "{{version}}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
 		echo "Invalid version '{{version}}'. Use MAJOR.MINOR.PATCH"
 		exit 2
 	fi
-	if [ -n "$(git status --porcelain)" ]; then
-		echo "Working tree is not clean. Commit or stash changes before pin-core."
-		exit 3
-	fi
-	echo "Aligning Zenzic Core pin to {{version}}..."
+
+_pin-core-apply version:
+	#!/usr/bin/env bash
+	set -euo pipefail
 	sed -i 's/uv tool install zenzic==[0-9.]*/uv tool install zenzic=={{version}}/g' README.md
 	sed -i 's/pip install zenzic==[0-9.]*/pip install zenzic=={{version}}/g' README.md
 	sed -i 's/Zenzic Core v[0-9.]* or higher/Zenzic Core v{{version}} or higher/g' README.md
@@ -74,6 +107,19 @@ pin-core version:
 	sed -i "s/\*\*Zenzic Core \`v[0-9.]*\`\*\* (\`MIN_CORE_VERSION = '[0-9.]*'\` in \`src\\/extension.ts\`)./**Zenzic Core \`v{{version}}\`** (\`MIN_CORE_VERSION = '{{version}}'\` in \`src\\/extension.ts\`)./g" CONTRIBUTING.md
 	sed -i 's/| \*\*Zenzic Core\*\* | ≥ [0-9.]* |/| **Zenzic Core** | ≥ {{version}} |/' CONTRIBUTING.md
 	sed -i "s/const MIN_CORE_VERSION = '[0-9.]*';/const MIN_CORE_VERSION = '{{version}}';/g" src/extension.ts
+
+# Realign the Zenzic Core pin in README.md, RELEASE.md, CONTRIBUTING.md, and src/extension.ts.
+# Usage: just pin-core <version>
+pin-core version:
+	#!/usr/bin/env bash
+	set -euo pipefail
+	just _validate-semver "{{version}}"
+	if [ -n "$(git status --porcelain)" ]; then
+		echo "Working tree is not clean. Commit or stash changes before pin-core."
+		exit 3
+	fi
+	echo "Aligning Zenzic Core pin to {{version}}..."
+	just _pin-core-apply "{{version}}"
 	git add README.md RELEASE.md CONTRIBUTING.md src/extension.ts
 	git commit -S -s -m "chore(deps): pin zenzic core to {{version}}"
 
@@ -82,10 +128,7 @@ pin-core version:
 pin-core-dry version:
 	#!/usr/bin/env bash
 	set -euo pipefail
-	if [[ ! "{{version}}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-		echo "Invalid version '{{version}}'. Use MAJOR.MINOR.PATCH"
-		exit 2
-	fi
+	just _validate-semver "{{version}}"
 	echo "==> Dry-run: changes that 'just pin-core {{version}}' would apply"
 	echo ""
 	echo "--- README.md ---"

@@ -25,8 +25,14 @@ Before bumping the version, ensure the workspace is pristine:
 Do not manually edit version strings. Rely on the automated pipeline.
 
 ```bash
-# Automate version bump (updates package.json, README.md, CHANGELOG, RELEASE.md, and CONTRIBUTING.md)
-just release <patch|minor|major>
+# Orchestrated release: bump extension version + align core pin in one flow
+just release <patch|minor|major> <core-version>
+```
+
+Validate before tag/push:
+
+```bash
+just audit-release
 ```
 
 ## 3. Tag & Push
