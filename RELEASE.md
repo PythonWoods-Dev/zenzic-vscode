@@ -8,8 +8,8 @@
 
 | Field | Value |
 | :--- | :--- |
-| **Extension Version** | 0.26.4 |
-| **Pinned Core** | `zenzic>=0.26.4` |
+| **Extension Version** | 0.26.5 |
+| **Pinned Core** | `zenzic>=0.26.5` |
 | **Date** | 2026-07-11 |
 
 ## 1. Pre-Flight Checklist
@@ -49,8 +49,8 @@ git checkout main
 git pull origin main
 
 # 3. Create the immutable signed tag pointing to the HEAD of origin/main
-git tag -s -m "Release v0.26.4" v0.26.4
-git push origin v0.26.4
+git tag -s -m "Release v0.26.5" v0.26.5
+git push origin v0.26.5
 ```
 
 ## 4. Distribute (Automated)

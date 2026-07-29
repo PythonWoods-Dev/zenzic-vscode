@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.26.5] - 2026-07-29
+
 ### Fixed
 - **Core Baseline Alignment**: Realigned pinned Zenzic Core baseline to `0.26.5` to bypass the dirty `0.26.4` PyPI release.
 
