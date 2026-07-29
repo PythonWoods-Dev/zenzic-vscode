@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Core Baseline Alignment**: Realigned pinned Zenzic Core baseline to `0.26.4`. This ensures the editor LSP client benefits from the eradication of ghost diagnostics on file deletion and correct inline suppression placement.
 ## [0.26.3] - 2026-07-28
 
 ### Added
