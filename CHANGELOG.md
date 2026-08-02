@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Core Baseline Alignment**: Realigned pinned Zenzic Core baseline to `0.27.0`.
+- **Diagnostic Support for v0.27 Rules**: Real-time inline diagnostics for `Z410`/`Z411` (Smart Link Graph), `Z510`/`Z511`/`Z512` (Semantic Linting), and `Z110`/`Z111` (Configuration Engine).
+- **JSON Schema Validation**: Updated bundled `.zenzic.toml` schema validation with `max_sentence_length` property.
+
 ## [0.26.5] - 2026-07-29
 
 ### Fixed
