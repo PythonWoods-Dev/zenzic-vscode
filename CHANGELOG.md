@@ -7,21 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.27.0] - 2026-08-02
+
+- **Core Baseline Alignment**: Realigned pinned Zenzic Core baseline to `0.27.0`.
+- **Diagnostic Support for v0.27 Rules**: Real-time inline diagnostics for `Z410`/`Z411` (Smart Link Graph), `Z510`/`Z511`/`Z512` (Semantic Linting), and `Z110`/`Z111` (Configuration Engine).
+- **JSON Schema Validation**: Updated bundled `.zenzic.toml` schema validation with `max_sentence_length` property.
+
 ## [0.26.5] - 2026-07-29
 
 ### Fixed
+
 - **Core Baseline Alignment**: Realigned pinned Zenzic Core baseline to `0.26.5` to bypass the dirty `0.26.4` PyPI release.
 
 ## [0.26.4] - 2026-07-29
 
 ### Fixed
+
 - **Core Baseline Alignment**: Realigned pinned Zenzic Core baseline to `0.26.4`. This ensures the editor LSP client benefits from the eradication of ghost diagnostics on file deletion and correct inline suppression placement.
+
 ## [0.26.3] - 2026-07-28
 
 ### Added
+
 - **Suppression Code Actions (`LSP-FEAT-003`)**: Added support for automated inline suppressions. You can now use the Quick Fix (Lightbulb) menu to instantly inject `<!-- zenzic:ignore:ZXXX -->` comments above offending lines. This feature is intentionally disabled for Z2xx Security findings.
 
 ### Fixed
+
 - **DQS Tooltip Rendering (`LSP-FIX-015`)**: Fixed a rendering issue where a `security_breach` status incorrectly displayed green checkmarks in the DQS tooltip. The tooltip now prominently displays a security breach warning.
 - **Core Baseline Alignment**: Realigned pinned Zenzic Core baseline to `0.26.3`.
 

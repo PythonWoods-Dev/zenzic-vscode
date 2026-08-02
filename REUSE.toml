@@ -15,7 +15,8 @@ path = [
   "README.md",
   "ROADMAP.md",
   "images/**",
-  "assets/**"
+  "assets/**",
+  "zenzic.schema.json"
 ]
 SPDX-FileCopyrightText = "2026 PythonWoods <dev@pythonwoods.dev>"
 SPDX-License-Identifier = "Apache-2.0"
