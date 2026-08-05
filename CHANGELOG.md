@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.27.1] - 2026-08-05
+
+### Changed
+- **Real-Time Configuration Diagnostics**: The extension now renders `Z110` (Syntax Error) and `Z111` (Schema Error) diagnostics instantly while typing in `.zenzic.toml` or `pyproject.toml`, driven by Core `v0.27.1` in-memory buffer validation.
+- **Instant Topological Feedback**: `Z410` (Unreachable Node) and `Z411` (Dead End) diagnostics now update in real-time across the workspace when navigation links are modified, utilizing the new $O(K)$ topological delta engine.
+
 ## [0.27.0] - 2026-08-02
 
 - **Core Baseline Alignment**: Realigned pinned Zenzic Core baseline to `0.27.0`.
