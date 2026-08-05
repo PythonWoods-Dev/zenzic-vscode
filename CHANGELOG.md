@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Ghost Diagnostics**: Resolved an issue where errors would remain in the Problems tab after a file or folder was deleted or moved outside the workspace.
+- **Workspace Synchronization**: Moving or renaming entire folders containing Markdown files now instantly updates the Problems tab without requiring files to be opened.
+
 ## [0.27.1] - 2026-08-05
 
 ### Changed
