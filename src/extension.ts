@@ -20,7 +20,7 @@ let dqsStatusBarItem: vscode.StatusBarItem | undefined;
 // A2 fix: guard flag prevents concurrent restart calls.
 let restarting = false;
 
-const MIN_CORE_VERSION = '0.27.1';
+const MIN_CORE_VERSION = '0.27.2';
 
 /**
  * Expand supported user-facing path variables in zenzic.executablePath.
@@ -273,7 +273,27 @@ export async function activate(context: vscode.ExtensionContext) {
         // zenzic process, not through a dedicated debug launcher.
         const serverOptions: ServerOptions = { run, debug: run };
 
-        const outputChannel = vscode.window.createOutputChannel('Zenzic Language Server', { log: true });
+        // LSP-OBS-001: Use a wrapper around a standard OutputChannel to satisfy the
+        // LogOutputChannel interface without applying VS Code's log-level filtering.
+        // This ensures initialization messages (like the Core version) are always visible.
+        const baseChannel = vscode.window.createOutputChannel('Zenzic Language Server');
+        const outputChannel: vscode.LogOutputChannel = {
+            name: baseChannel.name,
+            append: (value: string) => baseChannel.append(value),
+            appendLine: (value: string) => baseChannel.appendLine(value),
+            replace: (value: string) => baseChannel.replace(value),
+            clear: () => baseChannel.clear(),
+            show: (...args: any[]) => (baseChannel.show as any)(...args),
+            hide: () => baseChannel.hide(),
+            dispose: () => baseChannel.dispose(),
+            logLevel: vscode.LogLevel.Trace,
+            onDidChangeLogLevel: new vscode.EventEmitter<vscode.LogLevel>().event,
+            trace: (message: string, ...args: any[]) => baseChannel.appendLine(`[Trace] ${message} ${args.join(' ')}`.trimEnd()),
+            debug: (message: string, ...args: any[]) => baseChannel.appendLine(`[Debug] ${message} ${args.join(' ')}`.trimEnd()),
+            info:  (message: string, ...args: any[]) => baseChannel.appendLine(`[Info] ${message} ${args.join(' ')}`.trimEnd()),
+            warn:  (message: string, ...args: any[]) => baseChannel.appendLine(`[Warn] ${message} ${args.join(' ')}`.trimEnd()),
+            error: (message: string | Error, ...args: any[]) => baseChannel.appendLine(`[Error] ${message instanceof Error ? message.message : message} ${args.join(' ')}`.trimEnd())
+        };
 
         const clientOptions: LanguageClientOptions = {
             documentSelector: [
@@ -300,8 +320,23 @@ export async function activate(context: vscode.ExtensionContext) {
             // making the score non-deterministically lower than the CLI batch score.
             // Displaying a misleading score violates the Determinism invariant.
             // The authoritative DQS is produced exclusively by `zenzic check all`.
+
+            // LSP-OBS-002: Status Bar Versioning.
+            // Read the Core Engine version from the LSP serverInfo payload
+            // (InitializeResult.serverInfo.version) — populated by the server
+            // during the initialize handshake.  Radical Unawareness is preserved:
+            // the Core provides data; the Client decides how to render it in the UI.
+            const coreVersion = client.initializeResult?.serverInfo?.version;
             statusBarItem!.text = '$(check) Zenzic: Running';
-            statusBarItem!.tooltip = 'Zenzic Language Server is running';
+            const tipLines = [
+                '**Zenzic Language Server** is running.',
+                '',
+                coreVersion ? `Core: \`v${coreVersion}\`` : 'Core: version unknown',
+                `Binary: \`${resolvedPath}\``,
+            ];
+            const tip = new vscode.MarkdownString(tipLines.join('  \n'), true);
+            tip.isTrusted = true;
+            statusBarItem!.tooltip = tip;
         } catch (err: unknown) {
             // A1 fix: err is unknown; narrow to Error before accessing .message to
             // avoid producing "Error: undefined" when a non-Error value is thrown.

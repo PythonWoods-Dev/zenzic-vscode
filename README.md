@@ -51,7 +51,7 @@ To guarantee sub-50ms performance, Zenzic operates with a strict separation of c
 
 ## Requirements
 
-This extension requires **Zenzic Core v0.27.1 or higher**.
+This extension requires **Zenzic Core v0.27.2 or higher**.
 
 We recommend installing or updating the global binary via `uv`:
 
@@ -106,14 +106,14 @@ The extension contributes the following commands to the Command Palette:
 
 ### Zenzic: Outdated Core
 
-- **Cause**: The executable resolved by the extension is older than the minimum required Core version (`v0.27.1`).
+- **Cause**: The executable resolved by the extension is older than the minimum required Core version (`v0.27.2`).
 - **Remediation**: Upgrade your global binary:
 
   ```bash
   uv tool install --force zenzic
   ```
 
-  Or point `zenzic.executablePath` in `settings.json` to a virtual environment containing Core `v0.27.1` or higher.
+  Or point `zenzic.executablePath` in `settings.json` to a virtual environment containing Core `v0.27.2` or higher.
 
 ### Zenzic: Not Found (ENOENT)
 

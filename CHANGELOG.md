@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.27.2] - 2026-08-05
+
+### Added
+- **Core Version in Status Bar**: The Zenzic Status Bar item now displays the active Core Engine version and executable path on hover (Tooltip), providing immediate clarity on which Python environment the extension is using without violating Radical Unawareness.
+
+### Fixed
+- **Ghost Diagnostics**: Resolved an issue where errors would remain in the Problems tab after a file or folder was deleted or moved outside the workspace.
+- **Workspace Synchronization**: Moving or renaming entire folders containing Markdown files now instantly updates the Problems tab without requiring files to be opened.
+- **Output Observability**: Replaced `LogOutputChannel` with a standard `OutputChannel` to prevent VS Code from filtering out the server's initialization logs (like the version banner) based on the user's active log-level setting. All `window/logMessage` events are now unconditionally visible.
+
 ## [0.27.1] - 2026-08-05
 
 ### Changed
