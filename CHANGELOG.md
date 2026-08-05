@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.27.2] - 2026-08-05
+
 ### Added
 - **Core Version in Status Bar**: The Zenzic Status Bar item now displays the active Core Engine version and executable path on hover (Tooltip), providing immediate clarity on which Python environment the extension is using without violating Radical Unawareness.
 

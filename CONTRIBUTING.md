@@ -27,7 +27,7 @@ Zenzic is structured across three independent, dedicated repositories:
 
 - **Thin Client Sovereignty**: `zenzic-vscode` contains **zero** AST parsing, regex checks, or link validation rules. All analysis logic resides in Zenzic Core (`zenzic lsp`).
 - **Protocol Parity**: The extension communicates via standard Language Server Protocol (LSP) over stdio.
-- **Minimum Core Baseline**: Currently pinned to **Zenzic Core `v0.27.1`** (`MIN_CORE_VERSION = '0.27.1'` in `src/extension.ts`).
+- **Minimum Core Baseline**: Currently pinned to **Zenzic Core `v0.27.2`** (`MIN_CORE_VERSION = '0.27.2'` in `src/extension.ts`).
 
 ---
 
@@ -51,7 +51,7 @@ To maintain security, architectural integrity, and legal compliance, all contrib
 | **npm** | required | Package manager |
 | **just** | required | Task runner — `cargo install just` or via OS package manager |
 | **reuse** | required | SPDX license auditor (`uv tool install reuse`) |
-| **Zenzic Core** | ≥ 0.27.1 | Core engine (`uv tool install zenzic`) |
+| **Zenzic Core** | ≥ 0.27.2 | Core engine (`uv tool install zenzic`) |
 
 ---
 

@@ -20,7 +20,7 @@ let dqsStatusBarItem: vscode.StatusBarItem | undefined;
 // A2 fix: guard flag prevents concurrent restart calls.
 let restarting = false;
 
-const MIN_CORE_VERSION = '0.27.1';
+const MIN_CORE_VERSION = '0.27.2';
 
 /**
  * Expand supported user-facing path variables in zenzic.executablePath.
