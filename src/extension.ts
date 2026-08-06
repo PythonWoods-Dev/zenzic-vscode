@@ -283,7 +283,13 @@ export async function activate(context: vscode.ExtensionContext) {
             appendLine: (value: string) => baseChannel.appendLine(value),
             replace: (value: string) => baseChannel.replace(value),
             clear: () => baseChannel.clear(),
-            show: (preserveFocus?: boolean) => baseChannel.show(preserveFocus),
+            show: (columnOrPreserveFocus?: vscode.ViewColumn | boolean, preserveFocus?: boolean) => {
+                if (typeof columnOrPreserveFocus === 'number') {
+                    baseChannel.show(columnOrPreserveFocus, preserveFocus);
+                } else {
+                    baseChannel.show(columnOrPreserveFocus);
+                }
+            },
             hide: () => baseChannel.hide(),
             dispose: () => baseChannel.dispose(),
             logLevel: vscode.LogLevel.Trace,
