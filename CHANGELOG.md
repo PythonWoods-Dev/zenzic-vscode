@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Packaging**: Corrected a build pipeline issue that caused the `0.27.2` VSIX payload to be published with stale `0.27.1` metadata. This release contains the exact same LSP synchronization fixes intended for `0.27.2`.
+
 ## [0.27.2] - 2026-08-05
 
 ### Added
