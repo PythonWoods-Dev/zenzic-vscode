@@ -28,8 +28,13 @@ replace = "\"name\": \"zenzic-vscode\",\n      \"version\": \"{new_version}\""
 
 [[tool.bumpversion.files]]
 filename = "CHANGELOG.md"
-search = "## [Unreleased]"
-replace = "## [Unreleased]\n\n## [{new_version}] - {now:%Y-%m-%d}"
+search = '## \[Unreleased\](\s*\n\*Upcoming changes for the next release\.\*)?'
+replace = '''## [Unreleased]
+
+*Upcoming changes for the next release.*
+
+## [{new_version}] - {now:%Y-%m-%d}'''
+regex = true
 
 [[tool.bumpversion.files]]
 filename = "RELEASE.md"
