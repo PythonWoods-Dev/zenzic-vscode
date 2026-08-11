@@ -1,7 +1,7 @@
 {
   "name": "zenzic-vscode",
   "displayName": "Zenzic",
-  "description": "Deterministic Document Integrity Engine and SAST for Markdown/MDX graphs.",
+  "description": "Deterministic Document Integrity Engine for Markdown/MDX graphs in VS Code.",
   "version": "0.27.3",
   "publisher": "pythonwoods",
   "engines": {
