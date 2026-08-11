@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Path Sovereignty & AST Determinism**: Aligned core engine dependency to enforce strict workspace boundary checks (`Z202`) for symlink traversal and preserve line-offset precision across multiline AST comment blocks.
+
 ### Changed
 
 - **Brand & Positioning Alignment (`V0.27-13`)**: Realigned extension description (`package.json`) and README to position Zenzic as a **Deterministic Document Integrity Engine** in VS Code, eradicating misleading "SAST" terminology (**Mirror Law ADR-020**).
