@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+*Upcoming changes for the next release.*
+
+## [0.28.0] - 2026-08-11
+
 ### Added
 
 - **Policy-as-Code Diagnostics (`V0.28-01`)**: Real-time support for inline Policy-as-Code diagnostics (`Z610` REQUIRED_FRONTMATTER_MISSING and `Z611` FORBIDDEN_DOMAIN_REFERENCE) in the VS Code editor diagnostic panel when declared in `.zenzic.toml`.
