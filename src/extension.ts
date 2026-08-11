@@ -20,7 +20,7 @@ let dqsStatusBarItem: vscode.StatusBarItem | undefined;
 // A2 fix: guard flag prevents concurrent restart calls.
 let restarting = false;
 
-const MIN_CORE_VERSION = '0.27.2';
+const MIN_CORE_VERSION = '0.28.0';
 
 /**
  * Expand supported user-facing path variables in zenzic.executablePath.
@@ -283,16 +283,22 @@ export async function activate(context: vscode.ExtensionContext) {
             appendLine: (value: string) => baseChannel.appendLine(value),
             replace: (value: string) => baseChannel.replace(value),
             clear: () => baseChannel.clear(),
-            show: (...args: any[]) => (baseChannel.show as any)(...args),
+            show: (columnOrPreserveFocus?: vscode.ViewColumn | boolean, preserveFocus?: boolean) => {
+                if (typeof columnOrPreserveFocus === 'number') {
+                    baseChannel.show(columnOrPreserveFocus, preserveFocus);
+                } else {
+                    baseChannel.show(columnOrPreserveFocus);
+                }
+            },
             hide: () => baseChannel.hide(),
             dispose: () => baseChannel.dispose(),
             logLevel: vscode.LogLevel.Trace,
             onDidChangeLogLevel: new vscode.EventEmitter<vscode.LogLevel>().event,
-            trace: (message: string, ...args: any[]) => baseChannel.appendLine(`[Trace] ${message} ${args.join(' ')}`.trimEnd()),
-            debug: (message: string, ...args: any[]) => baseChannel.appendLine(`[Debug] ${message} ${args.join(' ')}`.trimEnd()),
-            info:  (message: string, ...args: any[]) => baseChannel.appendLine(`[Info] ${message} ${args.join(' ')}`.trimEnd()),
-            warn:  (message: string, ...args: any[]) => baseChannel.appendLine(`[Warn] ${message} ${args.join(' ')}`.trimEnd()),
-            error: (message: string | Error, ...args: any[]) => baseChannel.appendLine(`[Error] ${message instanceof Error ? message.message : message} ${args.join(' ')}`.trimEnd())
+            trace: (message: string, ...args: unknown[]) => baseChannel.appendLine(`[Trace] ${message} ${args.join(' ')}`.trimEnd()),
+            debug: (message: string, ...args: unknown[]) => baseChannel.appendLine(`[Debug] ${message} ${args.join(' ')}`.trimEnd()),
+            info:  (message: string, ...args: unknown[]) => baseChannel.appendLine(`[Info] ${message} ${args.join(' ')}`.trimEnd()),
+            warn:  (message: string, ...args: unknown[]) => baseChannel.appendLine(`[Warn] ${message} ${args.join(' ')}`.trimEnd()),
+            error: (message: string | Error, ...args: unknown[]) => baseChannel.appendLine(`[Error] ${message instanceof Error ? message.message : message} ${args.join(' ')}`.trimEnd())
         };
 
         const clientOptions: LanguageClientOptions = {

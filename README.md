@@ -5,12 +5,12 @@
 <h1 align="center">Zenzic: Deterministic Document Integrity (VS Code Extension)</h1>
 
 <p align="center">
-  <strong>Deterministic Document Integrity Engine and SAST for Markdown/MDX graphs in VS Code.</strong>
+  <strong>Deterministic Document Integrity Engine for Markdown/MDX graphs in VS Code.</strong>
 </p>
 
 ---
 
-Zenzic brings the exact same $O(N)$ SAST engine used in your CI/CD pipelines directly into your authoring environment, providing sub-50ms topological feedback and real-time diagnostic reporting as you type.
+Zenzic brings the exact same $O(N)$ document integrity engine used in your CI/CD pipelines directly into your authoring environment, providing sub-50ms topological feedback and real-time diagnostic reporting as you type.
 
 ## Thin Client Architecture
 
@@ -20,7 +20,7 @@ This extension is a strictly **Thin Client**. It contains zero parsing logic, ze
 
 ## Key Features
 
-### 1. Security Scanning (SAST)
+### 1. Security Scanning
 
 Hardcoded credentials (Z201) and path traversal sequences (Z202/Z203) are flagged in milliseconds using RE2 validation engine rules, preventing secret leaks before files are committed.
 
@@ -51,7 +51,7 @@ To guarantee sub-50ms performance, Zenzic operates with a strict separation of c
 
 ## Requirements
 
-This extension requires **Zenzic Core v0.27.2 or higher**.
+This extension requires **Zenzic Core v0.28.0 or higher**.
 
 We recommend installing or updating the global binary via `uv`:
 
@@ -106,14 +106,14 @@ The extension contributes the following commands to the Command Palette:
 
 ### Zenzic: Outdated Core
 
-- **Cause**: The executable resolved by the extension is older than the minimum required Core version (`v0.27.2`).
+- **Cause**: The executable resolved by the extension is older than the minimum required Core version (`v0.28.0`).
 - **Remediation**: Upgrade your global binary:
 
   ```bash
   uv tool install --force zenzic
   ```
 
-  Or point `zenzic.executablePath` in `settings.json` to a virtual environment containing Core `v0.27.2` or higher.
+  Or point `zenzic.executablePath` in `settings.json` to a virtual environment containing Core `v0.28.0` or higher.
 
 ### Zenzic: Not Found (ENOENT)
 
