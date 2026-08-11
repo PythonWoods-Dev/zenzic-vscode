@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-*Upcoming changes for the next release.*
+### Changed
+
+- **Brand & Positioning Alignment (`V0.27-13`)**: Realigned extension description (`package.json`) and README to position Zenzic as a **Deterministic Document Integrity Engine** in VS Code, eradicating misleading "SAST" terminology (**Mirror Law ADR-020**).
+- **Dependencies Bump**: Updated `@typescript-eslint/eslint-plugin` and `@typescript-eslint/parser` to `^8.66.0`, and `github/codeql-action` to `v4.37.6`.
 
 ## Historical Releases
 
