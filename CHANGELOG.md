@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Policy-as-Code Diagnostics (`V0.28-01`)**: Real-time support for inline Policy-as-Code diagnostics (`Z610` REQUIRED_FRONTMATTER_MISSING and `Z611` FORBIDDEN_DOMAIN_REFERENCE) in the VS Code editor diagnostic panel when declared in `.zenzic.toml`.
+- **Custom Rule SDK v3 Integration (`V0.28-02`)**: Seamless rendering of custom diagnostics emitted by SDK v3 `ZenzicRuleV3` rules.
+
 ### Fixed
 
 - **Path Sovereignty & AST Determinism**: Aligned core engine dependency to enforce strict workspace boundary checks (`Z202`) for symlink traversal and preserve line-offset precision across multiline AST comment blocks.
