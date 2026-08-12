@@ -28,7 +28,7 @@ Hardcoded credentials (Z201) and path traversal sequences (Z202/Z203) are flagge
 
 Modify a heading or link in one file, and Zenzic's Virtual Site Map (VSM) instantly invalidates any broken links, orphan pages, or dead navigation nodes across your entire workspace using $O(K)$ incremental graph patching.
 
-### 3. Adapter-Driven Config Hot-Reloading (`v0.25.0`)
+### 3. Adapter-Driven Config Hot-Reloading
 
 When framework configuration files (e.g. `mkdocs.yml`, `zensical.toml`, `.zenzic.toml`) are modified, the Language Server automatically reloads adapter metadata and rebuilds the Virtual Site Map without requiring an extension or editor restart.
 
@@ -36,9 +36,13 @@ When framework configuration files (e.g. `mkdocs.yml`, `zensical.toml`, `.zenzic
 
 Hover over any diagnostic to view the exact Z-Code, DQS score penalty, and remediation guidance. Apply automated Quick Fixes or insert Automated Inline Suppressions (`<!-- zenzic:ignore:ZXXX -->`, except for `Z2xx` Security findings) via `textDocument/codeAction` directly from the editor lightbulb menu.
 
-### 5. DQS Workspace UI
+### 5. DQS Workspace UI & Status Tooltip
 
-Stream Document Quality Score (DQS) updates directly to the status bar, providing real-time visibility into overall repository health.
+Stream Document Quality Score (DQS) updates directly to the status bar with versioning tooltips, providing real-time visibility into overall repository health and active Zenzic Core engine version.
+
+### 6. Real-Time Policy-as-Code Diagnostics
+
+Evaluates declarative `[policies]` rules (`Z610` required frontmatter keys, `Z611` forbidden domain references) line-by-line in real time as you edit, surfacing governance findings directly in the PROBLEMS panel.
 
 ### Real-Time Diagnostics vs. Global DQS
 
