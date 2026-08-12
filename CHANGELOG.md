@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 *Upcoming changes for the next release.*
 
+## [0.28.1] - 2026-08-12
+
+Upcoming changes for the next patch release.
+
+### Fixed
+
+- **AST Parser (Z511)**: Integrated core engine update resolving false positive excessive sentence length warnings on raw HTML block elements.
+
 ## [0.28.0] - 2026-08-11
 
 ### Added
