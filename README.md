@@ -42,7 +42,12 @@ Stream Document Quality Score (DQS) updates directly to the status bar with vers
 
 ### 6. Real-Time Policy-as-Code Diagnostics
 
-Evaluates declarative `[policies]` rules (`Z610` required frontmatter keys, `Z611` forbidden domain references) line-by-line in real time as you edit, surfacing governance findings directly in the PROBLEMS panel.
+Evaluates declarative `[policies]` rules line-by-line in real time as you edit, surfacing governance findings directly in the PROBLEMS panel. The full policy surface covered includes:
+
+- **Metadata Validation** (`Z610`–`Z613`): required frontmatter keys, forbidden keys, and RE2 schema pattern enforcement.
+- **Zero-Trust Link Governance** (`Z614`, `Z615`): external links not matching the `allowed_external_domains` whitelist, and links using disallowed URL schemes, are flagged inline as you type.
+- **Cross-Namespace Boundary Violations** (`Z616`): links crossing restricted topological boundaries (defined via `cross_namespace_restrictions` in `.zenzic.toml`) are surfaced in real time using the Virtual Site Map (VSM).
+
 
 ### Real-Time Diagnostics vs. Global DQS
 
