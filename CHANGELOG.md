@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 *Upcoming changes for the next release.*
 
+## [0.29.0] - 2026-08-13
+
 ### Added
 
 - **Real-Time Policy-as-Code LSP Support (`Z612`–`Z616`)**: Integrated real-time Language Server Protocol (LSP) diagnostics and editor feedback for all newly added Policy-as-Code governance rules (`Z612` Forbidden Frontmatter Key, `Z613` Frontmatter Schema Mismatch, `Z614` Unapproved Domain Reference, `Z615` Forbidden URL Scheme, and `Z616` Cross-Namespace Link Forbidden).
