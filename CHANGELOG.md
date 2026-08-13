@@ -9,32 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 *Upcoming changes for the next release.*
 
-## [0.28.1] - 2026-08-12
-
-Upcoming changes for the next patch release.
-
-### Fixed
-
-- **AST Parser (Z511)**: Integrated core engine update resolving false positive excessive sentence length warnings on raw HTML block elements.
-
-## [0.28.0] - 2026-08-11
+## [0.29.0] - 2026-08-13
 
 ### Added
 
-- **Policy-as-Code Diagnostics (`V0.28-01`)**: Real-time support for inline Policy-as-Code diagnostics (`Z610` REQUIRED_FRONTMATTER_MISSING and `Z611` FORBIDDEN_DOMAIN_REFERENCE) in the VS Code editor diagnostic panel when declared in `.zenzic.toml`.
-- **Custom Rule SDK v3 Integration (`V0.28-02`)**: Seamless rendering of custom diagnostics emitted by SDK v3 `ZenzicRuleV3` rules.
-
-### Fixed
-
-- **Path Sovereignty & AST Determinism**: Aligned core engine dependency to enforce strict workspace boundary checks (`Z202`) for symlink traversal and preserve line-offset precision across multiline AST comment blocks.
-
-### Changed
-
-- **Brand & Positioning Alignment (`V0.27-13`)**: Realigned extension description (`package.json`) and README to position Zenzic as a **Deterministic Document Integrity Engine** in VS Code, eradicating misleading "SAST" terminology (**Mirror Law ADR-020**).
-- **Dependencies Bump**: Updated `@typescript-eslint/eslint-plugin` and `@typescript-eslint/parser` to `^8.66.0`, and `github/codeql-action` to `v4.37.6`.
+- **Real-Time Policy-as-Code LSP Support (`Z612`–`Z616`)**: Integrated real-time Language Server Protocol (LSP) diagnostics and editor feedback for all newly added Policy-as-Code governance rules (`Z612` Forbidden Frontmatter Key, `Z613` Frontmatter Schema Mismatch, `Z614` Unapproved Domain Reference, `Z615` Forbidden URL Scheme, and `Z616` Cross-Namespace Link Forbidden).
 
 ## Historical Releases
 
+- v0.28.x archive: [changelogs/v0.28.x.md](./changelogs/v0.28.x.md)
 - v0.27.x archive: [changelogs/v0.27.x.md](./changelogs/v0.27.x.md)
 - v0.26.x archive: [changelogs/v0.26.x.md](./changelogs/v0.26.x.md)
 - v0.25.x archive: [changelogs/v0.25.x.md](./changelogs/v0.25.x.md)
