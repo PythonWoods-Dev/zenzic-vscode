@@ -9,7 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 *Upcoming changes for the next release.*
 
+## [0.29.1] - 2026-08-14
+
+### Changed
+
+- **Core Baseline Alignment**: Realigned pinned Zenzic Core dependency to `v0.29.1`, inheriting core engine fixes for `Z401` (Missing Directory Index) false positives on dynamic directories.
+
+
 ## [0.29.0] - 2026-08-13
+
+Release notes for the `v0.29.0` release series of the Zenzic VS Code Extension.
 
 ### Added
 
