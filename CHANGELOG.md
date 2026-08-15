@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 *Upcoming changes for the next release.*
 
+### Added
+
+- **Zenzic Core v0.30.0 Support**: Full Language Server Protocol (LSP) diagnostics and editor feedback for the new AST Semantic Linting suite (`Z513`–`Z520`) and Policy-as-Code Editorial Style governance (`Z617`–`Z619`).
+- **Expanded Atomic Quick Fixes (`Ctrl+.` / `Cmd+.`)**: Real-time automated remediation for bare URLs (`Z515`), invalid heading punctuation (`Z517`), and malformed paragraph lists (`Z520`).
+
 ## [0.29.1] - 2026-08-14
 
 ### Changed
