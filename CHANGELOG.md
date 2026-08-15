@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 *Upcoming changes for the next release.*
 
+## [0.30.0] - 2026-08-15
+
 ### Added
 
 - **Zenzic Core v0.30.0 Support**: Full Language Server Protocol (LSP) diagnostics and editor feedback for the new AST Semantic Linting suite (`Z513`–`Z520`) and Policy-as-Code Editorial Style governance (`Z617`–`Z619`).
