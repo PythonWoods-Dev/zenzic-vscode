@@ -21,11 +21,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Context-Aware Status Bar (`zenzic.showStatus`)**: Interactive Status Bar item that re-triggers actionable recovery dialogs on error states and opens a quick action menu when running normally.
 - **Troubleshoot & Repair Setup Wizard (`zenzic.troubleshoot`)**: Automated 4-point diagnostic wizard in the Command Palette to verify custom paths, system `$PATH`, isolated provisioning environments, and Core version health with 1-click self-healing remedies.
 - **`zenzic.autoProvision` Setting**: New boolean setting (default: `true`) to opt out of automatic engine provisioning for corporate proxy environments or policy-restricted machines.
-- **Persistent Binary Cache**: The provisioned binary path is persisted via VS Code `globalState`, ensuring re-installation is skipped on subsequent extension activations even if the binary is not on the system PATH.
+- **Standardized Packaging Automation**: Added `just package` recipe to `justfile` for building and packaging production `.vsix` artifacts via `@vscode/vsce package`.
 
 ### Fixed
 
+- **Notification Freeze & Deadlock Fix**: Resolved UI thread deadlocks by executing `restartServer` asynchronously via `setTimeout` in notification action handlers ("Clear Setting" and "Troubleshoot"), allowing notification promises to resolve immediately.
 - **Custom Path UX Trap**: Prevents infinite error loops by offering a "Clear Setting" fallback when an invalid custom `zenzic.executablePath` is configured.
+- **Type Safety & Version Fallback**: Added robust string fallback in `createErrorTooltip` for `versionResult.error` when the core binary reports an unformatted or missing version string.
 
 
 ## [0.29.1] - 2026-08-14
