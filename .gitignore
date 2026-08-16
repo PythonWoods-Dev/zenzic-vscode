@@ -7,3 +7,6 @@ dist/
 .architect/
 .zenzic_cache/
 example/
+
+# AI Control Plane — never commit to version control
+.gemini/

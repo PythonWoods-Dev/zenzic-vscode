@@ -58,6 +58,11 @@
           "type": "string",
           "default": "zenzic",
           "description": "Path to the Zenzic executable or virtual environment binary. Supports ${workspaceFolder} and leading ~/ or ~\\."
+        },
+        "zenzic.autoProvision": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically install the Zenzic CLI engine in an isolated environment (using uv or python3 venv) if it is not found on your system or at the configured path. No changes are made to your system Python, PATH, or shell configuration."
         }
       }
     }

@@ -14,17 +14,60 @@ SPDX-License-Identifier: Apache-2.0
   <em>Instant wavy-line feedback, one-click Quick Fixes, and deterministic quality scoring as you type.</em>
 </p>
 
+<p align="center">
+  <a href="https://marketplace.visualstudio.com/items?itemName=pythonwoods.zenzic-vscode">
+    <img src="https://img.shields.io/visual-studio-marketplace/v/pythonwoods.zenzic-vscode?style=flat-square&label=VS%20Code%20Marketplace&color=38bdf8" alt="Visual Studio Marketplace Version">
+  </a>
+  <a href="https://marketplace.visualstudio.com/items?itemName=pythonwoods.zenzic-vscode">
+    <img src="https://img.shields.io/visual-studio-marketplace/i/pythonwoods.zenzic-vscode?style=flat-square&color=4f46e5&label=installs" alt="Marketplace Installs">
+  </a>
+  <a href="https://marketplace.visualstudio.com/items?itemName=pythonwoods.zenzic-vscode">
+    <img src="https://img.shields.io/visual-studio-marketplace/r/pythonwoods.zenzic-vscode?style=flat-square&color=f59e0b" alt="Rating">
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/license-Apache--2.0-0d9488?style=flat-square" alt="License">
+  </a>
+</p>
+
 ---
 
 ## Stop Broken Docs Before You Commit
 
 Writing technical documentation shouldn't feel like guessing. **Zenzic for VS Code** brings the power of a deterministic compiler directly to Markdown and MDX files, eliminating broken references, accessibility defects, and security leaks in real time.
 
+<p align="center">
+  <img src="assets/demo.gif" alt="Zenzic VS Code Demo" width="100%">
+</p>
+
 - **Instant Visual Feedback**: See inline squiggly underlines (red for critical errors, yellow for warnings) the exact millisecond a defect is introduced.
 - **One-Click Quick Fixes (`Ctrl+.` / `Cmd+.`)**: Automatically repair bare URLs, invalid heading punctuation, malformed lists, untagged code blocks, and dead suppressions via the Atomic Mutator.
 - **Zero-Latency Authoring**: Built on a pure-function Language Server Protocol (LSP) architecture with sub-50ms response times and zero editor lag.
-- **Security & Privacy Guard**: Instantly flags accidental API tokens, secret keys, or internal private paths before files hit git.
-- **Documentation Quality Score (DQS)**: Track your workspace's overall health score (0–100) directly in the VS Code Status Bar.
+- **Security-First Protection**: Instantly flags accidental API tokens or secret keys before they hit your git history.
+- **Deterministic Quality Score (DQS)**: Turn documentation quality into a game. Watch your workspace score climb to 100/100 directly in the Status Bar as you fix issues.
+- **Zero-Config Installation**: No manual setup required. If the Zenzic CLI is not found, the extension automatically provisions an isolated engine — no changes to your system PATH or shell configuration.
+
+---
+
+## ⚠️ Requirements
+
+**Just VS Code** — that's it for most users.
+
+The extension automatically detects the `zenzic` Python CLI engine. If it is not found, it will prompt you to install it in a **fully isolated environment** managed by the extension itself. No changes are ever made to your system Python, `$PATH`, or shell configuration (`.bashrc` / `.zshrc`).
+
+> **Power User / Corporate Proxy Note:** If you prefer to manage the installation yourself — or if auto-provisioning is blocked by a corporate proxy — install the CLI manually and the extension will use it:
+> ```bash
+> # Recommended: isolated tool install via uv
+> uv tool install zenzic
+>
+> # Or via standard pip
+> pip install --upgrade zenzic
+> ```
+
+> **Virtual Environment Note:** If you use a repository virtual environment, pin the path in `.vscode/settings.json`:
+> ```json
+> { "zenzic.executablePath": "${workspaceFolder}/.venv/bin/zenzic" }
+> ```
+> To disable auto-provisioning entirely, set `"zenzic.autoProvision": false`.
 
 ---
 
@@ -34,12 +77,9 @@ Get real-time documentation intelligence in three simple steps:
 
 ### 1. Install Zenzic CLI Engine
 
-The VS Code extension communicates with the Zenzic core engine. Install or update it globally:
+In most cases, **you can skip this step** — the extension handles it automatically on first use.
 
-```bash
-uv tool install zenzic
-# or: pip install --upgrade zenzic
-```
+If you prefer a manual install: `uv tool install zenzic`.
 
 ### 2. Install the Extension
 
@@ -97,6 +137,7 @@ Need a temporary strategic exception? Press `Ctrl+.` on any finding to insert an
 | Setting | Default | Description |
 | :--- | :--- | :--- |
 | `zenzic.executablePath` | `"zenzic"` | Path to the `zenzic` executable or virtual-environment binary. Supports `${workspaceFolder}` and leading `~/` or `~\`. |
+| `zenzic.autoProvision` | `true` | Automatically install the Zenzic CLI in an isolated environment if not found. Set to `false` to opt out. |
 | `zenzic.trace.server` | `"off"` | Trace communication between VS Code and the Language Server (`off`, `messages`, `verbose`). |
 
 ### Command Palette

@@ -5,16 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
-*Upcoming changes for the next release.*
-
 ## [0.30.0] - 2026-08-15
 
 ### Added
 
 - **Zenzic Core v0.30.0 Support**: Full Language Server Protocol (LSP) diagnostics and editor feedback for the new AST Semantic Linting suite (`Z513`–`Z520`) and Policy-as-Code Editorial Style governance (`Z617`–`Z619`).
 - **Expanded Atomic Quick Fixes (`Ctrl+.` / `Cmd+.`)**: Real-time automated remediation for bare URLs (`Z515`), invalid heading punctuation (`Z517`), and malformed paragraph lists (`Z520`).
+- **Zero-Config Auto-Provisioning Engine**: The extension now automatically detects and provisions an isolated Zenzic CLI engine if one is not found on your system. On first activation with a missing binary, a consent prompt is shown and the engine is installed via `uv` (primary) or `python3 -m venv` (fallback) into a sandboxed directory managed by the extension. No changes are made to the user's system `$PATH`, `~/.bashrc`, or any shell configuration.
+- **`zenzic.autoProvision` Setting**: New boolean setting (default: `true`) to opt out of automatic engine provisioning for corporate proxy environments or policy-restricted machines.
+- **Persistent Binary Cache**: The provisioned binary path is persisted via VS Code `globalState`, ensuring re-installation is skipped on subsequent extension activations even if the binary is not on the system PATH.
+
 
 ## [0.29.1] - 2026-08-14
 
