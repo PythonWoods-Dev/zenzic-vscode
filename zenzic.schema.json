@@ -34,7 +34,7 @@
         },
         "base_url": {
           "default": "",
-          "description": "The root URL where the documentation is hosted (e.g. `https://docs.pythonwoods.dev/`).",
+          "description": "The root URL where the documentation is hosted (e.g. `https://docs.zenzic.dev/`).",
           "title": "Base Url",
           "type": "string"
         },
@@ -55,22 +55,46 @@
       "type": "object"
     },
     "CustomRuleConfig": {
-      "description": "A single entry in the ``[[custom_rules]]`` TOML array.\n\nEach entry declares a regex-based lint rule applied line-by-line to every\nMarkdown file under ``docs/``.  The rule engine compiles the pattern once\nat config-load time.\n\nTOML example::\n\n    [[custom_rules]]\n    id = \"ZZ-NOINTERNAL\"\n    pattern = \"internal\\.corp\\.example\\.com\"\n    message = \"Internal hostname must not appear in public docs.\"\n    severity = \"error\"",
+      "description": "A single entry in the ``[[custom_rules]]`` TOML array.\n\nSupports both regex-based line rules and Python class-based Custom Rule SDK v3 rules.\n\nTOML example (regex)::\n\n    [[custom_rules]]\n    id = \"ZZ-NOINTERNAL\"\n    pattern = \"internal\\.corp\\.example\\.com\"\n    message = \"Internal hostname must not appear in public docs.\"\n    severity = \"error\"\n\nTOML example (SDK v3 Python class)::\n\n    [[custom_rules]]\n    class_name = \"zenzic.sdk.examples.NoTodoRule\"",
       "properties": {
         "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
           "description": "Stable unique identifier for this rule (e.g. 'ZZ-MY-RULE').",
-          "title": "Id",
-          "type": "string"
+          "title": "Id"
         },
         "pattern": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
           "description": "Regular-expression string applied to each content line.",
-          "title": "Pattern",
-          "type": "string"
+          "title": "Pattern"
         },
         "message": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
           "description": "Human-readable explanation shown in the finding.",
-          "title": "Message",
-          "type": "string"
+          "title": "Message"
         },
         "severity": {
           "default": "error",
@@ -82,13 +106,21 @@
           ],
           "title": "Severity",
           "type": "string"
+        },
+        "class_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Fully qualified Python class name for a Custom Rule SDK v3 rule.",
+          "title": "Class Name"
         }
       },
-      "required": [
-        "id",
-        "pattern",
-        "message"
-      ],
       "title": "CustomRuleConfig",
       "type": "object"
     },
@@ -160,6 +192,109 @@
         }
       },
       "title": "NetworkConfig",
+      "type": "object"
+    },
+    "PoliciesConfig": {
+      "description": "Declarative governance policies declared in ``[policies]`` (v0.28.0).\n\nThis section introduces the **Policy-as-Code Engine**, allowing project\nmaintainers to define deterministic, declarative rules that every\nMarkdown file must satisfy.  Policies are **opt-in**: an empty\n``[policies]`` table (or no ``[policies]`` key at all) applies no\nadditional constraints and is fully backward-compatible.\n\nTOML example::\n\n    [policies]\n    required_frontmatter_keys = [\"title\", \"description\", \"author\"]\n    forbidden_external_domains = [\"competitor.example.com\", \"legacy.corp\"]",
+      "properties": {
+        "required_frontmatter_keys": {
+          "description": "List of frontmatter keys that MUST be present in every Markdown file. Missing keys emit Z610 REQUIRED_FRONTMATTER_MISSING. Policy is inactive when the list is empty (opt-in). Example: [\"title\", \"description\", \"author\"]",
+          "items": {
+            "type": "string"
+          },
+          "title": "Required Frontmatter Keys",
+          "type": "array"
+        },
+        "forbidden_external_domains": {
+          "description": "List of external domain prefixes forbidden from appearing in any link (both native Markdown and raw HTML <a href>). Violations emit Z611 FORBIDDEN_DOMAIN_REFERENCE. Policy is inactive when the list is empty (opt-in). Example: [\"competitor.example.com\", \"legacy.corp\"]",
+          "items": {
+            "type": "string"
+          },
+          "title": "Forbidden External Domains",
+          "type": "array"
+        },
+        "forbidden_frontmatter_keys": {
+          "description": "List of frontmatter keys that MUST NOT exist in any Markdown file. Presence of any forbidden key emits Z612 FORBIDDEN_FRONTMATTER_KEY. Policy is inactive when the list is empty (opt-in). Example: [\"draft\", \"internal_notes\"]",
+          "items": {
+            "type": "string"
+          },
+          "title": "Forbidden Frontmatter Keys",
+          "type": "array"
+        },
+        "frontmatter_schema_match": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Dictionary mapping frontmatter key names to RE2 regex patterns that the key's value must match. Mismatch emits Z613 FRONTMATTER_SCHEMA_MISMATCH. Policy is inactive when empty (opt-in). Example: {\"version\": r\"^v\\d+\\.\\d+\\.\\d+$\"}",
+          "title": "Frontmatter Schema Match",
+          "type": "object"
+        },
+        "allowed_external_domains": {
+          "description": "Zero-Trust whitelist of allowed external domain prefixes. When non-empty, ANY external link not matching this whitelist emits Z614 UNAPPROVED_DOMAIN_REFERENCE. Policy is inactive when empty (opt-in). Example: [\"zenzic.dev\", \"github.com\"]",
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed External Domains",
+          "type": "array"
+        },
+        "required_url_schemes": {
+          "description": "List of allowed URL scheme prefixes. Any link using a scheme not listed in this whitelist emits Z615 FORBIDDEN_URL_SCHEME. Policy is inactive when empty (opt-in). Example: [\"https\", \"mailto\"]",
+          "items": {
+            "type": "string"
+          },
+          "title": "Required Url Schemes",
+          "type": "array"
+        },
+        "cross_namespace_restrictions": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "description": "Dictionary mapping a source namespace path prefix to a list of forbidden target namespace path prefixes. Links crossing restricted boundaries emit Z616 CROSS_NAMESPACE_LINK_FORBIDDEN. Policy is inactive when empty (opt-in). Example: {\"docs/public\": [\"docs/internal\"]}",
+          "title": "Cross Namespace Restrictions",
+          "type": "object"
+        },
+        "forbidden_content_patterns": {
+          "description": "List of RE2 regex patterns forbidden from appearing in prose content. Matches emit Z617 FORBIDDEN_CONTENT_PATTERN. Policy is inactive when the list is empty (opt-in). Example: [\"\\\\bTODO\\\\b\", \"\\\\bFIXME\\\\b\", \"\\\\bconfidential\\\\b\"]",
+          "items": {
+            "type": "string"
+          },
+          "title": "Forbidden Content Patterns",
+          "type": "array"
+        },
+        "required_heading_patterns": {
+          "description": "List of RE2 regex patterns where each pattern MUST match at least one heading in the document. Missing matching headings emit Z618 REQUIRED_HEADING_PATTERN. Policy is inactive when the list is empty (opt-in). Example: [\"^Overview$\", \"^License$\"]",
+          "items": {
+            "type": "string"
+          },
+          "title": "Required Heading Patterns",
+          "type": "array"
+        },
+        "max_document_complexity": {
+          "default": 0,
+          "description": "Maximum allowed document complexity score (based on word count, heading depth, and link density). Documents exceeding this threshold emit Z619 MAX_DOCUMENT_COMPLEXITY. 0 disables complexity checking (opt-in).",
+          "minimum": 0,
+          "title": "Max Document Complexity",
+          "type": "integer"
+        },
+        "weasel_words": {
+          "description": "List of weasel words to detect in prose (e.g., 'clearly', 'simply', 'obviously'). Detected words emit Z519 WEASEL_WORDS. Policy is inactive when empty (opt-in). Example: [\"clearly\", \"simply\", \"obviously\", \"basically\", \"very\"]",
+          "items": {
+            "type": "string"
+          },
+          "title": "Weasel Words",
+          "type": "array"
+        },
+        "enable_passive_voice_check": {
+          "default": false,
+          "description": "When True, enables heuristic passive voice detection (Z518 PASSIVE_VOICE_DETECTED). Strictly opt-in.",
+          "title": "Enable Passive Voice Check",
+          "type": "boolean"
+        }
+      },
+      "title": "PoliciesConfig",
       "type": "object"
     },
     "ProjectMetadata": {
@@ -399,6 +534,10 @@
     "governance": {
       "$ref": "#/$defs/GovernanceConfig",
       "description": "Governance toggles for ADR-012 checks. Prefer this section over legacy [project_metadata].obsolete_names."
+    },
+    "policies": {
+      "$ref": "#/$defs/PoliciesConfig",
+      "description": "Declarative Policy-as-Code governance rules (v0.28.0). Opt-in: no constraints applied when section is absent or empty. See PoliciesConfig for available policy keys."
     },
     "network": {
       "$ref": "#/$defs/NetworkConfig",

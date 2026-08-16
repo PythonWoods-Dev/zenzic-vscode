@@ -265,17 +265,18 @@ export async function activate(context: vscode.ExtensionContext) {
 
     const clearExecutablePathSetting = async () => {
         const config = vscode.workspace.getConfiguration('zenzic');
-        try {
-            if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
+        const inspection = config.inspect<string>('executablePath');
+        if (inspection) {
+            if (inspection.workspaceFolderValue !== undefined) {
                 await config.update('executablePath', undefined, vscode.ConfigurationTarget.WorkspaceFolder);
             }
-        } catch { /* ignore */ }
-        try {
-            await config.update('executablePath', undefined, vscode.ConfigurationTarget.Workspace);
-        } catch { /* ignore */ }
-        try {
-            await config.update('executablePath', undefined, vscode.ConfigurationTarget.Global);
-        } catch { /* ignore */ }
+            if (inspection.workspaceValue !== undefined) {
+                await config.update('executablePath', undefined, vscode.ConfigurationTarget.Workspace);
+            }
+            if (inspection.globalValue !== undefined) {
+                await config.update('executablePath', undefined, vscode.ConfigurationTarget.Global);
+            }
+        }
     };
 
     const startServer = async () => {
@@ -305,7 +306,8 @@ export async function activate(context: vscode.ExtensionContext) {
                     );
                     if (action === 'Clear Setting') {
                         await clearExecutablePathSetting();
-                        await restartServer();
+                        vscode.window.showInformationMessage('Custom path cleared. Restarting server...');
+                        setTimeout(() => { vscode.commands.executeCommand('zenzic.restartServer'); }, 100);
                     } else if (action === 'Open Settings') {
                         vscode.commands.executeCommand('workbench.action.openSettings', 'zenzic.executablePath');
                     } else if (action === 'Open Docs') {
@@ -345,7 +347,7 @@ export async function activate(context: vscode.ExtensionContext) {
                         'Open Docs'
                     );
                     if (action === 'Install Now') {
-                        await restartServer();
+                        setTimeout(() => { vscode.commands.executeCommand('zenzic.restartServer'); }, 100);
                     } else if (action === 'Configure Path') {
                         vscode.commands.executeCommand('workbench.action.openSettings', 'zenzic.executablePath');
                     } else if (action === 'Open Docs') {
@@ -443,7 +445,8 @@ export async function activate(context: vscode.ExtensionContext) {
                     );
                     if (action === 'Clear Setting') {
                         await clearExecutablePathSetting();
-                        await restartServer();
+                        vscode.window.showInformationMessage('Custom path cleared. Restarting server...');
+                        setTimeout(() => { vscode.commands.executeCommand('zenzic.restartServer'); }, 100);
                     } else if (action === 'Open Settings') {
                         vscode.commands.executeCommand('workbench.action.openSettings', 'zenzic.executablePath');
                     } else if (action === 'Open Docs') {
@@ -499,7 +502,7 @@ export async function activate(context: vscode.ExtensionContext) {
             statusBarItem!.tooltip = createErrorTooltip(
                 'Zenzic: Version Check Error',
                 resolvedPath,
-                versionResult.error
+                versionResult.error || 'Unknown error'
             );
             const prompt = async () => {
                 vscode.window.showErrorMessage(
@@ -713,6 +716,7 @@ export async function activate(context: vscode.ExtensionContext) {
                     detail: 'Click to clear this setting and allow Auto-Provisioning to take over.',
                     execute: async () => {
                         await clearExecutablePathSetting();
+                        vscode.window.showInformationMessage('Custom path cleared. Restarting server...');
                         await restartServer();
                     }
                 });
@@ -768,10 +772,16 @@ export async function activate(context: vscode.ExtensionContext) {
                     : 'Click to re-enable zenzic.autoProvision in settings.',
                 execute: isAutoProvision
                     ? async () => {
+                        vscode.window.showInformationMessage('Provisioning Zenzic engine...');
                         await restartServer();
                     }
                     : async () => {
-                        await config.update('autoProvision', true, vscode.ConfigurationTarget.Global);
+                        const inspection = config.inspect<boolean>('autoProvision');
+                        const target = inspection?.workspaceValue !== undefined
+                            ? vscode.ConfigurationTarget.Workspace
+                            : vscode.ConfigurationTarget.Global;
+                        await config.update('autoProvision', true, target);
+                        vscode.window.showInformationMessage('Auto-provisioning enabled. Restarting server...');
                         await restartServer();
                     }
             });
@@ -820,7 +830,7 @@ export async function activate(context: vscode.ExtensionContext) {
             label: '$(gear) Configure Settings',
             detail: 'Open VS Code settings for Zenzic.',
             execute: async () => {
-                vscode.commands.executeCommand('workbench.action.openSettings', 'zenzic');
+                await vscode.commands.executeCommand('workbench.action.openSettings', 'zenzic');
             }
         });
 
@@ -829,7 +839,12 @@ export async function activate(context: vscode.ExtensionContext) {
         });
 
         if (selected?.execute) {
-            await selected.execute();
+            try {
+                await selected.execute();
+            } catch (err: unknown) {
+                const message = err instanceof Error ? err.message : String(err);
+                vscode.window.showErrorMessage(`Troubleshoot action failed: ${message}`);
+            }
         }
     };
 

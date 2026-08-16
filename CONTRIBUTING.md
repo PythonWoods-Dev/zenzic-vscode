@@ -78,6 +78,7 @@ just verify
 | Task | Command | Description |
 |:---|:---|:---|
 | Verify | `just verify` | Run `eslint`, `tsc --noEmit`, and `reuse lint` (pre-push gate) |
+| Package | `just package` | Build and package extension into `.vsix` archive |
 | Core Pin | `just pin-core <ver>` | Realign Zenzic Core version pin across docs & `extension.ts` |
 | Core Pin Dry-Run | `just pin-core-dry <ver>` | Preview file changes for core realignment |
 | Show Versions | `just versions` | Display extension version and pinned core version |

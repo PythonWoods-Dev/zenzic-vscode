@@ -1,0 +1,38 @@
+# SPDX-FileCopyrightText: 2026 PythonWoods <dev@pythonwoods.dev>
+# SPDX-License-Identifier: Apache-2.0
+
+name: Feature Request
+description: Propose a new feature, command, or enhancement for the Zenzic VS Code Extension.
+title: "feat(vscode): <short description>"
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting an improvement to the Zenzic VS Code Extension.
+        Please keep in mind that `zenzic-vscode` is a Thin Client; all Markdown parsing,
+        AST analysis, and policy rules reside in Zenzic Core.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: Is your feature request related to a problem? Please describe.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: Proposed solution
+      description: Describe the solution you'd like to see.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Describe any alternative solutions or features you've considered.
+    validations:
+      required: false
