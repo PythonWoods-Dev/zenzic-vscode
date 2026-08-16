@@ -12,8 +12,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Zenzic Core v0.30.0 Support**: Full Language Server Protocol (LSP) diagnostics and editor feedback for the new AST Semantic Linting suite (`Z513`–`Z520`) and Policy-as-Code Editorial Style governance (`Z617`–`Z619`).
 - **Expanded Atomic Quick Fixes (`Ctrl+.` / `Cmd+.`)**: Real-time automated remediation for bare URLs (`Z515`), invalid heading punctuation (`Z517`), and malformed paragraph lists (`Z520`).
 - **Zero-Config Auto-Provisioning Engine**: The extension now automatically detects and provisions an isolated Zenzic CLI engine if one is not found on your system. On first activation with a missing binary, a consent prompt is shown and the engine is installed via `uv` (primary) or `python3 -m venv` (fallback) into a sandboxed directory managed by the extension. No changes are made to the user's system `$PATH`, `~/.bashrc`, or any shell configuration.
+- **Smart Workspace Resolver**: Robust `${workspaceFolder}` resolution across all active workspace folders for multi-root and umbrella-folder setups.
+- **Telemetry Dashboard**: Rich Status Bar tooltip displaying core version, extension version, active executable path, and auto-provisioning status.
+- **Context-Aware Status Bar (`zenzic.showStatus`)**: Interactive Status Bar item that re-triggers actionable recovery dialogs on error states and opens a quick action menu when running normally.
+- **Troubleshoot & Repair Setup Wizard (`zenzic.troubleshoot`)**: Automated 4-point diagnostic wizard in the Command Palette to verify custom paths, system `$PATH`, isolated provisioning environments, and Core version health with 1-click self-healing remedies.
 - **`zenzic.autoProvision` Setting**: New boolean setting (default: `true`) to opt out of automatic engine provisioning for corporate proxy environments or policy-restricted machines.
 - **Persistent Binary Cache**: The provisioned binary path is persisted via VS Code `globalState`, ensuring re-installation is skipped on subsequent extension activations even if the binary is not on the system PATH.
+
+### Fixed
+
+- **Custom Path UX Trap**: Prevents infinite error loops by offering a "Clear Setting" fallback when an invalid custom `zenzic.executablePath` is configured.
 
 
 ## [0.29.1] - 2026-08-14
@@ -33,6 +41,7 @@ Release notes for the `v0.29.0` release series of the Zenzic VS Code Extension.
 
 ## Historical Releases
 
+- v0.29.x archive: [changelogs/v0.29.x.md](./changelogs/v0.29.x.md)
 - v0.28.x archive: [changelogs/v0.28.x.md](./changelogs/v0.28.x.md)
 - v0.27.x archive: [changelogs/v0.27.x.md](./changelogs/v0.27.x.md)
 - v0.26.x archive: [changelogs/v0.26.x.md](./changelogs/v0.26.x.md)

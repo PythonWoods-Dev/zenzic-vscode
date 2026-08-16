@@ -48,6 +48,14 @@
       {
         "command": "zenzic.computeDQS",
         "title": "Zenzic: Compute Global DQS"
+      },
+      {
+        "command": "zenzic.showStatus",
+        "title": "Zenzic: Show Status / Recovery"
+      },
+      {
+        "command": "zenzic.troubleshoot",
+        "title": "Zenzic: Troubleshoot & Repair Setup"
       }
     ],
     "configuration": {

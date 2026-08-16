@@ -136,7 +136,7 @@ Need a temporary strategic exception? Press `Ctrl+.` on any finding to insert an
 
 | Setting | Default | Description |
 | :--- | :--- | :--- |
-| `zenzic.executablePath` | `"zenzic"` | Path to the `zenzic` executable or virtual-environment binary. Supports `${workspaceFolder}` and leading `~/` or `~\`. |
+| `zenzic.executablePath` | `"zenzic"` | Path to the `zenzic` executable or virtual-environment binary. Supports leading `~/` or `~\` and `${workspaceFolder}` (intelligently scans across all active workspace folders in multi-root setups). |
 | `zenzic.autoProvision` | `true` | Automatically install the Zenzic CLI in an isolated environment if not found. Set to `false` to opt out. |
 | `zenzic.trace.server` | `"off"` | Trace communication between VS Code and the Language Server (`off`, `messages`, `verbose`). |
 
@@ -150,6 +150,8 @@ The extension contributes the following commands (`Ctrl+Shift+P` / `Cmd+Shift+P`
 | **Zenzic: Compute Global DQS** | `zenzic.computeDQS` | Executes on-demand global audit and updates the Status Bar score. |
 | **Zenzic: Start Server** | `zenzic.startServer` | Starts the ZLS Language Server background process. |
 | **Zenzic: Stop Server** | `zenzic.stopServer` | Stops the Language Server process. |
+| **Zenzic: Show Status / Recovery** | `zenzic.showStatus` | Re-triggers error recovery dialogs or opens the quick action menu. |
+| **Zenzic: Troubleshoot & Repair Setup** | `zenzic.troubleshoot` | Runs automated environment diagnostics and offers 1-click self-healing repairs. |
 
 ### Workspace Configuration Example
 
@@ -160,6 +162,8 @@ Configure a repository virtual environment in `.vscode/settings.json`:
   "zenzic.executablePath": "${workspaceFolder}/.venv/bin/zenzic"
 }
 ```
+
+> **Note:** If you configure an invalid custom `zenzic.executablePath`, the extension will prompt you to clear the setting to safely fall back to the Auto-Provisioning engine.
 
 ---
 
