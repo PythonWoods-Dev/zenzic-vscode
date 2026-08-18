@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 *Upcoming changes for the next release.*
 
-## [0.30.0] - 2026-08-15
+## [0.30.0] - 2026-08-18
 
 ### Added
 
@@ -22,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Troubleshoot & Repair Setup Wizard (`zenzic.troubleshoot`)**: Automated 4-point diagnostic wizard in the Command Palette to verify custom paths, system `$PATH`, isolated provisioning environments, and Core version health with 1-click self-healing remedies.
 - **`zenzic.autoProvision` Setting**: New boolean setting (default: `true`) to opt out of automatic engine provisioning for corporate proxy environments or policy-restricted machines.
 - **Standardized Packaging Automation**: Added `just package` recipe to `justfile` for building and packaging production `.vsix` artifacts via `@vscode/vsce package`.
+
+### Changed
+
+- **Core Baseline Alignment**: Bumped minimum required Core to `v0.30.0`, inheriting sequential parsing performance optimizations and the Z201 LSP single-pass credential scan in `_analyze_file`.
 
 ### Fixed
 
