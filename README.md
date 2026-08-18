@@ -1,90 +1,167 @@
+<!--
+SPDX-FileCopyrightText: 2026 PythonWoods <dev@pythonwoods.dev>
+SPDX-License-Identifier: Apache-2.0
+-->
+
 <p align="center">
-  <img src="images/logo.png" width="128" alt="Zenzic Logo">
+  <a href="https://github.com/PythonWoods/zenzic-vscode">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="./assets/zenzic-wordmark-vscode-dark.png">
+      <source media="(prefers-color-scheme: light)" srcset="./assets/zenzic-wordmark-vscode.png">
+      <img alt="Zenzic / vscode" src="./assets/zenzic-wordmark-vscode-dark.png" width="350">
+    </picture>
+  </a>
 </p>
 
-<h1 align="center">Zenzic: Deterministic Document Integrity (VS Code Extension)</h1>
+<h1 align="center">Zenzic: Real-Time Documentation Quality Platform (DQP) for VS Code</h1>
 
 <p align="center">
-  <strong>Deterministic Document Integrity Engine for Markdown/MDX graphs in VS Code.</strong>
+  <strong>Real-time graph validation, secret leak detection, and automated quick fixes directly in your editor.</strong><br>
+  <em>Instant Language Server diagnostics, one-click AST Quick Fixes, and continuous Documentation Quality Scoring (DQS).</em>
+</p>
+
+<p align="center">
+  <a href="https://marketplace.visualstudio.com/items?itemName=pythonwoods.zenzic-vscode">
+    <img src="https://img.shields.io/visual-studio-marketplace/v/pythonwoods.zenzic-vscode?style=flat-square&label=VS%20Code%20Marketplace&color=38bdf8" alt="Visual Studio Marketplace Version">
+  </a>
+  <a href="https://marketplace.visualstudio.com/items?itemName=pythonwoods.zenzic-vscode">
+    <img src="https://img.shields.io/visual-studio-marketplace/i/pythonwoods.zenzic-vscode?style=flat-square&color=4f46e5&label=installs" alt="Marketplace Installs">
+  </a>
+  <a href="https://marketplace.visualstudio.com/items?itemName=pythonwoods.zenzic-vscode">
+    <img src="https://img.shields.io/visual-studio-marketplace/r/pythonwoods.zenzic-vscode?style=flat-square&color=f59e0b" alt="Rating">
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/license-Apache--2.0-0d9488?style=flat-square" alt="License">
+  </a>
 </p>
 
 ---
 
-Zenzic brings the exact same $O(N)$ document integrity engine used in your CI/CD pipelines directly into your authoring environment, providing sub-50ms topological feedback and real-time diagnostic reporting as you type.
+## Documentation Quality Platform in Your Editor
 
-## Thin Client Architecture
+Writing technical documentation requires continuous verification. **Zenzic for VS Code** integrates the **Documentation Quality Platform (DQP)** directly into your editor, evaluating cross-file Markdown and MDX reference graphs, structural topology, accessibility constraints, and credential security in real time.
 
-This extension is a strictly **Thin Client**. It contains zero parsing logic, zero regex engines, and zero validation rules. It communicates via the Language Server Protocol (LSP) over standard I/O directly with the `zenzic` Python binary installed on your system.
+<p align="center">
+  <img src="assets/demo.gif" alt="Zenzic VS Code Demo" width="100%">
+</p>
 
----
-
-## Key Features
-
-### 1. Security Scanning
-
-Hardcoded credentials (Z201) and path traversal sequences (Z202/Z203) are flagged in milliseconds using RE2 validation engine rules, preventing secret leaks before files are committed.
-
-### 2. Graph Topology Analysis (VSM)
-
-Modify a heading or link in one file, and Zenzic's Virtual Site Map (VSM) instantly invalidates any broken links, orphan pages, or dead navigation nodes across your entire workspace using $O(K)$ incremental graph patching.
-
-### 3. Adapter-Driven Config Hot-Reloading
-
-When framework configuration files (e.g. `mkdocs.yml`, `zensical.toml`, `.zenzic.toml`) are modified, the Language Server automatically reloads adapter metadata and rebuilds the Virtual Site Map without requiring an extension or editor restart.
-
-### 4. Inline Diagnostics, Quick Fixes & Automated Suppressions
-
-Hover over any diagnostic to view the exact Z-Code, DQS score penalty, and remediation guidance. Apply automated Quick Fixes or insert Automated Inline Suppressions (`<!-- zenzic:ignore:ZXXX -->`, except for `Z2xx` Security findings) via `textDocument/codeAction` directly from the editor lightbulb menu.
-
-### 5. DQS Workspace UI & Status Tooltip
-
-Stream Document Quality Score (DQS) updates directly to the status bar with versioning tooltips, providing real-time visibility into overall repository health and active Zenzic Core engine version.
-
-### 6. Real-Time Policy-as-Code Diagnostics
-
-Evaluates declarative `[policies]` rules line-by-line in real time as you edit, surfacing governance findings directly in the PROBLEMS panel. The full policy surface covered includes:
-
-- **Metadata Validation** (`Z610`–`Z613`): required frontmatter keys, forbidden keys, and RE2 schema pattern enforcement.
-- **Zero-Trust Link Governance** (`Z614`, `Z615`): external links not matching the `allowed_external_domains` whitelist, and links using disallowed URL schemes, are flagged inline as you type.
-- **Cross-Namespace Boundary Violations** (`Z616`): links crossing restricted topological boundaries (defined via `cross_namespace_restrictions` in `.zenzic.toml`) are surfaced in real time using the Virtual Site Map (VSM).
-
-
-### Real-Time Diagnostics vs. Global DQS
-
-To guarantee sub-50ms performance, Zenzic operates with a strict separation of concerns in the editor:
-
-- **Real-Time Diagnostics (PROBLEMS Panel):** AST rules (e.g., Z502, Z505) and local topology checks are executed incrementally in memory on every keystroke.
-- **Global DQS (Status Bar):** The Documentation Quality Score requires a full repository audit. To prevent editor lag, the DQS is computed *on-demand*. Click the `Zenzic DQS` item in the Status Bar to execute a background CLI bridge and update the global score.
+- **Instant Visual Feedback**: See inline squiggly underlines (red for critical errors, yellow for warnings) the exact millisecond a defect is introduced.
+- **One-Click Quick Fixes (`Ctrl+.` / `Cmd+.`)**: Automatically repair bare URLs, invalid heading punctuation, malformed lists, untagged code blocks, and dead suppressions via the Atomic Mutator.
+- **Zero-Latency Authoring**: Built on a pure-function Language Server Protocol (LSP) architecture with sub-50ms response times and zero editor lag.
+- **Security-First Protection**: Instantly flags accidental API tokens or secret keys before they hit your git history.
+- **Deterministic Quality Score (DQS)**: Turn documentation quality into a game. Watch your workspace score climb to 100/100 directly in the Status Bar as you fix issues.
+- **Zero-Config Installation**: No manual setup required. If the Zenzic CLI is not found, the extension automatically provisions an isolated engine — no changes to your system PATH or shell configuration.
 
 ---
 
-## Requirements
+## ⚠️ Requirements
 
-This extension requires **Zenzic Core v0.29.1 or higher**.
+**Just VS Code** — that's it for most users.
 
-We recommend installing or updating the global binary via `uv`:
+The extension automatically detects the `zenzic` Python CLI engine. If it is not found, it will prompt you to install it in a **fully isolated environment** managed by the extension itself. No changes are ever made to your system Python, `$PATH`, or shell configuration (`.bashrc` / `.zshrc`).
 
-```bash
-uv tool install --force zenzic
+> **Power User / Corporate Proxy Note:** If you prefer to manage the installation yourself — or if auto-provisioning is blocked by a corporate proxy — install the CLI manually and the extension will use it:
+> ```bash
+> # Recommended: isolated tool install via uv
+> uv tool install zenzic
+>
+> # Or via standard pip
+> pip install --upgrade zenzic
+> ```
+
+> **Virtual Environment Note:** If you use a repository virtual environment, pin the path in `.vscode/settings.json`:
+> ```json
+> { "zenzic.executablePath": "${workspaceFolder}/.venv/bin/zenzic" }
+> ```
+> To disable auto-provisioning entirely, set `"zenzic.autoProvision": false`.
+
+---
+
+## ⚡ Quick Start (< 60 Seconds)
+
+Get real-time documentation intelligence in three simple steps:
+
+### 1. Install Zenzic CLI Engine
+
+In most cases, **you can skip this step** — the extension handles it automatically on first use.
+
+If you prefer a manual install: `uv tool install zenzic`.
+
+### 2. Install the Extension
+
+Search for **Zenzic** in the VS Code Extensions Marketplace (`Ctrl+Shift+X`) and click **Install**.
+
+### 3. Open Any Markdown File
+
+Open your documentation repository. Type a broken link or an unformatted URL:
+
+```markdown
+<!-- Type this into any Markdown file -->
+See our [guide](missing-page.md) or visit https://zenzic.dev
 ```
 
-Or via `pip`:
-
-```bash
-pip install --upgrade zenzic
-```
+You will immediately see:
+1. **Red underline** on `missing-page.md` (`Z104: File Not Found`).
+2. **Yellow underline** on `https://zenzic.dev` (`Z515: Bare URL Used`).
+3. Press **`Ctrl+.`** (or **`Cmd+.`** on macOS) on the bare URL to automatically format it into `<https://zenzic.dev>`.
 
 ---
 
-## Extension Settings
+## 🎯 Key Features at a Glance
 
-By default, the extension resolves the `zenzic` executable from your system `$PATH`.
+### 1. Real-Time Link & Asset Validation
+Move a file or rename a heading in one document, and Zenzic's Virtual Site Map (VSM) instantly flags broken cross-references and orphan pages across your entire workspace without saving or rebuilding.
 
-The extension currently contributes one user-facing setting:
+### 2. Instant Security & Credential Scanning
+Detects leaked API keys, tokens (e.g., GitHub, AWS, Stripe), and path traversal sequences in milliseconds using Google RE2 non-backtracking safety contracts.
 
-- `zenzic.executablePath`: path to the `zenzic` executable or to the virtual-environment binary you want the extension to use. The extension expands `${workspaceFolder}` and a leading `~/` or `~\` automatically.
+### 3. Native Semantic & Accessibility Linting
+- **Duplicate Headings (`Z513`)**: Prevents anchor collision and broken URL fragments.
+- **Generic Image Alt Text (`Z514`)**: Enforces descriptive alternative text for accessibility.
+- **Bare URLs (`Z515`)**: Detects unformatted raw URLs with instant auto-fix.
+- **Single H1 Hierarchy (`Z516`)**: Enforces clean semantic HTML document structure.
+- **Heading Punctuation (`Z517`)**: Flags trailing periods, colons, or semicolons in headings with instant auto-fix.
+- **Malformed Lists (`Z520`)**: Automatically converts pseudo-lists into clean Markdown bullet lists.
 
-If you use a local virtual environment or custom installation path, configure it in your workspace or user `settings.json`:
+### 4. Policy-as-Code & Editorial Style Governance
+Enforce organizational standards directly in the editor:
+- Required or forbidden frontmatter metadata (`Z610`–`Z613`).
+- Zero-Trust external domain whitelisting (`Z614`, `Z615`).
+- Cross-namespace boundary restrictions (`Z616`).
+- Passive voice heuristics (`Z518`) and weasel word eradication (`Z519`).
+- Forbidden terminology patterns (`Z617`) and document complexity caps (`Z619`).
+
+### 5. Automated Inline Suppressions
+Need a temporary strategic exception? Press `Ctrl+.` on any finding to insert an inline suppression comment (`<!-- zenzic:ignore ZXXX -->`) that tracks technical debt transparently.
+
+---
+
+## ⚙️ Extension Settings & Commands
+
+### Settings
+
+| Setting | Default | Description |
+| :--- | :--- | :--- |
+| `zenzic.executablePath` | `"zenzic"` | Path to the `zenzic` executable or virtual-environment binary. Supports leading `~/` or `~\` and `${workspaceFolder}` (intelligently scans across all active workspace folders in multi-root setups). |
+| `zenzic.autoProvision` | `true` | Automatically install the Zenzic CLI in an isolated environment if not found. Set to `false` to opt out. |
+| `zenzic.trace.server` | `"off"` | Trace communication between VS Code and the Language Server (`off`, `messages`, `verbose`). |
+
+### Command Palette
+
+The extension contributes the following commands (`Ctrl+Shift+P` / `Cmd+Shift+P`):
+
+| Command | Identifier | Description |
+| :--- | :--- | :--- |
+| **Zenzic: Restart Server** | `zenzic.restartServer` | Restarts the Language Server and re-indexes all workspace documents. |
+| **Zenzic: Compute Global DQS** | `zenzic.computeDQS` | Executes on-demand global audit and updates the Status Bar score. |
+| **Zenzic: Start Server** | `zenzic.startServer` | Starts the ZLS Language Server background process. |
+| **Zenzic: Stop Server** | `zenzic.stopServer` | Stops the Language Server process. |
+| **Zenzic: Show Status / Recovery** | `zenzic.showStatus` | Re-triggers error recovery dialogs or opens the quick action menu. |
+| **Zenzic: Troubleshoot & Repair Setup** | `zenzic.troubleshoot` | Runs automated environment diagnostics and offers 1-click self-healing repairs. |
+
+### Workspace Configuration Example
+
+Configure a repository virtual environment in `.vscode/settings.json`:
 
 ```json
 {
@@ -92,66 +169,40 @@ If you use a local virtual environment or custom installation path, configure it
 }
 ```
 
-User-scoped home-directory paths are also supported:
-
-```json
-{
-  "zenzic.executablePath": "~/custom_path/.venv/bin/zenzic"
-}
-```
-
-## Commands
-
-The extension contributes the following commands to the Command Palette:
-
-- `Zenzic: Start Server`
-- `Zenzic: Stop Server`
-- `Zenzic: Restart Server`
-- `Zenzic: Compute Global DQS`
+> **Note:** If you configure an invalid custom `zenzic.executablePath`, the extension will prompt you to clear the setting to safely fall back to the Auto-Provisioning engine.
 
 ---
 
-## Troubleshooting
+## 🏗️ Under the Hood: The Thin Client Architecture
 
-### Zenzic: Outdated Core
+Zenzic for VS Code is designed with strict adherence to the **Thin Client Architecture** (**ADR-075 Radical Unawareness**).
 
-- **Cause**: The executable resolved by the extension is older than the minimum required Core version (`v0.29.1`).
-- **Remediation**: Upgrade your global binary:
+The extension itself contains zero parsing logic, zero regex matching engines, and zero hardcoded validation rules. Instead, it acts as a high-performance Language Server Protocol (LSP) client that communicates directly with the local `zenzic` Python binary via JSON-RPC over standard input/output (`stdio`).
 
-  ```bash
-  uv tool install --force zenzic
-  ```
-
-  Or point `zenzic.executablePath` in `settings.json` to a virtual environment containing Core `v0.29.1` or higher.
-
-### Zenzic: Not Found (ENOENT)
-
-- **Cause**: The `zenzic` executable is not present in the system `$PATH`. This commonly occurs in Flatpak, Snap, or isolated terminal environments where user binary directories (`~/.local/bin`) are omitted from process environments.
-- **Remediation**: Specify an explicit path to the binary in `settings.json`. `${workspaceFolder}` and leading `~/` / `~\` are expanded automatically:
-
-  ```json
-  {
-    "zenzic.executablePath": "~/custom_path/.venv/bin/zenzic"
-  }
-  ```
-
-- **Null-workspace note**: `${workspaceFolder}` requires an open workspace folder. If you open a standalone file without a workspace, use an absolute path or a `~/...` path instead.
-
-### Logs and Observability
-
-The extension creates the `Zenzic Language Server` output channel. Use it to inspect startup failures, transport errors, and language-server logs when diagnostics do not appear as expected.
+This architecture guarantees:
+- **100% Behavioral Parity**: Diagnostics, finding codes, and auto-fixes in your editor match your local CLI runs and CI/CD pipelines bit-for-bit.
+- **Zero Editor Bloat**: All AST indexing, Virtual Site Map graph updates, and regex computations execute in the compiled Python core, keeping VS Code lightweight and responsive.
+- **Instant Engine Upgrades**: Upgrading the `zenzic` CLI immediately equips the VS Code extension with all newly released rules and mutations without waiting for extension marketplace releases.
 
 ---
 
-## Architectural Guarantees
+## 📦 Ecosystem Integration
 
-- **Zero Telemetry:** Zenzic operates entirely locally. No data is sent to external servers.
-- **Zero LLMs:** All analysis is mathematically deterministic. No probabilistic guessing.
-- **Sub-50ms Latency:** Incremental $O(K)$ graph patching ensures instant feedback regardless of workspace scale.
-- **100% CLI Parity:** Shared core governance pipeline ensures bit-for-bit identical diagnostics between VS Code and CI/CD.
+Zenzic provides a unified quality platform across your entire development lifecycle:
+
+- **[Zenzic CLI (Core Engine)](https://github.com/PythonWoods/zenzic)**: High-speed terminal static analyzer, batch auto-fixer, and DQS scoring engine.
+- **[Zenzic GitHub Action](https://github.com/PythonWoods/zenzic-action)**: Zero-config CI/CD quality gate with SARIF code scanning and PR annotations.
+- **[Official Documentation](https://zenzic.dev)**: For deep architectural explanations, full finding taxonomies, and configuration playbooks, visit [zenzic.dev](https://zenzic.dev).
 
 ---
 
-## License & Support
+## 📄 License
 
-Licensed under Apache-2.0. For complete finding taxonomy and developer guides, visit [zenzic.dev](https://zenzic.dev).
+Licensed under the [Apache License, Version 2.0](LICENSE).
+Copyright (c) 2026 PythonWoods `<dev@pythonwoods.dev>`.
+
+---
+
+## Legal Disclaimer
+
+*Visual Studio Code, VS Code, and the Visual Studio Code logo are trademarks of Microsoft Corporation. Zenzic and the `zenzic-vscode` extension are independent, open-source projects and are not affiliated with, endorsed by, or sponsored by Microsoft Corporation.*

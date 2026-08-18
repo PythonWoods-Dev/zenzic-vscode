@@ -4,6 +4,7 @@ set shell := ["bash", "-c"]
 #
 # Quick reference:
 #   just verify          — lint + tsc (pre-push gate)
+#   just package         — build and package .vsix archive
 #   just release <part> <core>  — bump extension version + align core pin
 #   just release-dry <p> <core> — dry-run release orchestration
 #   just pin-core <ver>  — realign Zenzic Core pin in README + RELEASE.md + CONTRIBUTING.md
@@ -11,6 +12,10 @@ set shell := ["bash", "-c"]
 #   just versions        — show extension version and pinned core version
 #   just audit-release   — verify release metadata/core pin alignment
 #   just clean           — remove generated artefacts (out/, *.vsix, .tsbuildinfo)
+
+package:
+	npm run build
+	npx @vscode/vsce package
 
 verify:
 	npm run lint

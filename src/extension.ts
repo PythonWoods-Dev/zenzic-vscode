@@ -12,6 +12,7 @@ import {
     ServerOptions,
     Executable
 } from 'vscode-languageclient/node';
+import { ensureZenzicEngine } from './provisioning';
 
 // A4 fix: typed as | undefined — initialized in activate(), disposed via subscriptions.
 let client: LanguageClient | undefined;
@@ -19,8 +20,13 @@ let statusBarItem: vscode.StatusBarItem | undefined;
 let dqsStatusBarItem: vscode.StatusBarItem | undefined;
 // A2 fix: guard flag prevents concurrent restart calls.
 let restarting = false;
+// Cache for the active zenzic binary path (found or provisioned). Allows
+// computeDQS to reuse the same binary without a second full PATH scan,
+// covering the case where the binary lives in the extension's isolated
+// globalStorageUri environment (not on the system PATH).
+let activeZenzicPath: string | undefined;
 
-const MIN_CORE_VERSION = '0.29.1';
+const MIN_CORE_VERSION = '0.30.0';
 
 /**
  * Expand supported user-facing path variables in zenzic.executablePath.
@@ -65,6 +71,35 @@ export async function resolveExecutablePath(cmd: string, workspaceRoot?: string)
         }
         return undefined;
     };
+
+    // Smart Workspace Resolver: If the path contains ${workspaceFolder},
+    // iteratively scan across all active workspace folders in multi-root
+    // or umbrella configurations to find the first valid executable.
+    if (cmd.includes('${workspaceFolder}')) {
+        const folders = vscode.workspace.workspaceFolders;
+        if (folders && folders.length > 0) {
+            for (const folder of folders) {
+                let candidate = cmd.replace(/\$\{workspaceFolder\}/g, folder.uri.fsPath);
+                if (candidate.startsWith('~/') || candidate.startsWith('~\\')) {
+                    candidate = path.join(os.homedir(), candidate.slice(2));
+                }
+                const resolved = await checkPath(candidate);
+                if (resolved) {
+                    return resolved;
+                }
+            }
+            return undefined;
+        }
+
+        if (workspaceRoot) {
+            let candidate = cmd.replace(/\$\{workspaceFolder\}/g, workspaceRoot);
+            if (candidate.startsWith('~/') || candidate.startsWith('~\\')) {
+                candidate = path.join(os.homedir(), candidate.slice(2));
+            }
+            return await checkPath(candidate);
+        }
+        return undefined;
+    }
 
     const expandedCmd = expandConfiguredPath(cmd, workspaceRoot);
     if (!expandedCmd) {
@@ -174,6 +209,7 @@ export async function checkCoreVersion(executablePath: string): Promise<CoreVers
 export async function activate(context: vscode.ExtensionContext) {
     statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
     statusBarItem.text = '$(sync~spin) Zenzic: Starting';
+    statusBarItem.command = 'zenzic.showStatus';
     statusBarItem.show();
     context.subscriptions.push(statusBarItem);
 
@@ -190,75 +226,291 @@ export async function activate(context: vscode.ExtensionContext) {
     }
     context.subscriptions.push(dqsStatusBarItem);
 
+    let lastErrorPrompt: (() => Promise<void>) | undefined;
+
+    const getExtVersion = (): string => {
+        return (context.extension?.packageJSON as { version?: string })?.version || 'unknown';
+    };
+
+    const createSuccessTooltip = (coreVersion: string | undefined, activePath: string): vscode.MarkdownString => {
+        const extVersion = getExtVersion();
+        const isAutoProvisioned = activePath.includes(context.globalStorageUri.fsPath);
+        const coreVerStr = coreVersion ? `v${coreVersion}` : 'unknown';
+        const lines = [
+            '**Zenzic Language Server** is running.',
+            '',
+            `- **Core Version**: \`${coreVerStr}\``,
+            `- **Extension Version**: \`v${extVersion}\``,
+            `- **Executable Path**: \`${activePath}\``,
+            `- **Auto-Provisioned**: \`${isAutoProvisioned ? 'Yes' : 'No'}\``
+        ];
+        const tip = new vscode.MarkdownString(lines.join('  \n'), true);
+        tip.isTrusted = true;
+        return tip;
+    };
+
+    const createErrorTooltip = (header: string, attemptedPath: string, reason: string): vscode.MarkdownString => {
+        const extVersion = getExtVersion();
+        const lines = [
+            `**${header}**`,
+            '',
+            `- **Extension Version**: \`v${extVersion}\``,
+            `- **Attempted Path**: \`${attemptedPath}\``,
+            `- **Error**: ${reason}`
+        ];
+        const tip = new vscode.MarkdownString(lines.join('  \n'), true);
+        tip.isTrusted = true;
+        return tip;
+    };
+
+    const clearExecutablePathSetting = async () => {
+        const config = vscode.workspace.getConfiguration('zenzic');
+        const inspection = config.inspect<string>('executablePath');
+        if (inspection) {
+            if (inspection.workspaceFolderValue !== undefined) {
+                await config.update('executablePath', undefined, vscode.ConfigurationTarget.WorkspaceFolder);
+            }
+            if (inspection.workspaceValue !== undefined) {
+                await config.update('executablePath', undefined, vscode.ConfigurationTarget.Workspace);
+            }
+            if (inspection.globalValue !== undefined) {
+                await config.update('executablePath', undefined, vscode.ConfigurationTarget.Global);
+            }
+        }
+    };
+
     const startServer = async () => {
         const config = vscode.workspace.getConfiguration('zenzic');
         const executablePath = config.get<string>('executablePath') || 'zenzic';
         const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+        const isCustomPath = executablePath.trim() !== '' && executablePath.trim() !== 'zenzic';
 
-        const resolvedPath = await resolveExecutablePath(executablePath, workspaceRoot);
+        let resolvedPath: string;
 
-        if (!resolvedPath) {
-            statusBarItem!.text = '$(error) Zenzic: Not Found';
-            statusBarItem!.tooltip = `Executable not found: '${executablePath}'. Run: uv tool install zenzic`;
-            const action = await vscode.window.showErrorMessage(
-                `Zenzic binary not found: '${executablePath}'. ` +
-                `Install the core engine via 'uv tool install zenzic' or configure 'zenzic.executablePath'.`,
-                'Install with uv',
-                'Open Docs'
-            );
-            if (action === 'Install with uv') {
-                const terminal = vscode.window.createTerminal('Zenzic Setup');
-                terminal.show();
-                terminal.sendText('uv tool install zenzic', true);
-            } else if (action === 'Open Docs') {
-                vscode.env.openExternal(vscode.Uri.parse(
-                    'https://github.com/PythonWoods/zenzic-vscode#requirements'
-                ));
+        if (isCustomPath) {
+            const resolvedCustom = await resolveExecutablePath(executablePath, workspaceRoot);
+            if (!resolvedCustom) {
+                statusBarItem!.text = '$(error) Zenzic: Custom Path Not Found';
+                statusBarItem!.tooltip = createErrorTooltip(
+                    'Zenzic: Custom Path Not Found',
+                    executablePath,
+                    'Binary not found at configured custom path.'
+                );
+                const prompt = async () => {
+                    const action = await vscode.window.showErrorMessage(
+                        `Zenzic binary not found at custom path: '${executablePath}'. ` +
+                        `Clear the setting to use auto-provisioning, or install it manually in that environment.`,
+                        'Clear Setting',
+                        'Open Settings',
+                        'Open Docs'
+                    );
+                    if (action === 'Clear Setting') {
+                        await clearExecutablePathSetting();
+                        vscode.window.showInformationMessage('Custom path cleared. Restarting server...');
+                        setTimeout(() => { vscode.commands.executeCommand('zenzic.restartServer'); }, 100);
+                    } else if (action === 'Open Settings') {
+                        vscode.commands.executeCommand('workbench.action.openSettings', 'zenzic.executablePath');
+                    } else if (action === 'Open Docs') {
+                        vscode.env.openExternal(vscode.Uri.parse(
+                            'https://github.com/PythonWoods/zenzic-vscode#requirements'
+                        ));
+                    }
+                };
+                lastErrorPrompt = prompt;
+                await prompt();
+                return;
             }
-            return;
+            resolvedPath = resolvedCustom;
+        } else {
+            // Auto-Provisioning Engine. Replaces the bare `resolveExecutablePath`
+            // call + manual error message with a consent-gated, isolated install flow.
+            // Dependency injection of `resolveExecutablePath` avoids circular imports.
+            const provisionResult = await ensureZenzicEngine(
+                context,
+                executablePath,
+                workspaceRoot,
+                resolveExecutablePath
+            );
+
+            if (provisionResult.status === 'declined') {
+                statusBarItem!.text = '$(circle-slash) Zenzic: Installation Declined';
+                statusBarItem!.tooltip = createErrorTooltip(
+                    'Zenzic: Installation Declined',
+                    executablePath,
+                    'User declined automatic engine installation.'
+                );
+                const prompt = async () => {
+                    const action = await vscode.window.showInformationMessage(
+                        'Zenzic engine installation was declined. Would you like to install it now or configure a custom path?',
+                        'Install Now',
+                        'Configure Path',
+                        'Open Docs'
+                    );
+                    if (action === 'Install Now') {
+                        setTimeout(() => { vscode.commands.executeCommand('zenzic.restartServer'); }, 100);
+                    } else if (action === 'Configure Path') {
+                        vscode.commands.executeCommand('workbench.action.openSettings', 'zenzic.executablePath');
+                    } else if (action === 'Open Docs') {
+                        vscode.env.openExternal(vscode.Uri.parse(
+                            'https://github.com/PythonWoods/zenzic-vscode#requirements'
+                        ));
+                    }
+                };
+                lastErrorPrompt = prompt;
+                return;
+            }
+
+            if (provisionResult.status === 'disabled') {
+                // autoProvision is false — mirror the previous manual-install UX.
+                statusBarItem!.text = '$(error) Zenzic: Not Found';
+                statusBarItem!.tooltip = createErrorTooltip(
+                    'Zenzic: Engine Not Found',
+                    executablePath,
+                    'Executable not found on system PATH and auto-provisioning is disabled.'
+                );
+                const prompt = async () => {
+                    const action = await vscode.window.showErrorMessage(
+                        `Zenzic binary not found: '${executablePath}'. ` +
+                        `Install manually ('uv tool install zenzic'), configure 'zenzic.executablePath', ` +
+                        `or enable 'zenzic.autoProvision'.`,
+                        'Open Settings',
+                        'Open Docs'
+                    );
+                    if (action === 'Open Settings') {
+                        vscode.commands.executeCommand('workbench.action.openSettings', 'zenzic.executablePath');
+                    } else if (action === 'Open Docs') {
+                        vscode.env.openExternal(vscode.Uri.parse(
+                            'https://github.com/PythonWoods/zenzic-vscode#requirements'
+                        ));
+                    }
+                };
+                lastErrorPrompt = prompt;
+                await prompt();
+                return;
+            }
+
+            if (provisionResult.status === 'failed') {
+                statusBarItem!.text = '$(error) Zenzic: Provisioning Failed';
+                statusBarItem!.tooltip = createErrorTooltip(
+                    'Zenzic: Auto-Provisioning Failed',
+                    executablePath,
+                    provisionResult.error
+                );
+                const prompt = async () => {
+                    const action = await vscode.window.showErrorMessage(
+                        `Zenzic auto-provisioning failed: ${provisionResult.error}`,
+                        'Install Manually',
+                        'Open Docs'
+                    );
+                    if (action === 'Install Manually') {
+                        const terminal = vscode.window.createTerminal('Zenzic Setup');
+                        terminal.show();
+                        terminal.sendText('uv tool install zenzic', true);
+                    } else if (action === 'Open Docs') {
+                        vscode.env.openExternal(vscode.Uri.parse(
+                            'https://github.com/PythonWoods/zenzic-vscode#requirements'
+                        ));
+                    }
+                };
+                lastErrorPrompt = prompt;
+                await prompt();
+                return;
+            }
+
+            // provisionResult.status is narrowed to 'found' | 'provisioned' here.
+            resolvedPath = provisionResult.executablePath;
         }
+
+        // Cache so computeDQS can reuse the same binary (covers the provisioned
+        // env case where the binary is not on the system PATH).
+        activeZenzicPath = resolvedPath;
 
         // Enforce Core Version Handshake (>= MIN_CORE_VERSION) before starting LSP client
         const versionResult = await checkCoreVersion(resolvedPath);
         if (versionResult.status === 'not_found') {
             statusBarItem!.text = '$(error) Zenzic: Not Found';
-            statusBarItem!.tooltip = `Zenzic binary not found at '${resolvedPath}'`;
-            vscode.window.showErrorMessage(
-                `Zenzic binary not found at '${resolvedPath}'. Please install it via 'uv tool install zenzic' or configure 'zenzic.executablePath'.`
+            statusBarItem!.tooltip = createErrorTooltip(
+                'Zenzic: Binary Not Found',
+                resolvedPath,
+                'Binary could not be executed or does not exist.'
             );
+            const prompt = async () => {
+                if (isCustomPath) {
+                    const action = await vscode.window.showErrorMessage(
+                        `Zenzic binary not found at custom path: '${executablePath}'. ` +
+                        `Clear the setting to use auto-provisioning, or install it manually in that environment.`,
+                        'Clear Setting',
+                        'Open Settings',
+                        'Open Docs'
+                    );
+                    if (action === 'Clear Setting') {
+                        await clearExecutablePathSetting();
+                        vscode.window.showInformationMessage('Custom path cleared. Restarting server...');
+                        setTimeout(() => { vscode.commands.executeCommand('zenzic.restartServer'); }, 100);
+                    } else if (action === 'Open Settings') {
+                        vscode.commands.executeCommand('workbench.action.openSettings', 'zenzic.executablePath');
+                    } else if (action === 'Open Docs') {
+                        vscode.env.openExternal(vscode.Uri.parse(
+                            'https://github.com/PythonWoods/zenzic-vscode#requirements'
+                        ));
+                    }
+                } else {
+                    vscode.window.showErrorMessage(
+                        `Zenzic binary not found at '${resolvedPath}'. Please install it via 'uv tool install zenzic' or configure 'zenzic.executablePath'.`
+                    );
+                }
+            };
+            lastErrorPrompt = prompt;
+            await prompt();
             return;
         }
 
         if (versionResult.status === 'outdated') {
             statusBarItem!.text = '$(error) Zenzic: Outdated Core';
-            statusBarItem!.tooltip = `Zenzic Core v${MIN_CORE_VERSION} or higher required (found v${versionResult.version})`;
-            const action = await vscode.window.showErrorMessage(
-                `Zenzic extension requires Zenzic Core v${MIN_CORE_VERSION} or higher. ` +
-                `Found v${versionResult.version}. Please update the global binary or configure 'zenzic.executablePath'.`,
-                'Update with uv',
-                'Configure Path',
-                'Open Docs'
+            statusBarItem!.tooltip = createErrorTooltip(
+                'Zenzic: Outdated Core',
+                resolvedPath,
+                `Zenzic Core v${MIN_CORE_VERSION} or higher required (found v${versionResult.version}).`
             );
-            if (action === 'Update with uv') {
-                const terminal = vscode.window.createTerminal('Zenzic Update');
-                terminal.show();
-                terminal.sendText('uv tool install --force zenzic', true);
-            } else if (action === 'Configure Path') {
-                vscode.commands.executeCommand('workbench.action.openSettings', 'zenzic.executablePath');
-            } else if (action === 'Open Docs') {
-                vscode.env.openExternal(vscode.Uri.parse(
-                    'https://github.com/PythonWoods/zenzic-vscode#requirements'
-                ));
-            }
+            const prompt = async () => {
+                const action = await vscode.window.showErrorMessage(
+                    `Zenzic extension requires Zenzic Core v${MIN_CORE_VERSION} or higher. ` +
+                    `Found v${versionResult.version}. Please update the global binary or configure 'zenzic.executablePath'.`,
+                    'Update with uv',
+                    'Configure Path',
+                    'Open Docs'
+                );
+                if (action === 'Update with uv') {
+                    const terminal = vscode.window.createTerminal('Zenzic Update');
+                    terminal.show();
+                    terminal.sendText('uv tool install --force zenzic', true);
+                } else if (action === 'Configure Path') {
+                    vscode.commands.executeCommand('workbench.action.openSettings', 'zenzic.executablePath');
+                } else if (action === 'Open Docs') {
+                    vscode.env.openExternal(vscode.Uri.parse(
+                        'https://github.com/PythonWoods/zenzic-vscode#requirements'
+                    ));
+                }
+            };
+            lastErrorPrompt = prompt;
+            await prompt();
             return;
         }
 
         if (versionResult.status === 'error') {
             statusBarItem!.text = '$(error) Zenzic: Version Error';
-            statusBarItem!.tooltip = `Failed to verify Zenzic Core version: ${versionResult.error}`;
-            vscode.window.showErrorMessage(
-                `Could not verify Zenzic Core version: ${versionResult.error}`
+            statusBarItem!.tooltip = createErrorTooltip(
+                'Zenzic: Version Check Error',
+                resolvedPath,
+                versionResult.error || 'Unknown error'
             );
+            const prompt = async () => {
+                vscode.window.showErrorMessage(
+                    `Could not verify Zenzic Core version: ${versionResult.error}`
+                );
+            };
+            lastErrorPrompt = prompt;
+            await prompt();
             return;
         }
 
@@ -327,33 +579,34 @@ export async function activate(context: vscode.ExtensionContext) {
             // Displaying a misleading score violates the Determinism invariant.
             // The authoritative DQS is produced exclusively by `zenzic check all`.
 
-            // LSP-OBS-002: Status Bar Versioning.
+            // LSP-OBS-002: Status Bar Versioning & Telemetry Tooltip.
             // Read the Core Engine version from the LSP serverInfo payload
             // (InitializeResult.serverInfo.version) — populated by the server
             // during the initialize handshake.  Radical Unawareness is preserved:
             // the Core provides data; the Client decides how to render it in the UI.
             const coreVersion = client.initializeResult?.serverInfo?.version;
             statusBarItem!.text = '$(check) Zenzic: Running';
-            const tipLines = [
-                '**Zenzic Language Server** is running.',
-                '',
-                coreVersion ? `Core: \`v${coreVersion}\`` : 'Core: version unknown',
-                `Binary: \`${resolvedPath}\``,
-            ];
-            const tip = new vscode.MarkdownString(tipLines.join('  \n'), true);
-            tip.isTrusted = true;
-            statusBarItem!.tooltip = tip;
+            statusBarItem!.tooltip = createSuccessTooltip(coreVersion, resolvedPath);
+            lastErrorPrompt = undefined;
         } catch (err: unknown) {
             // A1 fix: err is unknown; narrow to Error before accessing .message to
             // avoid producing "Error: undefined" when a non-Error value is thrown.
             const message = err instanceof Error ? err.message : String(err);
             statusBarItem!.text = '$(error) Zenzic: Error';
-            statusBarItem!.tooltip = 'Zenzic Language Server failed to start';
-            vscode.window.showErrorMessage(
-                `Failed to start Zenzic LSP. Please ensure zenzic is installed ` +
-                `(e.g., 'uv tool install zenzic') or set the correct path in ` +
-                `'zenzic.executablePath'. Error: ${message}`
+            statusBarItem!.tooltip = createErrorTooltip(
+                'Zenzic: Language Server Failed to Start',
+                resolvedPath,
+                message
             );
+            const prompt = async () => {
+                vscode.window.showErrorMessage(
+                    `Failed to start Zenzic LSP. Please ensure zenzic is installed ` +
+                    `(e.g., 'uv tool install zenzic') or set the correct path in ` +
+                    `'zenzic.executablePath'. Error: ${message}`
+                );
+            };
+            lastErrorPrompt = prompt;
+            await prompt();
         }
     };
 
@@ -384,10 +637,223 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     };
 
+    const showStatus = async () => {
+        if (lastErrorPrompt) {
+            await lastErrorPrompt();
+            return;
+        }
+
+        const items: vscode.QuickPickItem[] = [
+            {
+                label: '$(sync) Restart Language Server',
+                description: 'Restart the LSP background process and re-analyze workspace'
+            },
+            {
+                label: '$(tools) Run Troubleshoot Wizard',
+                description: 'Perform an automated health check on the Zenzic environment'
+            },
+            {
+                label: '$(symbol-numeric) Compute Global DQS',
+                description: 'Calculate overall workspace Documentation Quality Score'
+            },
+            {
+                label: '$(gear) Open Settings',
+                description: 'Configure zenzic.executablePath, autoProvision, and trace'
+            },
+            {
+                label: '$(book) Open Documentation',
+                description: 'Read the official Zenzic extension and rule guides'
+            }
+        ];
+
+        const selected = await vscode.window.showQuickPick(items, {
+            placeHolder: 'Zenzic Language Server Actions'
+        });
+
+        if (!selected) {
+            return;
+        }
+
+        if (selected.label.includes('Restart Language Server')) {
+            await restartServer();
+        } else if (selected.label.includes('Run Troubleshoot Wizard')) {
+            await troubleshoot();
+        } else if (selected.label.includes('Compute Global DQS')) {
+            await computeDQS();
+        } else if (selected.label.includes('Open Settings')) {
+            vscode.commands.executeCommand('workbench.action.openSettings', 'zenzic');
+        } else if (selected.label.includes('Open Documentation')) {
+            vscode.env.openExternal(vscode.Uri.parse('https://github.com/PythonWoods/zenzic-vscode#readme'));
+        }
+    };
+
+    const troubleshoot = async () => {
+        const config = vscode.workspace.getConfiguration('zenzic');
+        const executablePath = config.get<string>('executablePath') || 'zenzic';
+        const isAutoProvision = config.get<boolean>('autoProvision') ?? true;
+        const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+        const isCustomPath = executablePath.trim() !== '' && executablePath.trim() !== 'zenzic';
+
+        interface TroubleshootingActionItem extends vscode.QuickPickItem {
+            execute?: () => Promise<void>;
+        }
+
+        const items: TroubleshootingActionItem[] = [];
+
+        // 1. Custom Path Check
+        if (isCustomPath) {
+            const resolvedCustom = await resolveExecutablePath(executablePath, workspaceRoot);
+            if (resolvedCustom) {
+                items.push({
+                    label: '$(check) Custom Executable Path: Valid',
+                    description: executablePath,
+                    detail: `Resolved to: ${resolvedCustom}`
+                });
+            } else {
+                items.push({
+                    label: '$(error) Custom Executable Path: Not Found',
+                    description: executablePath,
+                    detail: 'Click to clear this setting and allow Auto-Provisioning to take over.',
+                    execute: async () => {
+                        await clearExecutablePathSetting();
+                        vscode.window.showInformationMessage('Custom path cleared. Restarting server...');
+                        await restartServer();
+                    }
+                });
+            }
+        } else {
+            items.push({
+                label: '$(info) Custom Executable Path: Not Set',
+                description: 'Using standard auto-detection / auto-provisioning',
+                detail: 'Default executable name: "zenzic"'
+            });
+        }
+
+        // 2. System PATH & Fallback Check
+        const resolvedSystem = await resolveExecutablePath('zenzic', workspaceRoot);
+        if (resolvedSystem) {
+            items.push({
+                label: '$(check) System PATH Zenzic: Detected',
+                description: resolvedSystem,
+                detail: 'Zenzic executable is available on system PATH or fallback directory.'
+            });
+        } else {
+            items.push({
+                label: '$(warning) System PATH Zenzic: Not Found',
+                description: 'zenzic is not on system $PATH',
+                detail: 'Install globally via `uv tool install zenzic` or use auto-provisioning.'
+            });
+        }
+
+        // 3. Auto-Provisioning Environment Check
+        const envDir = path.join(context.globalStorageUri.fsPath, 'env');
+        const provisionedEnv = process.platform === 'win32'
+            ? path.join(envDir, 'Scripts', 'zenzic.exe')
+            : path.join(envDir, 'bin', 'zenzic');
+
+        let provisionedFound = false;
+        try {
+            await fs.promises.access(provisionedEnv, fs.constants.X_OK);
+            provisionedFound = true;
+        } catch { /* not present */ }
+
+        if (provisionedFound) {
+            items.push({
+                label: '$(check) Auto-Provisioned Engine: Ready',
+                description: provisionedEnv,
+                detail: 'Isolated environment created and ready in global extension storage.'
+            });
+        } else {
+            items.push({
+                label: isAutoProvision ? '$(info) Auto-Provisioned Engine: Not Installed' : '$(warning) Auto-Provisioning: Disabled',
+                description: isAutoProvision ? 'Will install on demand if needed' : 'zenzic.autoProvision is set to false',
+                detail: isAutoProvision
+                    ? 'Click to force immediate engine provisioning in isolated storage.'
+                    : 'Click to re-enable zenzic.autoProvision in settings.',
+                execute: isAutoProvision
+                    ? async () => {
+                        vscode.window.showInformationMessage('Provisioning Zenzic engine...');
+                        await restartServer();
+                    }
+                    : async () => {
+                        const inspection = config.inspect<boolean>('autoProvision');
+                        const target = inspection?.workspaceValue !== undefined
+                            ? vscode.ConfigurationTarget.Workspace
+                            : vscode.ConfigurationTarget.Global;
+                        await config.update('autoProvision', true, target);
+                        vscode.window.showInformationMessage('Auto-provisioning enabled. Restarting server...');
+                        await restartServer();
+                    }
+            });
+        }
+
+        // 4. Active Engine Version Check
+        const targetPath = activeZenzicPath ?? resolvedSystem ?? (provisionedFound ? provisionedEnv : undefined);
+        if (targetPath) {
+            const versionResult = await checkCoreVersion(targetPath);
+            if (versionResult.status === 'ok') {
+                items.push({
+                    label: `$(check) Core Version: v${versionResult.version}`,
+                    description: `Satisfies >= v${MIN_CORE_VERSION}`,
+                    detail: `Target binary: ${targetPath}`
+                });
+            } else if (versionResult.status === 'outdated') {
+                items.push({
+                    label: `$(error) Core Version Outdated: v${versionResult.version}`,
+                    description: `Requires >= v${MIN_CORE_VERSION}`,
+                    detail: 'Click to update the global binary via terminal.',
+                    execute: async () => {
+                        const terminal = vscode.window.createTerminal('Zenzic Update');
+                        terminal.show();
+                        terminal.sendText('uv tool install --force zenzic', true);
+                    }
+                });
+            } else {
+                items.push({
+                    label: '$(warning) Core Version: Check Failed',
+                    description: versionResult.error,
+                    detail: `Target binary: ${targetPath}`
+                });
+            }
+        }
+
+        // General Actions
+        items.push({
+            label: '$(sync) Restart Language Server',
+            detail: 'Reload configuration and re-initialize LSP connection.',
+            execute: async () => {
+                await restartServer();
+            }
+        });
+
+        items.push({
+            label: '$(gear) Configure Settings',
+            detail: 'Open VS Code settings for Zenzic.',
+            execute: async () => {
+                await vscode.commands.executeCommand('workbench.action.openSettings', 'zenzic');
+            }
+        });
+
+        const selected = await vscode.window.showQuickPick(items, {
+            placeHolder: 'Zenzic Environment Diagnostic & Self-Healing Wizard'
+        });
+
+        if (selected?.execute) {
+            try {
+                await selected.execute();
+            } catch (err: unknown) {
+                const message = err instanceof Error ? err.message : String(err);
+                vscode.window.showErrorMessage(`Troubleshoot action failed: ${message}`);
+            }
+        }
+    };
+
     context.subscriptions.push(
         vscode.commands.registerCommand('zenzic.restartServer', restartServer),
         vscode.commands.registerCommand('zenzic.startServer', startServer),
-        vscode.commands.registerCommand('zenzic.stopServer', stopServer)
+        vscode.commands.registerCommand('zenzic.stopServer', stopServer),
+        vscode.commands.registerCommand('zenzic.showStatus', showStatus),
+        vscode.commands.registerCommand('zenzic.troubleshoot', troubleshoot)
     );
 
     // ECOSYSTEM-FEAT-002: zenzic.computeDQS
@@ -407,7 +873,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
         const config = vscode.workspace.getConfiguration('zenzic');
         const executablePath = config.get<string>('executablePath') || 'zenzic';
-        const resolvedPath = await resolveExecutablePath(executablePath, workspaceRoot);
+        // Prefer the cached active path (covers provisioned env binaries that
+        // are not on the system PATH); fall back to a fresh PATH scan.
+        const resolvedPath = activeZenzicPath ?? await resolveExecutablePath(executablePath, workspaceRoot);
 
         if (!resolvedPath) {
             dqsStatusBarItem.text = '$(error) Zenzic DQS: Not Found';

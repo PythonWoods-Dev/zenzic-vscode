@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 [tool.bumpversion]
-current_version = "0.29.1"
+current_version = "0.30.0"
 parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
 serialize = ["{major}.{minor}.{patch}"]
 commit = true
@@ -51,3 +51,8 @@ replace = 'git tag -s -m "Release v{new_version}" v{new_version}'
 filename = "RELEASE.md"
 search = "git push origin v{current_version}"
 replace = "git push origin v{new_version}"
+
+[[tool.bumpversion.files]]
+filename = ".github/ISSUE_TEMPLATE/bug_report.yml"
+search = 'placeholder: "{current_version}"'
+replace = 'placeholder: "{new_version}"'

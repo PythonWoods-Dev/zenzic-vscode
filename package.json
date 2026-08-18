@@ -1,8 +1,8 @@
 {
   "name": "zenzic-vscode",
   "displayName": "Zenzic",
-  "description": "Deterministic Document Integrity Engine for Markdown/MDX graphs in VS Code.",
-  "version": "0.29.1",
+  "description": "Deterministic Documentation Quality Platform (DQP) for Markdown/MDX graphs in VS Code.",
+  "version": "0.30.0",
   "publisher": "pythonwoods",
   "engines": {
     "vscode": "^1.125.0"
@@ -48,6 +48,14 @@
       {
         "command": "zenzic.computeDQS",
         "title": "Zenzic: Compute Global DQS"
+      },
+      {
+        "command": "zenzic.showStatus",
+        "title": "Zenzic: Show Status / Recovery"
+      },
+      {
+        "command": "zenzic.troubleshoot",
+        "title": "Zenzic: Troubleshoot & Repair Setup"
       }
     ],
     "configuration": {
@@ -58,6 +66,11 @@
           "type": "string",
           "default": "zenzic",
           "description": "Path to the Zenzic executable or virtual environment binary. Supports ${workspaceFolder} and leading ~/ or ~\\."
+        },
+        "zenzic.autoProvision": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically install the Zenzic CLI engine in an isolated environment (using uv or python3 venv) if it is not found on your system or at the configured path. No changes are made to your system Python, PATH, or shell configuration."
         }
       }
     }
@@ -66,7 +79,8 @@
     "vscode:prepublish": "node esbuild.js --production",
     "build": "node esbuild.js",
     "watch": "node esbuild.js --watch",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "package": "npm run build && npx @vscode/vsce package"
   },
   "dependencies": {
     "vscode-languageclient": "^10.1.0"

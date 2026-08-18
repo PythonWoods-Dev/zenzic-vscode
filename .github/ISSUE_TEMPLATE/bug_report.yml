@@ -1,0 +1,89 @@
+# SPDX-FileCopyrightText: 2026 PythonWoods <dev@pythonwoods.dev>
+# SPDX-License-Identifier: Apache-2.0
+
+name: Bug Report
+description: Report unexpected behaviour or errors in the Zenzic VS Code Extension.
+title: "fix(vscode): <short description>"
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting an issue with the Zenzic VS Code Extension.
+        Please provide the following details to help us investigate and reproduce the problem.
+
+  - type: input
+    id: extension_version
+    attributes:
+      label: Extension version
+      description: Found in the VS Code Extensions panel or Status Bar tooltip
+      placeholder: "0.30.0"
+    validations:
+      required: true
+
+  - type: input
+    id: zenzic_version
+    attributes:
+      label: Zenzic Core version
+      description: Output of `zenzic --version` or from Status Bar tooltip
+      placeholder: "0.30.0"
+    validations:
+      required: true
+
+  - type: input
+    id: vscode_version
+    attributes:
+      label: VS Code version
+      description: From Help -> About in VS Code
+      placeholder: "1.125.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Linux
+        - macOS
+        - Windows
+      multiple: false
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description of the bug
+      description: What happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: How can we reproduce this behavior?
+      placeholder: |
+        1. Open folder '...'
+        2. Set 'zenzic.executablePath' to '...'
+        3. See error '...'
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+      description: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: output_logs
+    attributes:
+      label: Output logs
+      description: Paste relevant logs from Output -> "Zenzic Language Server" channel if available.
+      render: text
+    validations:
+      required: false
