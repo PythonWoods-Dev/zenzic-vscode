@@ -199,3 +199,9 @@ Zenzic provides a unified quality platform across your entire development lifecy
 
 Licensed under the [Apache License, Version 2.0](LICENSE).
 Copyright (c) 2026 PythonWoods `<dev@pythonwoods.dev>`.
+
+---
+
+## Legal Disclaimer
+
+*Visual Studio Code, VS Code, and the Visual Studio Code logo are trademarks of Microsoft Corporation. Zenzic and the `zenzic-vscode` extension are independent, open-source projects and are not affiliated with, endorsed by, or sponsored by Microsoft Corporation.*
