@@ -6,8 +6,8 @@ SPDX-License-Identifier: Apache-2.0
 <p align="center">
   <a href="https://github.com/PythonWoods/zenzic-vscode">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="assets/zenzic-wordmark-vscode-dark.svg">
-      <img alt="Zenzic / vscode" src="assets/zenzic-wordmark-vscode.svg" width="350">
+      <source media="(prefers-color-scheme: light)" srcset="./assets/zenzic-wordmark-vscode.png">
+      <img alt="Zenzic / vscode" src="./assets/zenzic-wordmark-vscode-dark.png" width="350">
     </picture>
   </a>
 </p>
