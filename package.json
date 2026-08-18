@@ -1,7 +1,7 @@
 {
   "name": "zenzic-vscode",
   "displayName": "Zenzic",
-  "description": "Deterministic Document Integrity Engine for Markdown/MDX graphs in VS Code.",
+  "description": "Deterministic Documentation Quality Platform (DQP) for Markdown/MDX graphs in VS Code.",
   "version": "0.30.0",
   "publisher": "pythonwoods",
   "engines": {
