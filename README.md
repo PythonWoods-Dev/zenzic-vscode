@@ -4,7 +4,12 @@ SPDX-License-Identifier: Apache-2.0
 -->
 
 <p align="center">
-  <img src="images/logo.png" width="128" alt="Zenzic Logo">
+  <a href="https://github.com/PythonWoods/zenzic-vscode">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="assets/zenzic-wordmark-vscode-dark.svg">
+      <img alt="Zenzic / vscode" src="assets/zenzic-wordmark-vscode.svg" width="350">
+    </picture>
+  </a>
 </p>
 
 <h1 align="center">Zenzic: Real-Time Documentation Quality Platform (DQP) for VS Code</h1>
