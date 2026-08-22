@@ -16,8 +16,8 @@ SPDX-License-Identifier: Apache-2.0
 <h1 align="center">Zenzic: Real-Time Documentation Quality Platform (DQP) for VS Code</h1>
 
 <p align="center">
-  <strong>Real-time graph validation, secret leak detection, and automated quick fixes directly in your editor.</strong><br>
-  <em>Instant Language Server diagnostics, one-click AST Quick Fixes, and continuous Documentation Quality Scoring (DQS).</em>
+  <strong>Formatters handle syntax. Prose linters handle grammar. Zenzic protects the graph—and optionally enforces lightweight editorial policy without a separate tool.</strong><br>
+  <em>Instant Language Server diagnostics for Specification-Driven Development (SDD), real-time table contract validation, AST Quick Fixes, and continuous DQS scoring.</em>
 </p>
 
 <p align="center">
@@ -37,9 +37,9 @@ SPDX-License-Identifier: Apache-2.0
 
 ---
 
-## Documentation Quality Platform in Your Editor
+## Protect the Documentation Graph as You Write
 
-Writing technical documentation requires continuous verification. **Zenzic for VS Code** integrates the **Documentation Quality Platform (DQP)** directly into your editor, evaluating cross-file Markdown and MDX reference graphs, structural topology, accessibility constraints, and credential security in real time.
+Writing technical specifications requires real-time integrity verification. **Zenzic for VS Code** integrates the **Documentation Quality Platform (DQP)** directly into your editor, evaluating Markdown & MDX table schemas, cross-file reference graphs, structural topology, accessibility rules, and credential leaks in real time.
 
 <p align="center">
   <img src="assets/demo.gif" alt="Zenzic VS Code Demo" width="100%">
