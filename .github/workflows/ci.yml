@@ -18,19 +18,48 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Determine Zenzic Core Branch (Parity or Fallback)
+        id: resolve-branch
+        shell: bash
+        env:
+          ZENZIC_CORE_REF: ${{ vars.ZENZIC_CORE_REF }}
+        run: |
+          TARGET_BRANCH="${{ github.base_ref || github.ref_name }}"
+          echo "Target branch is: $TARGET_BRANCH"
+          if [[ -n "${ZENZIC_CORE_REF:-}" ]]; then
+            echo "Explicit core ref override: $ZENZIC_CORE_REF"
+            echo "core_ref=$ZENZIC_CORE_REF" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          if git ls-remote --exit-code --heads https://github.com/PythonWoods/zenzic.git "$TARGET_BRANCH" > /dev/null 2>&1; then
+            echo "Branch $TARGET_BRANCH exists in core. Using it."
+            echo "core_ref=$TARGET_BRANCH" >> $GITHUB_OUTPUT
+          else
+            echo "Branch $TARGET_BRANCH not found in core. Falling back to main."
+            echo "core_ref=main" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout Zenzic Core (Sovereign Resolution)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: PythonWoods/zenzic
+          ref: ${{ steps.resolve-branch.outputs.core_ref }}
+          path: _zenzic_core
+          fetch-tags: true
 
       - name: Install just
-        uses: taiki-e/install-action@just
+        uses: taiki-e/install-action@e1ad73d8df9252ed26a05bad034abe5444e7ad28 # just
 
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: '24'
           cache: 'npm'
 
-      - name: Setup uv (for REUSE compliance tool)
-        uses: astral-sh/setup-uv@v7
+      - name: Setup uv (for REUSE compliance tool and Zenzic gate)
+        uses: astral-sh/setup-uv@94527f2e458b27549849d47d273a16bec83a01e9 # v7
         with:
           enable-cache: true
 
@@ -41,13 +70,15 @@ jobs:
         run: npm ci
 
       - name: Run Quality Gates
+        env:
+          ZENZIC_CORE_PATH: _zenzic_core
         run: just verify
 
       - name: Test VSIX Packaging
         run: npx @vscode/vsce package
 
       - name: Upload VSIX Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: zenzic-vscode-extension
           path: "*.vsix"

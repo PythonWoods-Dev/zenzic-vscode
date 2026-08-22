@@ -17,7 +17,7 @@ package:
 	npm run build
 	npx @vscode/vsce package
 
-verify:
+verify: check
 	npm run lint
 	npx tsc --noEmit
 	@if ! command -v reuse > /dev/null 2>&1; then \
@@ -25,6 +25,53 @@ verify:
 		exit 1; \
 	fi
 	reuse lint
+
+# Run the Zenzic quality gate on extension documentation.
+# Shared sovereign model (family repos):
+#   1) explicit override via ZENZIC_CORE_PATH
+#   2) CI topology at ./_zenzic_core
+#   3) sibling dev topology at ../zenzic
+# Fail-closed policy is mandatory: PyPI fallback is prohibited.
+# ZRT-010 — Sovereign Parity: local == CI.
+check:
+	#!/usr/bin/env bash
+	set -euo pipefail
+	CORE_PATH=""
+	CHECKED=()
+
+	if [[ -n "${ZENZIC_CORE_PATH:-}" ]]; then
+		CHECKED+=("ZENZIC_CORE_PATH -> ${ZENZIC_CORE_PATH}")
+		if [[ -d "${ZENZIC_CORE_PATH}/src/zenzic" ]]; then
+			CORE_PATH="${ZENZIC_CORE_PATH}"
+		fi
+	fi
+
+	if [[ -z "$CORE_PATH" ]]; then
+		CHECKED+=("_zenzic_core -> _zenzic_core")
+		if [[ -d "_zenzic_core/src/zenzic" ]]; then
+			CORE_PATH="_zenzic_core"
+		fi
+	fi
+
+	if [[ -z "$CORE_PATH" ]]; then
+		CHECKED+=("../zenzic -> ../zenzic")
+		if [[ -d "../zenzic/src/zenzic" ]]; then
+			CORE_PATH="../zenzic"
+		fi
+	fi
+
+	if [[ -z "$CORE_PATH" ]]; then
+		echo "❌ [Zenzic] Core repository not found in sovereign search order." >&2
+		echo "Required precedence: ZENZIC_CORE_PATH -> ./_zenzic_core -> ../zenzic" >&2
+		echo "Each candidate must contain src/zenzic." >&2
+		echo "Checked: ${CHECKED[*]}" >&2
+		echo "Fail-closed policy active: PyPI fallback is prohibited." >&2
+		exit 2
+	fi
+
+	echo "🛡️  [Zenzic] Local core detected. Using: $CORE_PATH"
+	uv run --project "$CORE_PATH" zenzic check all --strict --no-header
+
 
 release part core_version:
 	#!/usr/bin/env bash
