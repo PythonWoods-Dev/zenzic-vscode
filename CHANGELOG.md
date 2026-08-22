@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+*Upcoming changes for the next release.*
+
 ### Added
 
 - **Specification-Driven Development (SDD) IntelliSense & Schema Support**:
