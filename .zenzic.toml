@@ -20,10 +20,7 @@ fail_under = 100
 # exit_zero = false
 # respect_vcs_ignore = true
 
-excluded_external_urls = [
-    # VS Code Marketplace URL — extension not yet published, URL returns 404 until first release.
-    "https://marketplace.visualstudio.com/items?itemName=pythonwoods.zenzic-vscode",
-]
+excluded_external_urls = []
 
 # --- EXCLUSION ZONES (Full bypass — use sparingly) ---
 # Paths listed here are INVISIBLE to Zenzic: no findings, no audit trail.
@@ -70,10 +67,6 @@ brand_obsolescence = [
 # BEHAVIOR: Matched findings are silently dropped — ZERO debt added.
 #
 [governance.directory_policies]
-# README.md: external badge links (Z101), marketplace URL not yet live (Z101),
-# missing demo.gif placeholder (Z104 — asset not yet created),
-# feature/settings headings that organize via sub-headings, not prose (Z512).
-"README.md"          = ["Z101", "Z104", "Z512"]
 # changelogs: historical entries — heading-only versions (Z512), long sentences
 # from release notes (Z511), topological dead-ends (Z410/Z411), editorial (Z513).
 "changelogs/**"      = ["Z410", "Z411", "Z512", "Z513", "Z511"]

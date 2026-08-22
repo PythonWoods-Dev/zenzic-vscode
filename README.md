@@ -21,16 +21,10 @@ SPDX-License-Identifier: Apache-2.0
 </p>
 
 <p align="center">
-  <a href="https://marketplace.visualstudio.com/items?itemName=pythonwoods.zenzic-vscode">
-    <img src="https://img.shields.io/visual-studio-marketplace/v/pythonwoods.zenzic-vscode?style=flat-square&label=VS%20Code%20Marketplace&color=38bdf8" alt="Visual Studio Marketplace Version">
+  <a href="https://github.com/PythonWoods/zenzic-vscode/releases">
+    <img src="https://img.shields.io/github/v/release/PythonWoods/zenzic-vscode?style=flat-square&label=GitHub%20Release&color=38bdf8" alt="GitHub Release">
   </a>
-  <a href="https://marketplace.visualstudio.com/items?itemName=pythonwoods.zenzic-vscode">
-    <img src="https://img.shields.io/visual-studio-marketplace/i/pythonwoods.zenzic-vscode?style=flat-square&color=4f46e5&label=installs" alt="Marketplace Installs">
-  </a>
-  <a href="https://marketplace.visualstudio.com/items?itemName=pythonwoods.zenzic-vscode">
-    <img src="https://img.shields.io/visual-studio-marketplace/r/pythonwoods.zenzic-vscode?style=flat-square&color=f59e0b" alt="Rating">
-  </a>
-  <a href="LICENSE">
+  <a href="https://opensource.org/licenses/Apache-2.0">
     <img src="https://img.shields.io/badge/license-Apache--2.0-0d9488?style=flat-square" alt="License">
   </a>
 </p>
@@ -40,10 +34,6 @@ SPDX-License-Identifier: Apache-2.0
 ## Protect the Documentation Graph as You Write
 
 Writing technical specifications requires real-time integrity verification. **Zenzic for VS Code** integrates the **Documentation Quality Platform (DQP)** directly into your editor, evaluating Markdown & MDX table schemas, cross-file reference graphs, structural topology, accessibility rules, and credential leaks in real time.
-
-<p align="center">
-  <img src="assets/demo.gif" alt="Zenzic VS Code Demo" width="100%">
-</p>
 
 - **Instant Visual Feedback**: See inline squiggly underlines (red for critical errors, yellow for warnings) the exact millisecond a defect is introduced.
 - **One-Click Quick Fixes (`Ctrl+.` / `Cmd+.`)**: Automatically repair bare URLs, invalid heading punctuation, malformed lists, untagged code blocks, and dead suppressions via the Atomic Mutator.
@@ -109,6 +99,8 @@ You will immediately see:
 
 ## 🎯 Key Features at a Glance
 
+Zenzic for VS Code delivers comprehensive documentation intelligence directly inside the editor:
+
 ### 1. Real-Time Link & Asset Validation
 Move a file or rename a heading in one document, and Zenzic's Virtual Site Map (VSM) instantly flags broken cross-references and orphan pages across your entire workspace without saving or rebuilding.
 
@@ -137,6 +129,8 @@ Need a temporary strategic exception? Press `Ctrl+.` on any finding to insert an
 ---
 
 ## ⚙️ Extension Settings & Commands
+
+Customize language client execution and invoke extension commands through standard VS Code workflows:
 
 ### Settings
 
@@ -198,7 +192,7 @@ Zenzic provides a unified quality platform across your entire development lifecy
 
 ## 📄 License
 
-Licensed under the [Apache License, Version 2.0](LICENSE).
+Licensed under the [Apache License, Version 2.0](https://opensource.org/licenses/Apache-2.0).
 Copyright (c) 2026 PythonWoods `<dev@pythonwoods.dev>`.
 
 ---
