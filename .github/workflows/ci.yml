@@ -77,6 +77,18 @@ jobs:
       - name: Test VSIX Packaging
         run: npx @vscode/vsce package
 
+      - name: Guard VSIX Package Size
+        shell: bash
+        run: |
+          VSIX_FILE=$(find . -maxdepth 1 -name '*.vsix' -print -quit)
+          SIZE_BYTES=$(stat -c%s "$VSIX_FILE")
+          MAX_BYTES=$((5 * 1024 * 1024))
+          echo "VSIX package: $VSIX_FILE ($SIZE_BYTES bytes)"
+          if [[ "$SIZE_BYTES" -gt "$MAX_BYTES" ]]; then
+            echo "::error::VSIX package is $SIZE_BYTES bytes, exceeding the $MAX_BYTES byte ceiling. A stray checkout, dependency, or build artifact is likely bundled — check .vscodeignore." >&2
+            exit 1
+          fi
+
       - name: Upload VSIX Artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
