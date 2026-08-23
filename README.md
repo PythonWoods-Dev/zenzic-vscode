@@ -91,7 +91,7 @@ See our [guide](missing-page.md) or visit https://zenzic.dev
 ```
 
 You will immediately see:
-1. **Red underline** on `missing-page.md` (`Z104: File Not Found`).
+1. **Red underline** on `missing-page.md` (`Z101: Link Broken` — cataloged as `Z104: File Not Found`, but the current engine reports missing-file links under the consolidated `Z101` code).
 2. **Yellow underline** on `https://zenzic.dev` (`Z515: Bare URL Used`).
 3. Press **`Ctrl+.`** (or **`Cmd+.`** on macOS) on the bare URL to automatically format it into `<https://zenzic.dev>`.
 
