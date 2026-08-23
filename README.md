@@ -174,7 +174,8 @@ Zenzic for VS Code is designed with strict adherence to the **Thin Client Archit
 The extension itself contains zero parsing logic, zero regex matching engines, and zero hardcoded validation rules. Instead, it acts as a high-performance Language Server Protocol (LSP) client that communicates directly with the local `zenzic` Python binary via JSON-RPC over standard input/output (`stdio`).
 
 This architecture guarantees:
-- **100% Behavioral Parity**: Diagnostics, finding codes, and auto-fixes in your editor match your local CLI runs and CI/CD pipelines bit-for-bit.
+
+- **Shared Engine, Shared Rules**: the extension runs the same rule engine, config loader, and adapter resolution as your local CLI and CI/CD pipeline — diagnostics and finding codes come from one Core, not a reimplementation in the extension. Topology detection (orphan/dead-end pages) is the one area where the LSP and the CLI currently use two independent algorithms rather than one shared primitive; see the Core's [`CHANGELOG.md` Known Limitations](https://github.com/PythonWoods/zenzic/blob/main/CHANGELOG.md#unreleased) for details.
 - **Zero Editor Bloat**: All AST indexing, Virtual Site Map graph updates, and regex computations execute in the compiled Python core, keeping VS Code lightweight and responsive.
 - **Instant Engine Upgrades**: Upgrading the `zenzic` CLI immediately equips the VS Code extension with all newly released rules and mutations without waiting for extension marketplace releases.
 
