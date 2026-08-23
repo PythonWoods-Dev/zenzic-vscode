@@ -8,5 +8,8 @@ dist/
 .zenzic_cache/
 example/
 
+# CI-only Zenzic Core checkout (sovereign parity dogfooding, see justfile `check`)
+_zenzic_core/
+
 # AI Control Plane — never commit to version control
 .gemini/
