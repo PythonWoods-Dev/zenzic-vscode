@@ -516,7 +516,7 @@
     },
     "absolute_path_allowlist": {
       "default": [],
-      "description": "List of absolute path prefixes allowed in links. Absolute path links matching any pattern in this list do not trigger Z105. If an entry in this list is never matched by any scanned absolute path link, it is reported as Z110 STALE_ALLOWLIST_ENTRY.",
+      "description": "List of absolute path prefixes allowed in links. Absolute path links matching any pattern in this list do not trigger Z105. If an entry in this list is never matched by any scanned absolute path link, it is reported as Z112 STALE_ALLOWLIST_ENTRY.",
       "items": {
         "type": "string"
       },
