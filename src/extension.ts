@@ -13,6 +13,7 @@ import {
     Executable
 } from 'vscode-languageclient/node';
 import { ensureZenzicEngine } from './provisioning';
+import { showQualityPanel, updateQualityPanel, QualityPanelReport } from './qualityPanel';
 
 // A4 fix: typed as | undefined — initialized in activate(), disposed via subscriptions.
 let client: LanguageClient | undefined;
@@ -25,6 +26,10 @@ let restarting = false;
 // covering the case where the binary lives in the extension's isolated
 // globalStorageUri environment (not on the system PATH).
 let activeZenzicPath: string | undefined;
+// Last successfully parsed `zenzic score --json` report — shared between the
+// DQS status bar item and the Quality Status webview panel so opening the
+// panel does not require a second, redundant subprocess call.
+let lastQualityReport: QualityPanelReport | undefined;
 
 const MIN_CORE_VERSION = '0.30.0';
 
@@ -657,6 +662,10 @@ export async function activate(context: vscode.ExtensionContext) {
                 description: 'Calculate overall workspace Documentation Quality Score'
             },
             {
+                label: '$(graph) Show Quality Status Panel',
+                description: 'Open the Quality Score / Suppression Cap / Baseline Freshness panel'
+            },
+            {
                 label: '$(gear) Open Settings',
                 description: 'Configure zenzic.executablePath, autoProvision, and trace'
             },
@@ -680,6 +689,8 @@ export async function activate(context: vscode.ExtensionContext) {
             await troubleshoot();
         } else if (selected.label.includes('Compute Global DQS')) {
             await computeDQS();
+        } else if (selected.label.includes('Show Quality Status Panel')) {
+            await showQualityStatusPanel();
         } else if (selected.label.includes('Open Settings')) {
             vscode.commands.executeCommand('workbench.action.openSettings', 'zenzic');
         } else if (selected.label.includes('Open Documentation')) {
@@ -913,12 +924,9 @@ export async function activate(context: vscode.ExtensionContext) {
                     }
 
                     try {
-                        const report = JSON.parse(raw) as {
-                            score: number;
-                            status: string;
-                            suppression_debt_pts?: number;
-                            categories?: Array<{ name: string; issues: number }>;
-                        };
+                        const report = JSON.parse(raw) as QualityPanelReport;
+                        lastQualityReport = report;
+                        updateQualityPanel(report);
 
                         const score = report.score ?? 0;
                         const status = report.status ?? 'unknown';
@@ -971,6 +979,22 @@ export async function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(
         vscode.commands.registerCommand('zenzic.computeDQS', computeDQS)
+    );
+
+    // ECOSYSTEM-FEAT-003: Quality Status Panel.
+    // Opens the webview with whatever report is cached from the last
+    // zenzic.computeDQS run; if none exists yet, triggers computeDQS once
+    // (the same bridge, not a second one) so the panel is never empty on
+    // first open.
+    const showQualityStatusPanel = async () => {
+        showQualityPanel(context, lastQualityReport, computeDQS);
+        if (!lastQualityReport) {
+            await computeDQS();
+        }
+    };
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('zenzic.showQualityPanel', showQualityStatusPanel)
     );
 
     context.subscriptions.push(
