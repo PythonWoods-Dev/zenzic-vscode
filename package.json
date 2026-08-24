@@ -50,6 +50,10 @@
         "title": "Zenzic: Compute Global DQS"
       },
       {
+        "command": "zenzic.showQualityPanel",
+        "title": "Zenzic: Show Quality Status Panel"
+      },
+      {
         "command": "zenzic.showStatus",
         "title": "Zenzic: Show Status / Recovery"
       },

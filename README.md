@@ -39,7 +39,7 @@ Writing technical specifications requires real-time integrity verification. **Ze
 - **One-Click Quick Fixes (`Ctrl+.` / `Cmd+.`)**: Automatically repair bare URLs, invalid heading punctuation, malformed lists, untagged code blocks, and dead suppressions via the Atomic Mutator.
 - **Zero-Latency Authoring**: Built on a pure-function Language Server Protocol (LSP) architecture with sub-50ms response times and zero editor lag.
 - **Security-First Protection**: Instantly flags accidental API tokens or secret keys before they hit your git history.
-- **Deterministic Quality Score (DQS)**: Turn documentation quality into a game. Watch your workspace score climb to 100/100 directly in the Status Bar as you fix issues.
+- **Deterministic Quality Score (DQS)**: Track your workspace's documentation quality score directly in the editor's Status Bar, computed on demand from the same deterministic engine used in CI.
 - **Zero-Config Installation**: No manual setup required. If the Zenzic CLI is not found, the extension automatically provisions an isolated engine — no changes to your system PATH or shell configuration.
 
 ---
@@ -148,6 +148,7 @@ The extension contributes the following commands (`Ctrl+Shift+P` / `Cmd+Shift+P`
 | :--- | :--- | :--- |
 | **Zenzic: Restart Server** | `zenzic.restartServer` | Restarts the Language Server and re-indexes all workspace documents. |
 | **Zenzic: Compute Global DQS** | `zenzic.computeDQS` | Executes on-demand global audit and updates the Status Bar score. |
+| **Zenzic: Show Quality Status Panel** | `zenzic.showQualityPanel` | Opens a WebView showing Quality Score, Suppression Cap Usage, and Baseline Freshness as governance metrics — reuses the same `zenzic score --json` result already fetched by `zenzic.computeDQS`, no additional process spawned. |
 | **Zenzic: Start Server** | `zenzic.startServer` | Starts the ZLS Language Server background process. |
 | **Zenzic: Stop Server** | `zenzic.stopServer` | Stops the Language Server process. |
 | **Zenzic: Show Status / Recovery** | `zenzic.showStatus` | Re-triggers error recovery dialogs or opens the quick action menu. |
