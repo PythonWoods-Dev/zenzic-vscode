@@ -953,7 +953,7 @@ export async function activate(context: vscode.ExtensionContext) {
                                 'Score is forced to 0/100 — Z201 is non-suppressible.',
                                 '',
                                 '⚠️  Rotate the exposed credential immediately.',
-                                'Reference: https://zenzic.dev/docs/reference/finding-codes#Z201',
+                                'Reference: https://zenzic.dev/reference/finding-codes/#z201',
                             ].join('\n');
                         } else {
                             const categoryLines = (report.categories ?? [])
