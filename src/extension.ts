@@ -12,7 +12,7 @@ import {
     ServerOptions,
     Executable
 } from 'vscode-languageclient/node';
-import { ensureZenzicEngine, MIN_CORE_VERSION } from './provisioning';
+import { ensureZenzicEngine } from './provisioning';
 import { showQualityPanel, updateQualityPanel, QualityPanelReport } from './qualityPanel';
 
 // A4 fix: typed as | undefined — initialized in activate(), disposed via subscriptions.
@@ -30,6 +30,8 @@ let activeZenzicPath: string | undefined;
 // DQS status bar item and the Quality Status webview panel so opening the
 // panel does not require a second, redundant subprocess call.
 let lastQualityReport: QualityPanelReport | undefined;
+
+const MIN_CORE_VERSION = '0.30.0';
 
 /**
  * Expand supported user-facing path variables in zenzic.executablePath.
