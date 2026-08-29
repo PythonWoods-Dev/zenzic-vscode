@@ -22,8 +22,8 @@ import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-/** Minimum Zenzic Core version required by this extension (mirrors extension.ts). */
-const MIN_CORE_VERSION = '0.30.0';
+/** Minimum Zenzic Core version required by this extension. */
+export const MIN_CORE_VERSION = '0.30.0';
 
 // ── Public types ──────────────────────────────────────────────────────────────
 
