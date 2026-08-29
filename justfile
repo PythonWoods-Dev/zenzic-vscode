@@ -107,10 +107,10 @@ versions:
 	#!/usr/bin/env bash
 	set -euo pipefail
 	PINNED=$(grep -oP '\*\*Pinned Core\*\* \| `zenzic>=\K[0-9.]+' RELEASE.md)
-	EXT_MIN=$(grep -oP "const MIN_CORE_VERSION = '\K[0-9.]+" src/extension.ts)
+	EXT_MIN=$(grep -oP "MIN_CORE_VERSION = '\K[0-9.]+" src/coreVersion.ts)
 	echo "extension:   $(uvx --from 'bump-my-version==1.2.6' bump-my-version show current_version)"
 	echo "core-pinned: $PINNED (RELEASE.md)"
-	echo "min-core-ts: $EXT_MIN (src/extension.ts)"
+	echo "min-core-ts: $EXT_MIN (src/coreVersion.ts)"
 
 audit-release:
 	#!/usr/bin/env bash
@@ -120,7 +120,7 @@ audit-release:
 	LOCK="$(grep -oP '"version":\s*"\K[0-9.]+' package-lock.json | head -n1)"
 	REL="$(grep -oP '\*\*Extension Version\*\* \| \K[0-9.]+' RELEASE.md)"
 	CORE_REL="$(grep -oP '\*\*Pinned Core\*\* \| `zenzic>=\K[0-9.]+' RELEASE.md)"
-	CORE_TS="$(grep -oP "const MIN_CORE_VERSION = '\K[0-9.]+" src/extension.ts)"
+	CORE_TS="$(grep -oP "MIN_CORE_VERSION = '\K[0-9.]+" src/coreVersion.ts)"
 	CORE_CONTRIB="$(grep -oP '\| \*\*Zenzic Core\*\* \| ≥ \K[0-9.]+' CONTRIBUTING.md)"
 	if [[ -z "$PKG" || -z "$LOCK" || -z "$REL" || -z "$CORE_REL" || -z "$CORE_TS" || -z "$CORE_CONTRIB" ]]; then
 		echo "audit-release failed: missing expected release/core markers"
@@ -132,8 +132,8 @@ audit-release:
 		exit 1
 	fi
 	if [[ "$CORE_REL" != "$CORE_TS" || "$CORE_REL" != "$CORE_CONTRIB" ]]; then
-		echo "audit-release failed: core pin mismatch (RELEASE/TS/CONTRIBUTING)"
-		echo "  RELEASE.md=$CORE_REL extension.ts=$CORE_TS CONTRIBUTING.md=$CORE_CONTRIB"
+		echo "audit-release failed: core pin mismatch (RELEASE/coreVersion.ts/CONTRIBUTING)"
+		echo "  RELEASE.md=$CORE_REL coreVersion.ts=$CORE_TS CONTRIBUTING.md=$CORE_CONTRIB"
 		exit 1
 	fi
 	grep -q "Zenzic Core v$CORE_REL or higher" README.md
@@ -156,11 +156,11 @@ _pin-core-apply version:
 	sed -i 's/minimum required Core version (`v[0-9.]*`)/minimum required Core version (`v{{version}}`)/g' README.md
 	sed -i 's/virtual environment containing Core `v[0-9.]*` or higher/virtual environment containing Core `v{{version}}` or higher/g' README.md
 	sed -i 's/| \*\*Pinned Core\*\* | .* |/| **Pinned Core** | `zenzic>={{version}}` |/' RELEASE.md
-	sed -i "s/\*\*Zenzic Core \`v[0-9.]*\`\*\* (\`MIN_CORE_VERSION = '[0-9.]*'\` in \`src\\/extension.ts\`)./**Zenzic Core \`v{{version}}\`** (\`MIN_CORE_VERSION = '{{version}}'\` in \`src\\/extension.ts\`)./g" CONTRIBUTING.md
+	sed -i "s/\*\*Zenzic Core \`v[0-9.]*\`\*\* (\`MIN_CORE_VERSION = '[0-9.]*'\` in \`src\\/coreVersion.ts\`)./**Zenzic Core \`v{{version}}\`** (\`MIN_CORE_VERSION = '{{version}}'\` in \`src\\/coreVersion.ts\`)./g" CONTRIBUTING.md
 	sed -i 's/| \*\*Zenzic Core\*\* | ≥ [0-9.]* |/| **Zenzic Core** | ≥ {{version}} |/' CONTRIBUTING.md
-	sed -i "s/const MIN_CORE_VERSION = '[0-9.]*';/const MIN_CORE_VERSION = '{{version}}';/g" src/extension.ts
+	sed -i "s/export const MIN_CORE_VERSION = '[0-9.]*';/export const MIN_CORE_VERSION = '{{version}}';/g" src/coreVersion.ts
 
-# Realign the Zenzic Core pin in README.md, RELEASE.md, CONTRIBUTING.md, and src/extension.ts.
+# Realign the Zenzic Core pin in README.md, RELEASE.md, CONTRIBUTING.md, and src/coreVersion.ts.
 # Usage: just pin-core <version>
 pin-core version:
 	#!/usr/bin/env bash
@@ -172,7 +172,7 @@ pin-core version:
 	fi
 	echo "Aligning Zenzic Core pin to {{version}}..."
 	just _pin-core-apply "{{version}}"
-	git add README.md RELEASE.md CONTRIBUTING.md src/extension.ts
+	git add README.md RELEASE.md CONTRIBUTING.md src/coreVersion.ts
 	git commit -S -s -m "chore(deps): pin zenzic core to {{version}}"
 
 # Simulate a Zenzic Core pin realignment and print the diff without writing files.
@@ -199,8 +199,8 @@ pin-core-dry version:
 	grep -nE 'Minimum Core Baseline|\| \*\*Zenzic Core\*\* \|' CONTRIBUTING.md \
 		| sed -E "s/\*\*Zenzic Core \`v[0-9.]+\`\*\*/**Zenzic Core \`v{{version}}\`**/g; s/MIN_CORE_VERSION = '[0-9.]+'/MIN_CORE_VERSION = '{{version}}'/g; s/\| \*\*Zenzic Core\*\* \| ≥ [0-9.]+ \|/| **Zenzic Core** | ≥ {{version}} |/g" || echo "  (no occurrences)"
 	echo ""
-	echo "--- src/extension.ts ---"
-	grep -n "MIN_CORE_VERSION = '[0-9.]*';" src/extension.ts \
+	echo "--- src/coreVersion.ts ---"
+	grep -n "MIN_CORE_VERSION = '[0-9.]*';" src/coreVersion.ts \
 		| sed "s/MIN_CORE_VERSION = '[0-9.]*';/MIN_CORE_VERSION = '{{version}}';/" || echo "  (no occurrences)"
 
 # Remove generated artefacts

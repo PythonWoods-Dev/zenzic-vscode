@@ -46,7 +46,7 @@ Writing technical specifications requires real-time integrity verification. **Ze
 
 ## ⚠️ Requirements
 
-**Just VS Code** — that's it for most users.
+**Just VS Code** — that's it for most users. Requires Zenzic Core v0.30.0 or higher.
 
 The extension automatically detects the `zenzic` Python CLI engine. If it is not found, it will prompt you to install it in a **fully isolated environment** managed by the extension itself. No changes are ever made to your system Python, `$PATH`, or shell configuration (`.bashrc` / `.zshrc`).
 

@@ -27,7 +27,7 @@ Zenzic is structured across three independent, dedicated repositories:
 
 - **Thin Client Sovereignty**: `zenzic-vscode` contains **zero** AST parsing, regex checks, or link validation rules. All analysis logic resides in Zenzic Core (`zenzic lsp`).
 - **Protocol Parity**: The extension communicates via standard Language Server Protocol (LSP) over stdio.
-- **Minimum Core Baseline**: Currently pinned to **Zenzic Core `v0.30.0`** (`MIN_CORE_VERSION = '0.30.0'` in `src/extension.ts`).
+- **Minimum Core Baseline**: Currently pinned to **Zenzic Core `v0.30.0`** (`MIN_CORE_VERSION = '0.30.0'` in `src/coreVersion.ts`).
 
 ---
 
@@ -92,7 +92,7 @@ just verify
 |:---|:---|:---|
 | Verify | `just verify` | Run `eslint`, `tsc --noEmit`, and `reuse lint` (pre-push gate) |
 | Package | `just package` | Build and package extension into `.vsix` archive |
-| Core Pin | `just pin-core <ver>` | Realign Zenzic Core version pin across docs & `extension.ts` |
+| Core Pin | `just pin-core <ver>` | Realign Zenzic Core version pin across docs & `coreVersion.ts` |
 | Core Pin Dry-Run | `just pin-core-dry <ver>` | Preview file changes for core realignment |
 | Show Versions | `just versions` | Display extension version and pinned core version |
 | Release Dry-Run | `just release-dry minor 0.26.3` | Preview version bump + core-pin orchestration |
