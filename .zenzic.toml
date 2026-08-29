@@ -73,8 +73,6 @@ brand_obsolescence = [
 # assets/ and images/: design assets not yet linked from documentation.
 "assets/**"          = ["Z405"]
 "images/**"          = ["Z405"]
-# CONTRIBUTING.md: intentional structural dead-end by design in contributor docs.
-"CONTRIBUTING.md"    = ["Z411"]
 # ROADMAP.md: intentionally short, single-topic page; structural dead-end by design.
 "ROADMAP.md"         = ["Z411", "Z502"]
 # CODE_OF_CONDUCT.md: topological dead-ends and long clauses by design.

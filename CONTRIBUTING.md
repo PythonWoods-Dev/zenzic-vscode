@@ -43,6 +43,19 @@ To maintain security, architectural integrity, and legal compliance, all contrib
 
 ---
 
+## Issue Templates
+
+Opening a new issue offers two templates:
+
+| Template | Use for |
+|:---|:---|
+| **Bug Report** | Unexpected behaviour or errors in the extension — diagnostics, Quick Fixes, DQS status bar, or LSP communication with Zenzic Core. |
+| **Feature Request** | Proposing a new feature, command, or enhancement. |
+
+For a security vulnerability, see [SECURITY.md](SECURITY.md) instead of opening a public issue.
+
+---
+
 ## Prerequisites
 
 | Requirement | Version | Notes |
