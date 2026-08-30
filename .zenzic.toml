@@ -29,6 +29,7 @@ excluded_dirs = [
     "out",           # TypeScript build output
     "dist",          # Alternative build output dir
     ".vscode-test",  # VS Code extension test harness artefacts
+    "coverage",      # vitest coverage report output
     "LICENSES",      # REUSE license files — machine-readable, not documentation
 ]
 excluded_file_patterns = [
