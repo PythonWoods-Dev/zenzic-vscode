@@ -4,7 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 -->
 
 <p align="center">
-  <a href="https://github.com/PythonWoods/zenzic-vscode">
+  <a href="https://github.com/PythonWoods-Dev/zenzic-vscode">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="./assets/zenzic-wordmark-vscode-dark.png">
       <source media="(prefers-color-scheme: light)" srcset="./assets/zenzic-wordmark-vscode.png">
@@ -21,8 +21,8 @@ SPDX-License-Identifier: Apache-2.0
 </p>
 
 <p align="center">
-  <a href="https://github.com/PythonWoods/zenzic-vscode/releases">
-    <img src="https://img.shields.io/github/v/release/PythonWoods/zenzic-vscode?style=flat-square&label=GitHub%20Release&color=38bdf8" alt="GitHub Release">
+  <a href="https://github.com/PythonWoods-Dev/zenzic-vscode/releases">
+    <img src="https://img.shields.io/github/v/release/PythonWoods-Dev/zenzic-vscode?style=flat-square&label=GitHub%20Release&color=38bdf8" alt="GitHub Release">
   </a>
   <a href="https://opensource.org/licenses/Apache-2.0">
     <img src="https://img.shields.io/badge/license-Apache--2.0-0d9488?style=flat-square" alt="License">
@@ -176,7 +176,7 @@ The extension itself contains zero parsing logic, zero regex matching engines, a
 
 This architecture guarantees:
 
-- **Shared Engine, Shared Rules**: the extension runs the same rule engine, config loader, and adapter resolution as your local CLI and CI/CD pipeline — diagnostics and finding codes come from one Core, not a reimplementation in the extension. Topology detection (orphan/dead-end pages) is the one area where the LSP and the CLI currently use two independent algorithms rather than one shared primitive; see the Core's [`CHANGELOG.md` Known Limitations](https://github.com/PythonWoods/zenzic/blob/main/CHANGELOG.md#unreleased) for details.
+- **Shared Engine, Shared Rules**: the extension runs the same rule engine, config loader, and adapter resolution as your local CLI and CI/CD pipeline — diagnostics and finding codes come from one Core, not a reimplementation in the extension. Topology detection (orphan/dead-end pages) is the one area where the LSP and the CLI currently use two independent algorithms rather than one shared primitive; see the Core's [`CHANGELOG.md` Known Limitations](https://github.com/PythonWoods-Dev/zenzic/blob/main/CHANGELOG.md#unreleased) for details.
 - **Zero Editor Bloat**: All AST indexing, Virtual Site Map graph updates, and regex computations execute in the compiled Python core, keeping VS Code lightweight and responsive.
 - **Instant Engine Upgrades**: Upgrading the `zenzic` CLI immediately equips the VS Code extension with all newly released rules and mutations without waiting for extension marketplace releases.
 
@@ -186,8 +186,8 @@ This architecture guarantees:
 
 Zenzic provides a unified quality platform across your entire development lifecycle:
 
-- **[Zenzic CLI (Core Engine)](https://github.com/PythonWoods/zenzic)**: High-speed terminal static analyzer, batch auto-fixer, and DQS scoring engine.
-- **[Zenzic GitHub Action](https://github.com/PythonWoods/zenzic-action)**: Zero-config CI/CD quality gate with SARIF code scanning and PR annotations.
+- **[Zenzic CLI (Core Engine)](https://github.com/PythonWoods-Dev/zenzic)**: High-speed terminal static analyzer, batch auto-fixer, and DQS scoring engine.
+- **[Zenzic GitHub Action](https://github.com/PythonWoods-Dev/zenzic-action)**: Zero-config CI/CD quality gate with SARIF code scanning and PR annotations.
 - **[Official Documentation](https://zenzic.dev)**: For deep architectural explanations, full finding taxonomies, and configuration playbooks, visit [zenzic.dev](https://zenzic.dev).
 
 ---
