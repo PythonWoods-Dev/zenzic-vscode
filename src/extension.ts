@@ -564,7 +564,12 @@ export async function activate(context: vscode.ExtensionContext) {
                 { scheme: 'untitled', language: 'markdown' },
                 { scheme: 'untitled', language: 'mdx' }
             ],
-            outputChannel
+            outputChannel,
+            // Read once at startup; live toggles are forwarded via
+            // workspace/didChangeConfiguration below, no restart needed.
+            initializationOptions: {
+                autoFixOnSave: vscode.workspace.getConfiguration('zenzic').get<boolean>('autoFixOnSave', false)
+            }
         };
 
         client = new LanguageClient(
@@ -1000,6 +1005,12 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.workspace.onDidChangeConfiguration(async (e) => {
             if (e.affectsConfiguration('zenzic.executablePath')) {
                 await restartServer();
+            }
+            if (e.affectsConfiguration('zenzic.autoFixOnSave') && client) {
+                const autoFixOnSave = vscode.workspace.getConfiguration('zenzic').get<boolean>('autoFixOnSave', false);
+                await client.sendNotification('workspace/didChangeConfiguration', {
+                    settings: { zenzic: { autoFixOnSave } }
+                });
             }
         })
     );
