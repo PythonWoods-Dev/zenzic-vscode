@@ -11,6 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Unit Test Suite & Coverage Gate**: previously this extension had zero automated tests of any
+  kind — only `eslint`/`tsc --noEmit`. Added `vitest` + `@vitest/coverage-v8`, a real test suite
+  (`test/semver.test.ts`, 8 cases, 100% coverage) for the version-comparison logic that gates LSP
+  activation, and a coverage threshold (90% lines/branches/functions/statements) wired into
+  `just verify`/CI via a new `just test-cov` recipe. `compareSemver` was extracted from
+  `extension.ts` into its own `vscode`-import-free module (`src/semver.ts`, mirroring
+  `coreVersion.ts`'s existing pattern) specifically so it can be loaded by a plain Node test
+  runner — `vscode` is a virtual module that only resolves inside a running Extension Host.
+  Full `@vscode/test-electron` integration testing is not yet wired up: it requires a display
+  server (Xvfb) not available in this project's automation today; see `CONTRIBUTING.md`'s new
+  "Testing" section.
 - **`zenzic.autoFixOnSave` Setting — Auto-Apply Quick Fixes on Save (Opt-In, Off by Default)**:
   - New boolean setting; when enabled, saving a Markdown/MDX file auto-applies Zenzic's deterministic Quick Fixes (bare URLs, untagged code blocks, empty link text, malformed lists, heading punctuation). Off by default: silently rewriting file content on every save can surprise a workflow or conflict with another formatter also running on save. All trigger and fix logic lives server-side (Zenzic Core's LSP now implements `textDocument/willSaveWaitUntil`) — the extension only reads the setting, passes it via `initializationOptions` at startup, and forwards live changes through `workspace/didChangeConfiguration`, no server restart needed. The actual save hook is `vscode-languageclient`'s standard, automatic `workspace.onWillSaveTextDocument` → `textDocument/willSaveWaitUntil` forwarding — no client-side save-handling code was written, consistent with the Thin Client Architecture (ADR-075).
 - **`zenzic.autoRepairLinksOnRename` Setting — Auto-Repair Inbound Links on Rename (Opt-In, Off by Default)**:

@@ -3,7 +3,9 @@ set shell := ["bash", "-c"]
 # just — developer workflow for zenzic-vscode.
 #
 # Quick reference:
-#   just verify          — lint + tsc (pre-push gate)
+#   just verify          — lint + tsc + test-cov (pre-push gate)
+#   just test-cov        — unit tests with coverage gate (src/semver.ts only —
+#                           see vitest.config.mts for why)
 #   just package         — build and package .vsix archive
 #   just release <part> <core>  — bump extension version + align core pin
 #   just release-dry <p> <core> — dry-run release orchestration
@@ -20,11 +22,16 @@ package:
 verify: check
 	npm run lint
 	npx tsc --noEmit
+	just test-cov
 	@if ! command -v reuse > /dev/null 2>&1; then \
 		echo "ERROR: 'reuse' is not installed. Please install it via 'uv tool install reuse' or 'pipx install reuse'."; \
 		exit 1; \
 	fi
 	reuse lint
+
+# Unit tests with coverage gate (thresholds in vitest.config.mts).
+test-cov:
+	npm run test:coverage
 
 # Run the Zenzic quality gate on extension documentation.
 # Shared sovereign model (family repos):

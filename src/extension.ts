@@ -15,6 +15,7 @@ import {
 import { ensureZenzicEngine } from './provisioning';
 import { showQualityPanel, updateQualityPanel, QualityPanelReport } from './qualityPanel';
 import { MIN_CORE_VERSION } from './coreVersion';
+import { compareSemver } from './semver';
 
 // A4 fix: typed as | undefined — initialized in activate(), disposed via subscriptions.
 let client: LanguageClient | undefined;
@@ -140,23 +141,6 @@ export async function resolveExecutablePath(cmd: string, workspaceRoot?: string)
  * Compare two SemVer strings (MAJOR.MINOR.PATCH).
  * Returns > 0 if v1 > v2, < 0 if v1 < v2, and 0 if v1 === v2.
  */
-export function compareSemver(v1: string, v2: string): number {
-    const parse = (v: string) => {
-        const match = v.match(/^(\d+)\.(\d+)\.(\d+)/);
-        if (!match) {
-            throw new Error(`Invalid SemVer format: '${v}'`);
-        }
-        return [parseInt(match[1], 10), parseInt(match[2], 10), parseInt(match[3], 10)];
-    };
-
-    const [major1, minor1, patch1] = parse(v1);
-    const [major2, minor2, patch2] = parse(v2);
-
-    if (major1 !== major2) { return major1 - major2; }
-    if (minor1 !== minor2) { return minor1 - minor2; }
-    return patch1 - patch2;
-}
-
 export interface CoreVersionCheckResult {
     status: 'ok' | 'outdated' | 'not_found' | 'error';
     version?: string;

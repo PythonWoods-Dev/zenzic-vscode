@@ -82,7 +82,23 @@ npm install
 just verify
 ```
 
-`just verify` runs linting (`eslint`), TypeScript type-checking (`tsc --noEmit`), and REUSE compliance verification.
+`just verify` runs linting (`eslint`), TypeScript type-checking (`tsc --noEmit`), unit tests with a
+coverage gate (`vitest`), and REUSE compliance verification.
+
+---
+
+## Testing
+
+Unit tests (`test/*.test.ts`, run via `vitest`) currently cover `src/semver.ts` only. Any module
+that imports `vscode` at the top level — which is most of `src/` — cannot be loaded by a plain
+Node test runner. `vscode` is a virtual module VS Code injects at runtime, not a real npm package.
+It only resolves inside a running Extension Host. Pure, `vscode`-independent logic (like the
+version-comparison helper in `semver.ts`) is deliberately kept in its own module for exactly this
+reason, mirroring `coreVersion.ts`'s existing pattern — extract before you can unit-test.
+
+Full Extension Host integration testing (`@vscode/test-electron`) is not yet wired up; it requires
+a display server (Xvfb on headless Linux CI) that this repository's automation does not currently
+provision.
 
 ---
 
@@ -90,7 +106,8 @@ just verify
 
 | Task | Command | Description |
 |:---|:---|:---|
-| Verify | `just verify` | Run `eslint`, `tsc --noEmit`, and `reuse lint` (pre-push gate) |
+| Verify | `just verify` | Run `eslint`, `tsc --noEmit`, `test-cov`, and `reuse lint` (pre-push gate) |
+| Test | `just test-cov` | Run unit tests with a coverage gate (configured in `vitest.config.mts`) |
 | Package | `just package` | Build and package extension into `.vsix` archive |
 | Core Pin | `just pin-core <ver>` | Realign Zenzic Core version pin across docs & `coreVersion.ts` |
 | Core Pin Dry-Run | `just pin-core-dry <ver>` | Preview file changes for core realignment |
