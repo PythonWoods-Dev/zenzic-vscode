@@ -9,6 +9,7 @@ path = [
   "package.json",
   "tsconfig.json",
   "LICENSE",
+  "NOTICE",
   "REUSE.toml",
   "CHANGELOG.md",
   "RELEASE.md",
