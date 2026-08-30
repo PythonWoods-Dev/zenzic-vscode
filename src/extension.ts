@@ -568,7 +568,8 @@ export async function activate(context: vscode.ExtensionContext) {
             // Read once at startup; live toggles are forwarded via
             // workspace/didChangeConfiguration below, no restart needed.
             initializationOptions: {
-                autoFixOnSave: vscode.workspace.getConfiguration('zenzic').get<boolean>('autoFixOnSave', false)
+                autoFixOnSave: vscode.workspace.getConfiguration('zenzic').get<boolean>('autoFixOnSave', false),
+                autoRepairLinksOnRename: vscode.workspace.getConfiguration('zenzic').get<boolean>('autoRepairLinksOnRename', false)
             }
         };
 
@@ -1010,6 +1011,12 @@ export async function activate(context: vscode.ExtensionContext) {
                 const autoFixOnSave = vscode.workspace.getConfiguration('zenzic').get<boolean>('autoFixOnSave', false);
                 await client.sendNotification('workspace/didChangeConfiguration', {
                     settings: { zenzic: { autoFixOnSave } }
+                });
+            }
+            if (e.affectsConfiguration('zenzic.autoRepairLinksOnRename') && client) {
+                const autoRepairLinksOnRename = vscode.workspace.getConfiguration('zenzic').get<boolean>('autoRepairLinksOnRename', false);
+                await client.sendNotification('workspace/didChangeConfiguration', {
+                    settings: { zenzic: { autoRepairLinksOnRename } }
                 });
             }
         })

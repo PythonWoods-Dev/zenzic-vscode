@@ -126,6 +126,9 @@ Enforce organizational standards directly in the editor:
 ### 5. Automated Inline Suppressions
 Need a temporary strategic exception? Press `Ctrl+.` on any finding to insert an inline suppression comment (`<!-- zenzic:ignore ZXXX -->`) that tracks technical debt transparently.
 
+### 6. Opt-In Auto-Fix on Save & Auto-Repair on Rename
+Beyond manual Quick Fix, two workspace behaviors are available but **off by default**: `zenzic.autoFixOnSave` applies the same deterministic Quick Fixes automatically whenever you save; `zenzic.autoRepairLinksOnRename` rewrites inbound relative links across the workspace whenever you rename or move a file. See [Settings](#settings) below.
+
 ---
 
 ## ⚙️ Extension Settings & Commands
@@ -138,6 +141,8 @@ Customize language client execution and invoke extension commands through standa
 | :--- | :--- | :--- |
 | `zenzic.executablePath` | `"zenzic"` | Path to the `zenzic` executable or virtual-environment binary. Supports leading `~/` or `~\` and `${workspaceFolder}` (intelligently scans across all active workspace folders in multi-root setups). |
 | `zenzic.autoProvision` | `true` | Automatically install the Zenzic CLI in an isolated environment if not found. Set to `false` to opt out. |
+| `zenzic.autoFixOnSave` | `false` | Automatically apply Zenzic's deterministic Quick Fixes (bare URLs, untagged code blocks, empty link text, malformed lists, heading punctuation, dead suppressions) when a Markdown/MDX file is saved. Off by default — rewrites file content on every save, which can surprise a workflow or conflict with another on-save formatter. |
+| `zenzic.autoRepairLinksOnRename` | `false` | Automatically rewrite inbound relative links when a Markdown/MDX file is renamed or moved. Off by default — unlike auto-fix-on-save, this can rewrite files you didn't directly touch. Docs-root-relative (`/...`) and `@site/...` alias links are always left untouched. |
 | `zenzic.trace.server` | `"off"` | Trace communication between VS Code and the Language Server (`off`, `messages`, `verbose`). |
 
 ### Command Palette
