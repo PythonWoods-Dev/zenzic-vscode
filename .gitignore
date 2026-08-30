@@ -13,4 +13,5 @@ example/
 _zenzic_core/
 
 # AI Control Plane — never commit to version control
+.claude/
 .gemini/
