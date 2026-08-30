@@ -75,6 +75,11 @@
           "type": "boolean",
           "default": true,
           "description": "Automatically install the Zenzic CLI engine in an isolated environment (using uv or python3 venv) if it is not found on your system or at the configured path. No changes are made to your system Python, PATH, or shell configuration."
+        },
+        "zenzic.autoFixOnSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically apply Zenzic's deterministic Quick Fixes (bare URLs, untagged code blocks, empty link text, malformed lists, heading punctuation) when a Markdown/MDX file is saved. Off by default: this rewrites file content on every save, which can surprise a workflow or conflict with another formatter also running on save -- enable it once you're comfortable with what it fixes."
         }
       }
     }
