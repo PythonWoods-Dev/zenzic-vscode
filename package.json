@@ -80,6 +80,11 @@
           "type": "boolean",
           "default": false,
           "description": "Automatically apply Zenzic's deterministic Quick Fixes (bare URLs, untagged code blocks, empty link text, malformed lists, heading punctuation) when a Markdown/MDX file is saved. Off by default: this rewrites file content on every save, which can surprise a workflow or conflict with another formatter also running on save -- enable it once you're comfortable with what it fixes."
+        },
+        "zenzic.autoRepairLinksOnRename": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically rewrite inbound relative links when a Markdown/MDX file is renamed or moved. Off by default: unlike auto-fix-on-save, this can rewrite files you didn't directly touch (every file that linked to the renamed one) -- enable it once you're comfortable reviewing multi-file changes from a single rename. Docs-root-relative ('/...') and '@site/...' alias links are always left untouched (ambiguous to rewrite safely) even when this is on."
         }
       }
     }
