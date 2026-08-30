@@ -33,7 +33,7 @@ jobs:
             echo "core_ref=$ZENZIC_CORE_REF" >> $GITHUB_OUTPUT
             exit 0
           fi
-          if git ls-remote --exit-code --heads https://github.com/PythonWoods/zenzic.git "$TARGET_BRANCH" > /dev/null 2>&1; then
+          if git ls-remote --exit-code --heads https://github.com/PythonWoods-Dev/zenzic.git "$TARGET_BRANCH" > /dev/null 2>&1; then
             echo "Branch $TARGET_BRANCH exists in core. Using it."
             echo "core_ref=$TARGET_BRANCH" >> $GITHUB_OUTPUT
           else
@@ -44,7 +44,7 @@ jobs:
       - name: Checkout Zenzic Core (Sovereign Resolution)
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          repository: PythonWoods/zenzic
+          repository: PythonWoods-Dev/zenzic
           ref: ${{ steps.resolve-branch.outputs.core_ref }}
           path: _zenzic_core
           fetch-tags: true

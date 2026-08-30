@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 
 # Security Policy — zenzic-vscode
 
-This document defines the security disclosure process for `zenzic-vscode`. For the Zenzic Core security policy, see [github.com/PythonWoods/zenzic](https://github.com/PythonWoods/zenzic/blob/main/SECURITY.md).
+This document defines the security disclosure process for `zenzic-vscode`. For the Zenzic Core security policy, see [github.com/PythonWoods-Dev/zenzic](https://github.com/PythonWoods-Dev/zenzic/blob/main/SECURITY.md).
 
 ## Scope
 
@@ -15,7 +15,7 @@ extension itself contains **zero** AST parsing, regex checks, or link validation
 all analysis logic lives in Zenzic Core.
 
 For vulnerabilities in the **Zenzic engine** (Python, credential scanner, path-traversal
-protection), see the [core security policy](https://github.com/PythonWoods/zenzic/blob/main/SECURITY.md).
+protection), see the [core security policy](https://github.com/PythonWoods-Dev/zenzic/blob/main/SECURITY.md).
 
 ---
 
@@ -25,7 +25,7 @@ protection), see the [core security policy](https://github.com/PythonWoods/zenzi
 
 Report privately via:
 
-- **GitHub Security Advisories** (preferred): [github.com/PythonWoods/zenzic-vscode/security/advisories](https://github.com/PythonWoods/zenzic-vscode/security/advisories)
+- **GitHub Security Advisories** (preferred): [github.com/PythonWoods-Dev/zenzic-vscode/security/advisories](https://github.com/PythonWoods-Dev/zenzic-vscode/security/advisories)
 - **Email**: `dev@pythonwoods.dev` — subject line: `[SECURITY] zenzic-vscode — <brief description>`
 
 Include a clear description of the vulnerability, steps to reproduce, potential impact,
@@ -47,7 +47,7 @@ We will acknowledge your report within **72 hours** and aim to release a patch w
 | **Dependency CVE** | A known CVE in `vscode-languageclient` or another `npm` dependency that affects the extension's security posture. |
 
 Out-of-scope: false-positive/false-negative findings from Zenzic Core's own checks (report
-those against [zenzic](https://github.com/PythonWoods/zenzic/security/advisories/new)),
+those against [zenzic](https://github.com/PythonWoods-Dev/zenzic/security/advisories/new)),
 cosmetic UI issues, or documentation errors.
 
 ---
