@@ -848,12 +848,85 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     };
 
+    // zenzic.reportFindingAsIssue
+    // Opens a prefilled GitHub "new issue" form for the finding under the cursor.
+    //
+    // Deliberately openExternal rather than the GitHub API: no auth prompt, no
+    // token storage, no rate limit, and nothing to fail when offline (the browser
+    // reports it, the editor does not). It also keeps this a thin client — the
+    // extension adds no logic of its own beyond formatting (ADR-075). The user
+    // reviews and submits, which for a defect report is a feature, not friction.
+    const ISSUE_URL_BUDGET = 6000; // GitHub tolerates ~8k; leave real headroom.
+
+    const reportFindingAsIssue = async () => {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            vscode.window.showWarningMessage('Zenzic: No active editor.');
+            return;
+        }
+
+        const cursor = editor.selection.active;
+        const diagnostics = vscode.languages
+            .getDiagnostics(editor.document.uri)
+            .filter(d => d.source === 'zenzic' || d.source === 'Zenzic');
+
+        if (diagnostics.length === 0) {
+            vscode.window.showInformationMessage('Zenzic: No findings in this file to report.');
+            return;
+        }
+
+        // Prefer the finding under the cursor; otherwise let the user pick one,
+        // so the command is still useful when invoked from the palette.
+        let target = diagnostics.find(d => d.range.contains(cursor));
+        if (!target) {
+            const picked = await vscode.window.showQuickPick(
+                diagnostics.map(d => ({
+                    label: `${typeof d.code === 'object' ? d.code.value : d.code ?? '?'} — line ${d.range.start.line + 1}`,
+                    detail: d.message,
+                    diagnostic: d
+                })),
+                { placeHolder: 'Select the Zenzic finding to report' }
+            );
+            if (!picked) { return; }
+            target = picked.diagnostic;
+        }
+
+        const code = typeof target.code === 'object' ? String(target.code.value) : String(target.code ?? 'finding');
+        const relPath = vscode.workspace.asRelativePath(editor.document.uri);
+        const line = target.range.start.line + 1;
+
+        const title = `[${code}] ${relPath}:${line}`;
+        let body =
+            `**Finding:** \`${code}\`\n` +
+            `**Location:** \`${relPath}:${line}\`\n\n` +
+            `**Message:**\n\n> ${target.message}\n\n` +
+            `**Extension version:** ${context.extension.packageJSON.version ?? 'unknown'}\n` +
+            `**VS Code:** ${vscode.version}\n\n` +
+            `---\n\n` +
+            `<!-- Describe what you expected instead. -->\n`;
+
+        // Bound the URL by construction rather than trusting message length: a
+        // finding message can interpolate matched text of unpredictable size.
+        const overhead = `https://github.com/PythonWoods/zenzic/issues/new?title=${encodeURIComponent(title)}&body=`.length;
+        while (encodeURIComponent(body).length + overhead > ISSUE_URL_BUDGET && body.length > 200) {
+            body = body.slice(0, Math.floor(body.length * 0.8)) + '\n\n… (truncated)\n';
+        }
+
+        const url =
+            `https://github.com/PythonWoods/zenzic/issues/new` +
+            `?title=${encodeURIComponent(title)}` +
+            `&body=${encodeURIComponent(body)}`;
+
+        await vscode.env.openExternal(vscode.Uri.parse(url));
+    };
+
     context.subscriptions.push(
         vscode.commands.registerCommand('zenzic.restartServer', restartServer),
         vscode.commands.registerCommand('zenzic.startServer', startServer),
         vscode.commands.registerCommand('zenzic.stopServer', stopServer),
         vscode.commands.registerCommand('zenzic.showStatus', showStatus),
-        vscode.commands.registerCommand('zenzic.troubleshoot', troubleshoot)
+        vscode.commands.registerCommand('zenzic.troubleshoot', troubleshoot),
+        vscode.commands.registerCommand('zenzic.reportFindingAsIssue', reportFindingAsIssue)
     );
 
     // ECOSYSTEM-FEAT-002: zenzic.computeDQS

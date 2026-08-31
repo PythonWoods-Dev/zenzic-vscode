@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`Zenzic: Report Finding as GitHub Issue` Command**: opens a prefilled GitHub issue form for the finding under the cursor — carrying the finding code, file and line, the diagnostic message, and the extension and VS Code versions. Invoked from anywhere else in a file, it lists that file's findings and asks which to report. Implemented with `vscode.env.openExternal` and a query-string URL: no authentication, no token storage, no GitHub API call, and therefore no rate limit and no sign-in step. With no network it is the browser that reports the failure rather than the editor, and nothing is submitted until the prefilled form is reviewed and sent by hand. The issue body is bounded by construction (truncated to stay well inside GitHub's URL limit) rather than relying on finding messages being short.
+
 - **Unit Test Suite & Coverage Gate**: previously this extension had zero automated tests of any
   kind — only `eslint`/`tsc --noEmit`. Added `vitest` + `@vitest/coverage-v8`, a real test suite
   (`test/semver.test.ts`, 8 cases, 100% coverage) for the version-comparison logic that gates LSP
