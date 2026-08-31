@@ -27,6 +27,11 @@ node_modules/**
 # never sees them — but a local `vsce package` does, and would ship internal
 # governance material and a coverage report to every Marketplace user.
 .claude/**
+.gemini/**
+.human/**
+.zenzic-score.json
+.zenzic-history.jsonl
+.DS_Store
 coverage/**
 .zenzic_cache/**
 example/**
