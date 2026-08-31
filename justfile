@@ -21,6 +21,12 @@ package:
 
 verify: check
 	npm run lint
+	# Pinned to the same markdownlint-cli version zenzic Core pins by SHA in
+	# pre-commit. An unpinned npx resolves to latest, and .markdownlint.json sets
+	# `default: true`, so every rule a newer release adds would fire here as a
+	# phantom failure -- observed on Core, where latest reported 76 MD060 findings
+	# the authoritative version does not have.
+	npx -y markdownlint-cli@0.41.0 '**/*.md' --ignore node_modules
 	npx tsc --noEmit
 	just test-cov
 	@if ! command -v reuse > /dev/null 2>&1; then \

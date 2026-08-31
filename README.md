@@ -51,6 +51,7 @@ Writing technical specifications requires real-time integrity verification. **Ze
 The extension automatically detects the `zenzic` Python CLI engine. If it is not found, it will prompt you to install it in a **fully isolated environment** managed by the extension itself. No changes are ever made to your system Python, `$PATH`, or shell configuration (`.bashrc` / `.zshrc`).
 
 > **Power User / Corporate Proxy Note:** If you prefer to manage the installation yourself — or if auto-provisioning is blocked by a corporate proxy — install the CLI manually and the extension will use it:
+>
 > ```bash
 > # Recommended: isolated tool install via uv
 > uv tool install zenzic
@@ -59,10 +60,14 @@ The extension automatically detects the `zenzic` Python CLI engine. If it is not
 > pip install --upgrade zenzic
 > ```
 
+<!-- Two distinct callouts, deliberately separate blocks. -->
+
 > **Virtual Environment Note:** If you use a repository virtual environment, pin the path in `.vscode/settings.json`:
+>
 > ```json
 > { "zenzic.executablePath": "${workspaceFolder}/.venv/bin/zenzic" }
 > ```
+>
 > To disable auto-provisioning entirely, set `"zenzic.autoProvision": false`.
 
 ---
@@ -91,6 +96,7 @@ See our [guide](missing-page.md) or visit https://zenzic.dev
 ```
 
 You will immediately see:
+
 1. **Red underline** on `missing-page.md` (`Z101: Link Broken` — cataloged as `Z104: File Not Found`, but the current engine reports missing-file links under the consolidated `Z101` code).
 2. **Yellow underline** on `https://zenzic.dev` (`Z515: Bare URL Used`).
 3. Press **`Ctrl+.`** (or **`Cmd+.`** on macOS) on the bare URL to automatically format it into `<https://zenzic.dev>`.
@@ -102,12 +108,15 @@ You will immediately see:
 Zenzic for VS Code delivers comprehensive documentation intelligence directly inside the editor:
 
 ### 1. Real-Time Link & Asset Validation
+
 Move a file or rename a heading in one document, and Zenzic's Virtual Site Map (VSM) instantly flags broken cross-references and orphan pages across your entire workspace without saving or rebuilding.
 
 ### 2. Instant Security & Credential Scanning
+
 Detects leaked API keys, tokens (e.g., GitHub, AWS, Stripe), and path traversal sequences in milliseconds using Google RE2 non-backtracking safety contracts.
 
 ### 3. Native Semantic & Accessibility Linting
+
 - **Duplicate Headings (`Z513`)**: Prevents anchor collision and broken URL fragments.
 - **Generic Image Alt Text (`Z514`)**: Enforces descriptive alternative text for accessibility.
 - **Bare URLs (`Z515`)**: Detects unformatted raw URLs with instant auto-fix.
@@ -116,7 +125,9 @@ Detects leaked API keys, tokens (e.g., GitHub, AWS, Stripe), and path traversal 
 - **Malformed Lists (`Z520`)**: Automatically converts pseudo-lists into clean Markdown bullet lists.
 
 ### 4. Policy-as-Code & Editorial Style Governance
+
 Enforce organizational standards directly in the editor:
+
 - Required or forbidden frontmatter metadata (`Z610`–`Z613`).
 - Zero-Trust external domain whitelisting (`Z614`, `Z615`).
 - Cross-namespace boundary restrictions (`Z616`).
@@ -124,9 +135,11 @@ Enforce organizational standards directly in the editor:
 - Forbidden terminology patterns (`Z617`) and document complexity caps (`Z619`).
 
 ### 5. Automated Inline Suppressions
+
 Need a temporary strategic exception? Press `Ctrl+.` on any finding to insert an inline suppression comment (`<!-- zenzic:ignore ZXXX -->`) that tracks technical debt transparently.
 
 ### 6. Opt-In Auto-Fix on Save & Auto-Repair on Rename
+
 Beyond manual Quick Fix, two workspace behaviors are available but **off by default**: `zenzic.autoFixOnSave` applies the same deterministic Quick Fixes automatically whenever you save; `zenzic.autoRepairLinksOnRename` rewrites inbound relative links across the workspace whenever you rename or move a file. See the [Settings section](#settings) below.
 
 ---
