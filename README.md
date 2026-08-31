@@ -127,7 +127,7 @@ Enforce organizational standards directly in the editor:
 Need a temporary strategic exception? Press `Ctrl+.` on any finding to insert an inline suppression comment (`<!-- zenzic:ignore ZXXX -->`) that tracks technical debt transparently.
 
 ### 6. Opt-In Auto-Fix on Save & Auto-Repair on Rename
-Beyond manual Quick Fix, two workspace behaviors are available but **off by default**: `zenzic.autoFixOnSave` applies the same deterministic Quick Fixes automatically whenever you save; `zenzic.autoRepairLinksOnRename` rewrites inbound relative links across the workspace whenever you rename or move a file. See [Settings](#settings) below.
+Beyond manual Quick Fix, two workspace behaviors are available but **off by default**: `zenzic.autoFixOnSave` applies the same deterministic Quick Fixes automatically whenever you save; `zenzic.autoRepairLinksOnRename` rewrites inbound relative links across the workspace whenever you rename or move a file. See the [Settings section](#settings) below.
 
 ---
 

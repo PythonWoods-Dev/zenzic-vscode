@@ -89,7 +89,7 @@ coverage gate (`vitest`), and REUSE compliance verification.
 
 ## Testing
 
-Unit tests (`test/*.test.ts`, run via `vitest`) currently cover `src/semver.ts` only. Any module
+Unit tests (`test/*.test.ts`, run via `vitest`, configured in [`vitest.config.mts`](vitest.config.mts)) currently cover `src/semver.ts` only. Any module
 that imports `vscode` at the top level — which is most of `src/` — cannot be loaded by a plain
 Node test runner. `vscode` is a virtual module VS Code injects at runtime, not a real npm package.
 It only resolves inside a running Extension Host. Pure, `vscode`-independent logic (like the
