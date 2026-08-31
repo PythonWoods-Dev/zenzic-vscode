@@ -15,3 +15,6 @@ _zenzic_core/
 # AI Control Plane — never commit to version control
 .claude/
 .gemini/
+
+# Zenzic quality scores — derived local metadata
+.zenzic-score.json
