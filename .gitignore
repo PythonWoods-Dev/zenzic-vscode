@@ -18,3 +18,4 @@ _zenzic_core/
 
 # Zenzic quality scores — derived local metadata
 .zenzic-score.json
+.zenzic-history.jsonl
