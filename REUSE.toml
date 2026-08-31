@@ -3,6 +3,7 @@ version = 1
 [[annotations]]
 path = [
   ".gitignore",
+  ".markdownlint.json",
   "esbuild.js",
   "justfile",
   "package-lock.json",
