@@ -5,7 +5,7 @@
   "version": "0.30.0",
   "publisher": "pythonwoods",
   "engines": {
-    "vscode": "^1.125.0"
+    "vscode": "^1.91.0"
   },
   "categories": [
     "Programming Languages"
@@ -109,7 +109,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.2.0",
-    "@types/vscode": "~1.125.0",
+    "@types/vscode": "~1.91.0",
     "@typescript-eslint/eslint-plugin": "^8.67.0",
     "@typescript-eslint/parser": "^8.67.0",
     "@vitest/coverage-v8": "^4.1.11",
