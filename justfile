@@ -26,7 +26,12 @@ verify: check
 	# `default: true`, so every rule a newer release adds would fire here as a
 	# phantom failure -- observed on Core, where latest reported 76 MD060 findings
 	# the authoritative version does not have.
-	npx -y markdownlint-cli@0.41.0 '**/*.md' --ignore node_modules
+	# _zenzic_core is the Sovereign Resolution chain's CI checkout of Core
+	# (02-architecture-models.md, priority 2), not this repo's content. It
+	# carries Core's examples/ fixtures, which are deliberately non-compliant.
+	# Absent locally -- resolution falls through to ../zenzic -- which is why
+	# this passed here and failed in CI.
+	npx -y markdownlint-cli@0.41.0 '**/*.md' --ignore node_modules --ignore _zenzic_core
 	npx tsc --noEmit
 	just test-cov
 	@if ! command -v reuse > /dev/null 2>&1; then \
