@@ -23,6 +23,11 @@ node_modules/**
 **/*.ts
 **/*.map
 .architect/**
+# Gitignored locally, so a CI build (which packages a clean git checkout)
+# never sees them — but a local `vsce package` does, and would ship internal
+# governance material and a coverage report to every Marketplace user.
+.claude/**
+coverage/**
 .zenzic_cache/**
 example/**
 _zenzic_core/**
