@@ -60,6 +60,11 @@
       {
         "command": "zenzic.troubleshoot",
         "title": "Zenzic: Troubleshoot & Repair Setup"
+      },
+      {
+        "command": "zenzic.reportFindingAsIssue",
+        "title": "Zenzic: Report Finding as GitHub Issue",
+        "category": "Zenzic"
       }
     ],
     "configuration": {

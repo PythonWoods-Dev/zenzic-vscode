@@ -158,6 +158,7 @@ The extension contributes the following commands (`Ctrl+Shift+P` / `Cmd+Shift+P`
 | **Zenzic: Stop Server** | `zenzic.stopServer` | Stops the Language Server process. |
 | **Zenzic: Show Status / Recovery** | `zenzic.showStatus` | Re-triggers error recovery dialogs or opens the quick action menu. |
 | **Zenzic: Troubleshoot & Repair Setup** | `zenzic.troubleshoot` | Runs automated environment diagnostics and offers 1-click self-healing repairs. |
+| **Zenzic: Report Finding as GitHub Issue** | `zenzic.reportFindingAsIssue` | Opens a prefilled GitHub issue for the finding under the cursor (code, file, line, message, versions). No sign-in and no API call — it opens a URL you review before submitting. |
 
 ### Workspace Configuration Example
 
