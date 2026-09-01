@@ -119,6 +119,23 @@ provision.
 
 ---
 
+## Editor Tooling vs the Gate
+
+**`just verify` is the authority on every finding; the editor is an interactive aid.**
+The committed `.vscode/settings.json` pins `typescript.tsdk` to `node_modules/typescript/lib`,
+so the editor's TypeScript language service uses the exact compiler version `npm` resolves
+for the build — not the copy VS Code itself ships, which drifts with each VS Code update.
+The ESLint extension (recommended in `.vscode/extensions.json`) resolves the workspace's
+own `eslint` from `node_modules` by design, matching `npm run lint`.
+
+One asymmetry cannot be closed: **markdownlint**. `just verify` pins `markdownlint-cli`
+to the version the ecosystem gates on, while the VS Code markdownlint extension bundles
+its own engine (`markdownlint-cli2`) and exposes no setting that points it at another
+version. Both read the same `.markdownlint.json`, but behaviour can diverge in either
+direction — mostly the editor flagging findings the gate's engine does not have. When
+they disagree, the gate is right by definition: a squiggle the gate does not report needs
+no code change, and a clean editor does not excuse a red `just verify`.
+
 ## Licensing & REUSE Compliance
 
 All source files must contain an explicit SPDX header:
