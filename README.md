@@ -112,7 +112,7 @@ Zenzic for VS Code delivers comprehensive documentation intelligence directly in
 
 ### 1. Real-Time Link & Asset Validation
 
-Move a file or rename a heading in one document, and Zenzic's Virtual Site Map (VSM) instantly flags broken cross-references and orphan pages across your entire workspace — fast enough to run on every keystroke without noticeable lag, and without saving or rebuilding.
+Move a file or rename a heading in one document, and Zenzic's Virtual Site Map (VSM) instantly flags broken cross-references and orphan pages across your entire workspace. It is fast enough to run on every keystroke without noticeable lag, and needs no save or rebuild.
 
 ### 2. Instant Security & Credential Scanning
 

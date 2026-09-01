@@ -19,7 +19,7 @@ package:
 	npm run build
 	npx @vscode/vsce package
 
-verify: check
+verify: _check-hooks check
 	npm run lint
 	# Pinned to the same markdownlint-cli version zenzic Core pins by SHA in
 	# pre-commit. An unpinned npx resolves to latest, and .markdownlint.json sets
@@ -225,3 +225,42 @@ pin-core-dry version:
 clean:
 	rm -rf out/ .tsbuildinfo
 	find . -maxdepth 1 -name '*.vsix' -delete
+
+# Blocking gate, not a warning. A pre-commit hook that is merely declared in
+# .pre-commit-config.yaml runs nothing: the hook has to be installed into
+# .git/hooks for the commit-time gate to exist at all. Three of the four
+# ecosystem repositories were found with no hook installed, so every commit
+# in them bypassed markdownlint, REUSE and the formatter silently.
+#
+# A missing pre-commit hook cannot block its own commit -- there is nothing
+# installed to run -- so this check fails `just verify` instead, which is the
+# pre-push path and what CI runs. Exit 1, never a warning: the previous
+# version of this recipe printed the same diagnosis and let the work proceed.
+# Blocking gate, not a warning. A pre-commit hook that is merely declared in
+# .pre-commit-config.yaml runs nothing: the hook has to be installed into
+# .git/hooks for the commit-time gate to exist at all. Three of the four
+# ecosystem repositories were found with no hook installed, so every commit
+# in them bypassed markdownlint, REUSE and the formatter silently.
+#
+# A missing pre-commit hook cannot block its own commit -- there is nothing
+# installed to run -- so this check fails `just verify` instead, which is the
+# pre-push path and what CI runs. Exit 1, never a warning: the previous
+# version of this recipe printed the same diagnosis and let the work proceed.
+_check-hooks:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    _missing=0
+    for _h in pre-commit pre-push; do
+        if [ ! -f ".git/hooks/${_h}" ] || ! grep -qi "pre-commit" ".git/hooks/${_h}"; then
+            echo -e "\033[31mBLOCKED: the ${_h} hook is not installed (or is not pre-commit's).\033[0m"
+            echo "  Without it the ${_h} gate does not run, and defects reach the remote."
+            echo "  Fix: uvx pre-commit install -t ${_h}"
+            _missing=1
+        fi
+    done
+    if [ "${_missing}" -ne 0 ]; then
+        echo ""
+        echo "Refusing to continue with an uninstalled git hook. See Rule 31."
+        exit 1
+    fi
+    echo "git hooks installed (pre-commit, pre-push)"
