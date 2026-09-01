@@ -15,6 +15,7 @@ RELEASE.md
 REUSE.toml
 tsconfig.json
 esbuild.js
+optimize-gif.js
 eslint.config.mjs
 package-lock.json
 node_modules/**
