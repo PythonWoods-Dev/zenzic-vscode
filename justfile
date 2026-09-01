@@ -19,6 +19,27 @@ package:
 	npm run build
 	npx @vscode/vsce package
 
+# The only mixed-toolchain repository in the ecosystem: the extension itself is
+# TypeScript, but the quality gates it runs (zenzic, reuse) are Python, so a
+# working clone needs both. This repository has no pyproject.toml -- it is a
+# Node project -- so the Python side is a plain venv holding the two tools the
+# justfile invokes: Core (editable from the sibling checkout, so gates run
+# against live engine code) and reuse, pinned to the same version the
+# reuse-tool pre-commit rev provides. `npm ci` rather than `npm install` so the
+# lockfile is honoured exactly, matching what CI resolves.
+#
+# The hook install is part of setup rather than a step to remember: this
+# repository was once found with no hooks installed at all, the precondition
+# Rule 31 blocks on. Running setup makes that self-healing.
+#
+# Bootstrap a fresh clone: install dependencies and git hooks.
+setup:
+    npm ci
+    uv venv --allow-existing
+    uv pip install --python .venv -e ../zenzic reuse==6.2.0
+    uvx pre-commit install -t pre-commit -t pre-push
+    @echo "Setup complete. Run 'just verify' to check everything passes."
+
 verify: _check-hooks check
 	npm run lint
 	# Pinned to the same markdownlint-cli version zenzic Core pins by SHA in
