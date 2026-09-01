@@ -165,7 +165,7 @@ Customize language client execution and invoke extension commands through standa
 | `zenzic.autoProvision` | `true` | Automatically install the Zenzic CLI in an isolated environment if not found. Set to `false` to opt out. |
 | `zenzic.autoFixOnSave` | `false` | Automatically apply Zenzic's deterministic Quick Fixes (bare URLs, untagged code blocks, empty link text, malformed lists, heading punctuation, dead suppressions) when a Markdown/MDX file is saved. Off by default — rewrites file content on every save, which can surprise a workflow or conflict with another on-save formatter. |
 | `zenzic.autoRepairLinksOnRename` | `false` | Automatically rewrite inbound relative links when a Markdown/MDX file is renamed or moved. Off by default — unlike auto-fix-on-save, this can rewrite files you didn't directly touch. Docs-root-relative (`/...`) and `@site/...` alias links are always left untouched. |
-| `zenzic.trace.server` | `"off"` | Trace communication between VS Code and the Language Server (`off`, `messages`, `verbose`). |
+| `zenzicLanguageServer.trace.server` | `"off"` | Trace communication between VS Code and the Language Server (`off`, `messages`, `verbose`). Set it in `settings.json` — it is provided by the language-client library rather than contributed by the extension, so it does not appear in the Settings UI. |
 
 ### Command Palette
 

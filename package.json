@@ -84,7 +84,7 @@
         "zenzic.autoFixOnSave": {
           "type": "boolean",
           "default": false,
-          "description": "Automatically apply Zenzic's deterministic Quick Fixes (bare URLs, untagged code blocks, empty link text, malformed lists, heading punctuation) when a Markdown/MDX file is saved. Off by default: this rewrites file content on every save, which can surprise a workflow or conflict with another formatter also running on save -- enable it once you're comfortable with what it fixes."
+          "description": "Automatically apply Zenzic's deterministic Quick Fixes (bare URLs, untagged code blocks, empty link text, malformed lists, heading punctuation, dead suppressions) when a Markdown/MDX file is saved. Off by default: this rewrites file content on every save, which can surprise a workflow or conflict with another formatter also running on save -- enable it once you're comfortable with what it fixes."
         },
         "zenzic.autoRepairLinksOnRename": {
           "type": "boolean",
