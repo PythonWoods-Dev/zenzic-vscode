@@ -13,15 +13,15 @@ SPDX-License-Identifier: Apache-2.0
   </a>
 </p>
 
-<h1 align="center">Zenzic: Real-Time Documentation Quality Platform (DQP) for VS Code</h1>
+<h1 align="center">Zenzic: Markdown Link Checker &amp; Docs Linter for VS Code</h1>
 
 <p align="center">
-  Catches broken links, missing anchors, orphan pages, and leaked credentials in Markdown and MDX — inline, as you type.
+  <strong>Catches broken links, missing anchors, orphan pages, and leaked credentials in Markdown and MDX — inline, as you type.</strong>
 </p>
 
 <p align="center">
-  <strong>Formatters handle syntax. Prose linters handle grammar. Zenzic protects the graph—and optionally enforces lightweight editorial policy without a separate tool.</strong><br>
-  <em>For Specification-Driven Development (SDD) workflows: table-contract validation, AST-powered quick fixes, and workspace quality scoring, all inline in VS Code.</em>
+  <em>Formatters handle syntax. Prose linters handle grammar. Zenzic protects the graph—and optionally enforces lightweight editorial policy without a separate tool.</em><br>
+  For documentation whose Markdown carries contracts: table-schema validation, AST-powered quick fixes, and workspace quality scoring, all inline in VS Code.
 </p>
 
 <p align="center">
@@ -37,19 +37,19 @@ SPDX-License-Identifier: Apache-2.0
 
 ## Protect the Documentation Graph as You Write
 
-Writing technical specifications and documentation-as-code requires real-time integrity verification — catching a broken graph before it reaches review, not after. **Zenzic for VS Code** brings that same DQP rule engine directly into your editor, evaluating table schemas, cross-file references, structural topology, accessibility rules, and credential leaks as you write.
+A link to a page that no longer exists, an anchor renamed out from under its references, a page
+orphaned by a moved file — these break between files, so a single-file checker never sees them.
+Zenzic builds a graph of your whole workspace and re-checks it on every keystroke, marking
+breakage inline the moment you introduce it. No save, no rebuild.
 
-- **Instant Inline Feedback**: See inline squiggly underlines (red for critical errors, yellow for warnings) the moment a defect is introduced — no save, no rebuild.
-- **One-Click Quick Fixes (`Ctrl+.` / `Cmd+.`)**: Automatically repair bare URLs, invalid heading punctuation, malformed lists, untagged code blocks, and dead suppressions.
-- **Zero-Config Installation**: No manual setup required. If the Zenzic CLI is not found, the extension automatically provisions an isolated engine — no changes to your system PATH or shell configuration.
-
-More capabilities — security scanning, the live quality score, and editorial policy governance — are covered in Key Features, further down this page.
+It runs the same engine as the Zenzic CLI and your CI pipeline, so what you see underlined in the
+editor is exactly what the pull request gate will report.
 
 ---
 
-## ⚡ Quick Start (< 60 Seconds)
+## ⚡ Quick Start (< 30 Seconds)
 
-Get real-time documentation intelligence in three simple steps:
+Get real-time link, structure, and credential checking in three simple steps:
 
 ### 1. Install Zenzic CLI Engine
 
@@ -106,50 +106,44 @@ The extension automatically detects the `zenzic` Python CLI engine. If it is not
 
 ---
 
-## 🎯 Key Features at a Glance
+## 🎯 What It Catches
 
-Zenzic for VS Code delivers comprehensive documentation intelligence directly inside the editor:
+Everything below runs on the same keystroke-speed pass. The first two are the reason to install
+the extension; the rest come along with them.
 
-### 1. Real-Time Link & Asset Validation
+### The graph, as you type
 
-Move a file or rename a heading in one document, and Zenzic's Virtual Site Map (VSM) instantly flags broken cross-references and orphan pages across your entire workspace. It is fast enough to run on every keystroke without noticeable lag, and needs no save or rebuild.
+Move a file or rename a heading, and Zenzic's Virtual Site Map instantly flags broken
+cross-references, missing anchors, and orphan pages across the whole workspace — no save, no
+rebuild. This is the class of defect no single-file checker can see, because it only exists
+between files.
 
-### 2. Instant Security & Credential Scanning
+### Credentials, before they reach git
 
-Detects leaked API keys, tokens (e.g., GitHub, AWS, Stripe), and path traversal sequences the moment they're typed — before they ever reach your git history — using Google RE2 non-backtracking safety contracts.
+Leaked API keys and tokens (GitHub, AWS, Stripe) and path-traversal sequences are flagged the
+moment they're typed, using Google RE2 non-backtracking matching. These findings are never
+suppressible.
 
-### 3. Native Semantic & Accessibility Linting
+### Everything else it flags while it's there
 
-- **Duplicate Headings (`Z513`)**: Prevents anchor collision and broken URL fragments.
-- **Generic Image Alt Text (`Z514`)**: Enforces descriptive alternative text for accessibility.
-- **Bare URLs (`Z515`)**: Detects unformatted raw URLs with instant auto-fix.
-- **Single H1 Hierarchy (`Z516`)**: Enforces clean semantic HTML document structure.
-- **Heading Punctuation (`Z517`)**: Flags trailing periods, colons, or semicolons in headings with instant auto-fix.
-- **Malformed Lists (`Z520`)**: Automatically converts pseudo-lists into clean Markdown bullet lists.
+| Area | Codes | What you get |
+| :--- | :--- | :--- |
+| **Accessibility & semantics** | `Z513`–`Z517`, `Z520` | Duplicate headings, generic image alt text, bare URLs, multiple H1s, heading punctuation, malformed lists — most with a one-key fix. |
+| **Editorial policy** | `Z610`–`Z619` | Required/forbidden frontmatter, external-domain allowlisting, cross-namespace limits, forbidden terms, document complexity caps. |
+| **Prose heuristics** | `Z518`, `Z519` | Passive voice and weasel words. RE2 pattern matching, not NLP — it flags candidates ("was reviewed by", "it is believed that"), not every instance a human editor would catch. |
 
-### 4. Policy-as-Code & Editorial Style Governance
+### Fixing what it finds
 
-Enforce organizational standards directly in the editor:
+Press `Ctrl+.` (`Cmd+.`) on any finding for a deterministic Quick Fix — bare URLs, heading
+punctuation, malformed lists, untagged code fences, dead suppressions — or to insert an inline
+`<!-- zenzic:ignore ZXXX -->` when an exception is genuinely warranted. Two workspace behaviors
+extend this and are **off by default**: `zenzic.autoFixOnSave` applies those same fixes on every
+save, and `zenzic.autoRepairLinksOnRename` rewrites inbound relative links when you move a file.
 
-- Required or forbidden frontmatter metadata (`Z610`–`Z613`).
-- Zero-Trust external domain whitelisting (`Z614`, `Z615`).
-- Cross-namespace boundary restrictions (`Z616`).
-- Passive voice heuristics (`Z518`) and weasel word eradication (`Z519`).
-- Forbidden terminology patterns (`Z617`) and document complexity caps (`Z619`).
-
-> `Z518`/`Z519` are lightweight, RE2-based pattern heuristics — not full NLP grammar analysis. They flag common patterns (e.g. "was reviewed by", "it is believed that"), not every instance of passive voice or vagueness a human editor would catch.
-
-### 5. Automated Inline Suppressions
-
-Need a temporary strategic exception? Press `Ctrl+.` on any finding to insert an inline suppression comment (`<!-- zenzic:ignore ZXXX -->`) that tracks technical debt transparently.
-
-### 6. Opt-In Auto-Fix on Save & Auto-Repair on Rename
-
-Beyond manual Quick Fix, two workspace behaviors are available but **off by default**: `zenzic.autoFixOnSave` applies the same deterministic Quick Fixes automatically whenever you save; `zenzic.autoRepairLinksOnRename` rewrites inbound relative links across the workspace whenever you rename or move a file. See the [Settings section](#settings) below.
-
-### 7. Continuous Quality Score in the Status Bar
-
-Your workspace's DQS (Documentation Quality Score) updates live in the Status Bar, computed the same way your CI pipeline computes it — the number you see locally is the number CI will report. Run **Zenzic: Compute Global DQS** anytime for an on-demand refresh, or open the **Quality Status Panel** for a breakdown of suppression-cap usage and baseline freshness.
+Your workspace's DQS (Documentation Quality Score) sits in the Status Bar, computed exactly as
+your CI computes it — the number you see locally is the number CI will report. **Zenzic: Compute
+Global DQS** refreshes it; the **Quality Status Panel** breaks down suppression-cap usage and
+baseline freshness.
 
 ---
 
@@ -176,7 +170,7 @@ The extension contributes the following commands (`Ctrl+Shift+P` / `Cmd+Shift+P`
 | **Zenzic: Restart Server** | `zenzic.restartServer` | Restarts the Language Server and re-indexes all workspace documents. |
 | **Zenzic: Compute Global DQS** | `zenzic.computeDQS` | Executes on-demand global audit and updates the Status Bar score. |
 | **Zenzic: Show Quality Status Panel** | `zenzic.showQualityPanel` | Opens a WebView showing Quality Score, Suppression Cap Usage, and Baseline Freshness as governance metrics — reuses the same `zenzic score --json` result already fetched by `zenzic.computeDQS`, no additional process spawned. |
-| **Zenzic: Start Server** | `zenzic.startServer` | Starts the ZLS Language Server background process. |
+| **Zenzic: Start Server** | `zenzic.startServer` | Starts the Zenzic Language Server background process. |
 | **Zenzic: Stop Server** | `zenzic.stopServer` | Stops the Language Server process. |
 | **Zenzic: Show Status / Recovery** | `zenzic.showStatus` | Re-triggers error recovery dialogs or opens the quick action menu. |
 | **Zenzic: Troubleshoot & Repair Setup** | `zenzic.troubleshoot` | Runs automated environment diagnostics and offers 1-click self-healing repairs. |
@@ -192,21 +186,20 @@ Configure a repository virtual environment in `.vscode/settings.json`:
 }
 ```
 
-> **Note:** If you configure an invalid custom `zenzic.executablePath`, the extension will prompt you to clear the setting to safely fall back to the Auto-Provisioning engine.
+> **Note:** If you configure an invalid custom `zenzic.executablePath`, the extension will prompt you to clear the setting to safely fall back to the auto-provisioned engine.
 
 ---
 
-## 🏗️ Under the Hood: The Thin Client Architecture
+## 🏗️ Under the Hood
 
-Zenzic for VS Code is designed with strict adherence to the **Thin Client Architecture** (**ADR-075 Radical Unawareness**).
+The extension contains no parsing logic, no regex engines, and no validation rules of its own. It is a thin Language Server Protocol (LSP) client that talks to your local `zenzic` Python binary over JSON-RPC on stdio — fast enough to run on every keystroke without noticeable lag.
 
-The extension itself contains zero parsing logic, zero regex matching engines, and zero hardcoded validation rules. Instead, it acts as a Language Server Protocol (LSP) client that communicates directly with the local `zenzic` Python binary via JSON-RPC over standard input/output (`stdio`) — fast enough to run on every keystroke without noticeable lag.
+Two consequences worth knowing:
 
-This architecture guarantees:
+- **One engine, everywhere.** The editor runs the same rules, config loader, and adapters as your CLI and CI, so a finding means the same thing in all three. One exception: orphan and dead-end page detection currently uses two independent algorithms in the LSP and the CLI — see the Core's [`CHANGELOG.md` Known Limitations](https://github.com/PythonWoods-Dev/zenzic/blob/main/CHANGELOG.md#unreleased).
+- **Upgrades need no extension release.** Upgrading the `zenzic` CLI gives the extension every new rule and fix immediately.
 
-- **Shared Engine, Shared Rules**: the extension runs the same rule engine, config loader, and adapter resolution as your local CLI and CI/CD pipeline — diagnostics and finding codes come from one Core, not a reimplementation in the extension. Topology detection (orphan/dead-end pages) is the one area where the LSP and the CLI currently use two independent algorithms rather than one shared primitive; see the Core's [`CHANGELOG.md` Known Limitations](https://github.com/PythonWoods-Dev/zenzic/blob/main/CHANGELOG.md#unreleased) for details.
-- **Zero Editor Bloat**: All AST indexing, Virtual Site Map graph updates, and regex computations execute in the compiled Python core, keeping VS Code lightweight and responsive.
-- **Instant Engine Upgrades**: Upgrading the `zenzic` CLI immediately equips the VS Code extension with all newly released rules and mutations without waiting for extension marketplace releases.
+Full architecture: [zenzic.dev](https://zenzic.dev).
 
 ---
 
