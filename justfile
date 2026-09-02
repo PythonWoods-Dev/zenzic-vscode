@@ -176,6 +176,18 @@ audit-release:
 		exit 1
 	fi
 	grep -q "Zenzic Core v$CORE_REL or higher" README.md
+	# Exhaustive README sweep: every Core version reference must equal the pin.
+	# A prose line or install command that pin-core's patterns fail to reach would
+	# otherwise keep a stale version silently -- the ADR-092 drift class. This asserts
+	# the outcome (no wrong number survives) rather than trusting the patterns.
+	STALE="$(grep -oE 'zenzic[>=]=[0-9]+\.[0-9]+\.[0-9]+|Zenzic Core v[0-9]+\.[0-9]+\.[0-9]+' README.md \
+		| grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | sort -u | grep -v "^${CORE_REL}$" || true)"
+	if [[ -n "$STALE" ]]; then
+		echo "audit-release failed: README.md has Core version(s) not matching the pin ($CORE_REL):"
+		echo "$STALE" | sed 's/^/  stale: /'
+		echo "  Run 'just pin-core $CORE_REL', or extend _pin-core-apply if a pattern does not reach the line."
+		exit 1
+	fi
 	echo "✅ audit-release: release metadata and core pin alignment are coherent."
 
 _validate-semver version:
@@ -189,6 +201,8 @@ _validate-semver version:
 _pin-core-apply version:
 	#!/usr/bin/env bash
 	set -euo pipefail
+	sed -i 's/uv tool install "zenzic>=[0-9.]*"/uv tool install "zenzic>={{version}}"/g' README.md
+	sed -i 's/pip install --upgrade "zenzic>=[0-9.]*"/pip install --upgrade "zenzic>={{version}}"/g' README.md
 	sed -i 's/uv tool install zenzic==[0-9.]*/uv tool install zenzic=={{version}}/g' README.md
 	sed -i 's/pip install zenzic==[0-9.]*/pip install zenzic=={{version}}/g' README.md
 	sed -i 's/Zenzic Core v[0-9.]* or higher/Zenzic Core v{{version}} or higher/g' README.md
@@ -223,8 +237,9 @@ pin-core-dry version:
 	echo "==> Dry-run: changes that 'just pin-core {{version}}' would apply"
 	echo ""
 	echo "--- README.md ---"
-	grep -nE 'zenzic==[0-9.]*|Zenzic Core v[0-9.]+ or higher|minimum required Core version \(`v[0-9.]+`\)|virtual environment containing Core `v[0-9.]+` or higher' README.md \
+	grep -nE 'zenzic[>=]=[0-9.]*|Zenzic Core v[0-9.]+ or higher|minimum required Core version \(`v[0-9.]+`\)|virtual environment containing Core `v[0-9.]+` or higher' README.md \
 		| sed -E \
+			-e 's/zenzic>=[0-9.]*/zenzic>={{version}}/g' \
 			-e 's/zenzic==[0-9.]*/zenzic=={{version}}/g' \
 			-e 's/Zenzic Core v[0-9.]+ or higher/Zenzic Core v{{version}} or higher/g' \
 			-e 's/minimum required Core version \(`v[0-9.]+`\)/minimum required Core version (`v{{version}}`)/g' \
