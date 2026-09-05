@@ -68,9 +68,10 @@ brand_obsolescence = [
 # BEHAVIOR: Matched findings are silently dropped — ZERO debt added.
 #
 [governance.directory_policies]
-# changelogs: historical entries — heading-only versions (Z512), long sentences
-# from release notes (Z511), topological dead-ends (Z410/Z411), editorial (Z513).
-"changelogs/**"      = ["Z410", "Z411", "Z512", "Z513", "Z511"]
+# changelogs: historical entries — long sentences from release notes (Z511),
+# topological dead-ends (Z410/Z411), editorial (Z513). Z512 removed: never
+# used to suppress a finding here (Z620).
+"changelogs/**"      = ["Z410", "Z411", "Z513", "Z511"]
 # assets/ and images/: design assets not yet linked from documentation.
 "assets/**"          = ["Z405"]
 "images/**"          = ["Z405"]
