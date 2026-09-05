@@ -1,0 +1,88 @@
+# SPDX-FileCopyrightText: 2026 PythonWoods <dev@pythonwoods.dev>
+# SPDX-License-Identifier: Apache-2.0
+
+# Precedence: .zenzic.toml is shared baseline; .zenzic.local.toml overrides locally.
+# Keep secrets and workstation-only values in .zenzic.local.toml.
+
+# --- CORE SETTINGS ---
+# ---------------------------------------------------------------------------
+# docs_dir
+# ---------------------------------------------------------------------------
+# Set to "." to scan the entire repository root (no docs/ folder exists in
+# this TypeScript/npm project — docs live at root level: README.md,
+# CHANGELOG.md, CONTRIBUTING.md, RELEASE.md).
+# L1 system exclusions (node_modules, .git, etc.) apply automatically.
+#
+docs_dir = "."
+
+strict = true
+fail_under = 100
+# exit_zero = false
+# respect_vcs_ignore = true
+
+excluded_external_urls = []
+
+# --- EXCLUSION ZONES (Full bypass — use sparingly) ---
+# Paths listed here are INVISIBLE to Zenzic: no findings, no audit trail.
+# Prefer [governance.per_file_ignores] for targeted suppression.
+excluded_dirs = [
+    "out",           # TypeScript build output
+    "dist",          # Alternative build output dir
+    ".vscode-test",  # VS Code extension test harness artefacts
+    "coverage",      # vitest coverage report output
+    "LICENSES",      # REUSE license files — machine-readable, not documentation
+]
+excluded_file_patterns = [
+    "RELEASE.md",
+]
+
+# --- PLACEHOLDERS & CODE SNIPPETS (Optional) ---
+placeholder_patterns = []
+
+# --- ENGINE CONTEXT ---
+[build_context]
+engine         = "standalone" # No docs framework — standalone markdown files at root
+base_url       = "/"
+default_locale = "en"
+
+# --- BRAND INTEGRITY ---
+[project_metadata]
+release_name = "Magnetite"
+badge_stamp_files = ["README.md"]
+
+[governance]
+suppression_cap = 0
+suppression_cap_fail_hard = true
+
+brand_obsolescence = [
+    "Basalt",
+    "Quartz",
+    "Obsidian",
+    "Graphite",
+]
+
+# ---------------------------------------------------------------------------
+# directory_policies
+# ---------------------------------------------------------------------------
+# Strategic exemptions for entire directory trees or specific files.
+# BEHAVIOR: Matched findings are silently dropped — ZERO debt added.
+#
+[governance.directory_policies]
+# changelogs: historical entries — long sentences from release notes (Z511),
+# topological dead-ends (Z410/Z411), editorial (Z513). Z512 removed: never
+# used to suppress a finding here (Z620).
+"changelogs/**"      = ["Z410", "Z411", "Z513", "Z511"]
+# assets/ and images/: design assets not yet linked from documentation.
+"assets/**"          = ["Z405"]
+"images/**"          = ["Z405"]
+# ROADMAP.md: intentionally short, single-topic page; structural dead-end by design.
+"ROADMAP.md"         = ["Z411", "Z502"]
+# CODE_OF_CONDUCT.md: topological dead-ends and long clauses by design.
+"CODE_OF_CONDUCT.md" = ["Z411", "Z511"]
+
+# --- CUSTOM RULES (Optional) ---
+[[custom_rules]]
+id       = "ZZ-NOCLICKHERE"
+pattern  = "(?i)\\bclick here\\b|\\bclicca qui\\b"
+message  = "Avoid generic link text. Use a meaningful description for accessibility."
+severity = "error"

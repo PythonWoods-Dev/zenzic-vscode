@@ -5,7 +5,7 @@
   "version": "0.30.0",
   "publisher": "pythonwoods",
   "engines": {
-    "vscode": "^1.125.0"
+    "vscode": "^1.91.0"
   },
   "categories": [
     "Programming Languages"
@@ -20,12 +20,12 @@
   "icon": "images/logo.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/PythonWoods/zenzic-vscode.git"
+    "url": "https://github.com/PythonWoods-Dev/zenzic-vscode.git"
   },
   "bugs": {
-    "url": "https://github.com/PythonWoods/zenzic-vscode/issues"
+    "url": "https://github.com/PythonWoods-Dev/zenzic-vscode/issues"
   },
-  "homepage": "https://github.com/PythonWoods/zenzic-vscode",
+  "homepage": "https://github.com/PythonWoods-Dev/zenzic-vscode",
   "activationEvents": [
     "onLanguage:markdown",
     "onLanguage:mdx"
@@ -50,12 +50,21 @@
         "title": "Zenzic: Compute Global DQS"
       },
       {
+        "command": "zenzic.showQualityPanel",
+        "title": "Zenzic: Show Quality Status Panel"
+      },
+      {
         "command": "zenzic.showStatus",
         "title": "Zenzic: Show Status / Recovery"
       },
       {
         "command": "zenzic.troubleshoot",
         "title": "Zenzic: Troubleshoot & Repair Setup"
+      },
+      {
+        "command": "zenzic.reportFindingAsIssue",
+        "title": "Zenzic: Report Finding as GitHub Issue",
+        "category": "Zenzic"
       }
     ],
     "configuration": {
@@ -71,6 +80,16 @@
           "type": "boolean",
           "default": true,
           "description": "Automatically install the Zenzic CLI engine in an isolated environment (using uv or python3 venv) if it is not found on your system or at the configured path. No changes are made to your system Python, PATH, or shell configuration."
+        },
+        "zenzic.autoFixOnSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically apply Zenzic's deterministic Quick Fixes (bare URLs, untagged code blocks, empty link text, malformed lists, heading punctuation, dead suppressions) when a Markdown/MDX file is saved. Off by default: this rewrites file content on every save, which can surprise a workflow or conflict with another formatter also running on save -- enable it once you're comfortable with what it fixes."
+        },
+        "zenzic.autoRepairLinksOnRename": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically rewrite inbound relative links when a Markdown/MDX file is renamed or moved. Off by default: unlike auto-fix-on-save, this can rewrite files you didn't directly touch (every file that linked to the renamed one) -- enable it once you're comfortable reviewing multi-file changes from a single rename. Docs-root-relative ('/...') and '@site/...' alias links are always left untouched (ambiguous to rewrite safely) even when this is on."
         }
       }
     }
@@ -80,19 +99,23 @@
     "build": "node esbuild.js",
     "watch": "node esbuild.js --watch",
     "lint": "eslint src",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "package": "npm run build && npx @vscode/vsce package"
   },
   "dependencies": {
-    "vscode-languageclient": "^10.1.0"
+    "vscode-languageclient": "^10.1.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/node": "^26.2.0",
-    "@types/vscode": "~1.125.0",
-    "@typescript-eslint/eslint-plugin": "^8.67.0",
-    "@typescript-eslint/parser": "^8.67.0",
+    "@types/node": "^26.4.1",
+    "@types/vscode": "~1.91.0",
+    "@typescript-eslint/eslint-plugin": "^8.69.0",
+    "@typescript-eslint/parser": "^8.69.0",
+    "@vitest/coverage-v8": "^4.1.11",
     "esbuild": "^0.28.2",
-    "eslint": "^10.8.1",
-    "typescript": "~6.0.2"
+    "eslint": "^10.9.1",
+    "typescript": "~6.0.2",
+    "vitest": "^4.1.11"
   }
 }

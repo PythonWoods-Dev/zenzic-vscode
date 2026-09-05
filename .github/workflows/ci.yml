@@ -18,19 +18,72 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Determine Zenzic Core Branch (Explicit Declaration, Override, or Main)
+        id: resolve-branch
+        shell: bash
+        env:
+          ZENZIC_CORE_REF: ${{ vars.ZENZIC_CORE_REF }}
+        run: |
+          # Priority 1: repo-variable override -- a fast, ad-hoc escape hatch
+          # for a single session/investigation. Not meant to be left set;
+          # see .zenzic-core-ref below for the durable, per-branch mechanism.
+          if [[ -n "${ZENZIC_CORE_REF:-}" ]]; then
+            echo "Explicit core ref override (repo variable ZENZIC_CORE_REF): $ZENZIC_CORE_REF"
+            echo "core_ref=$ZENZIC_CORE_REF" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Priority 2: an explicit, committed declaration that this branch
+          # depends on a specific zenzic core ref. Replaces the old "does a
+          # same-named branch happen to exist in core" heuristic, which
+          # silently fell back to main on ANY name mismatch -- including the
+          # exact coordinated-development case it existed to serve (a vscode
+          # branch and a core branch developed together under different
+          # names), producing CI results that silently diverged from local
+          # runs with no signal anywhere in the log.
+          if [[ -f ".zenzic-core-ref" ]]; then
+            DECLARED_REF="$(tr -d '[:space:]' < .zenzic-core-ref)"
+            if [[ -z "$DECLARED_REF" ]]; then
+              echo "::error::.zenzic-core-ref exists but is empty. Put a real zenzic branch/tag name in it, or delete the file to use main."
+              exit 1
+            fi
+            if git ls-remote --exit-code --heads --tags https://github.com/PythonWoods-Dev/zenzic.git "$DECLARED_REF" > /dev/null 2>&1; then
+              echo "Declared core ref (.zenzic-core-ref): $DECLARED_REF -- found in core, using it."
+              echo "core_ref=$DECLARED_REF" >> $GITHUB_OUTPUT
+            else
+              echo "::error::.zenzic-core-ref declares '$DECLARED_REF', but no matching branch or tag exists in PythonWoods-Dev/zenzic. Update .zenzic-core-ref to a real ref, or delete the file to fall back to main. Falling back silently here is exactly the failure mode this file exists to prevent."
+              exit 1
+            fi
+            exit 0
+          fi
+
+          # No declaration and no override: this branch has not asked for a
+          # specific core ref, so main is the correct, ordinary default --
+          # not a fallback from a failed match, and nothing to warn about.
+          echo "No .zenzic-core-ref declaration and no ZENZIC_CORE_REF override -- using zenzic's main (no cross-repo core coupling declared for this branch)."
+          echo "core_ref=main" >> $GITHUB_OUTPUT
+
+      - name: Checkout Zenzic Core (Sovereign Resolution)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: PythonWoods-Dev/zenzic
+          ref: ${{ steps.resolve-branch.outputs.core_ref }}
+          path: _zenzic_core
+          fetch-tags: true
 
       - name: Install just
-        uses: taiki-e/install-action@just
+        uses: taiki-e/install-action@e1ad73d8df9252ed26a05bad034abe5444e7ad28 # just
 
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: '24'
           cache: 'npm'
 
-      - name: Setup uv (for REUSE compliance tool)
-        uses: astral-sh/setup-uv@v7
+      - name: Setup uv (for REUSE compliance tool and Zenzic gate)
+        uses: astral-sh/setup-uv@94527f2e458b27549849d47d273a16bec83a01e9 # v7
         with:
           enable-cache: true
 
@@ -41,13 +94,27 @@ jobs:
         run: npm ci
 
       - name: Run Quality Gates
+        env:
+          ZENZIC_CORE_PATH: _zenzic_core
         run: just verify
 
       - name: Test VSIX Packaging
         run: npx @vscode/vsce package
 
+      - name: Guard VSIX Package Size
+        shell: bash
+        run: |
+          VSIX_FILE=$(find . -maxdepth 1 -name '*.vsix' -print -quit)
+          SIZE_BYTES=$(stat -c%s "$VSIX_FILE")
+          MAX_BYTES=$((5 * 1024 * 1024))
+          echo "VSIX package: $VSIX_FILE ($SIZE_BYTES bytes)"
+          if [[ "$SIZE_BYTES" -gt "$MAX_BYTES" ]]; then
+            echo "::error::VSIX package is $SIZE_BYTES bytes, exceeding the $MAX_BYTES byte ceiling. A stray checkout, dependency, or build artifact is likely bundled — check .vscodeignore." >&2
+            exit 1
+          fi
+
       - name: Upload VSIX Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: zenzic-vscode-extension
           path: "*.vsix"
