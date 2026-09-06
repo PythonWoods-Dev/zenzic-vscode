@@ -128,8 +128,8 @@ suppressible.
 
 | Area | Codes | What you get |
 | :--- | :--- | :--- |
-| **Accessibility & semantics** | `Z513`–`Z517`, `Z520` | Duplicate headings, generic image alt text, bare URLs, multiple H1s, heading punctuation, malformed lists — most with a one-key fix. |
-| **Editorial policy** | `Z610`–`Z619` | Required/forbidden frontmatter, external-domain allowlisting, cross-namespace limits, forbidden terms, document complexity caps. |
+| **Accessibility & semantics** | `Z513`, `Z514`, `Z515`, `Z516`, `Z517`, `Z520` | Duplicate headings, generic image alt text, bare URLs, multiple H1s, heading punctuation, malformed lists — most with a one-key fix. |
+| **Editorial policy** | `Z610`, `Z611`, `Z612`, `Z613`, `Z614`, `Z615`, `Z616`, `Z617`, `Z618`, `Z619` | Required/forbidden frontmatter, external-domain allowlisting, cross-namespace limits, forbidden terms, document complexity caps. |
 | **Prose heuristics** | `Z518`, `Z519` | Passive voice and weasel words. RE2 pattern matching, not NLP — it flags candidates ("was reviewed by", "it is believed that"), not every instance a human editor would catch. |
 
 ### Fixing what it finds
