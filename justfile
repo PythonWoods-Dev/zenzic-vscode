@@ -29,8 +29,8 @@ package:
 # lockfile is honoured exactly, matching what CI resolves.
 #
 # The hook install is part of setup rather than a step to remember: this
-# repository was once found with no hooks installed at all, the precondition
-# Rule 31 blocks on. Running setup makes that self-healing.
+# repository was once found with no hooks installed at all, a precondition
+# this now blocks on. Running setup makes that self-healing.
 #
 # Bootstrap a fresh clone: install dependencies and git hooks.
 setup:
@@ -47,9 +47,9 @@ verify: _check-hooks check
 	# `default: true`, so every rule a newer release adds would fire here as a
 	# phantom failure -- observed on Core, where latest reported 76 MD060 findings
 	# the authoritative version does not have.
-	# _zenzic_core is the Sovereign Resolution chain's CI checkout of Core
-	# (02-architecture-models.md, priority 2), not this repo's content. It
-	# carries Core's examples/ fixtures, which are deliberately non-compliant.
+	# _zenzic_core is the Sovereign Resolution chain's CI checkout of Core,
+	# not this repo's content. It carries Core's examples/ fixtures, which
+	# are deliberately non-compliant.
 	# Absent locally -- resolution falls through to ../zenzic -- which is why
 	# this passed here and failed in CI.
 	npx -y markdownlint-cli@0.41.0 '**/*.md' --ignore node_modules --ignore _zenzic_core
@@ -304,7 +304,7 @@ _check-hooks:
     done
     if [ "${_missing}" -ne 0 ]; then
         echo ""
-        echo "Refusing to continue with an uninstalled git hook. See Rule 31."
+        echo "Refusing to continue with an uninstalled git hook."
         exit 1
     fi
     echo "git hooks installed (pre-commit, pre-push)"

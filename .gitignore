@@ -5,16 +5,14 @@ dist/
 coverage/
 *.vsix
 .DS_Store
-.architect/
 .zenzic_cache/
 example/
 
 # CI-only Zenzic Core checkout (sovereign parity dogfooding, see justfile `check`)
 _zenzic_core/
 
-# AI Control Plane — never commit to version control
+# Internal workspace — never commit to version control
 .claude/
-.gemini/
 
 # Zenzic quality scores — derived local metadata
 .zenzic-score.json
