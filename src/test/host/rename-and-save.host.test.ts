@@ -195,22 +195,36 @@ suite('extension host: case-insensitive identity on rename', () => {
         assert.ok(linker.getText().includes('(CaseTarget2.md)'), linker.getText());
     });
 
-    // A rename that changes only letter case. On a case-insensitive
-    // filesystem the new name already "exists" (it is the old file), so a
-    // server that resolved the new path through the filesystem would see
-    // old == new and rewrite nothing. On Linux this is an ordinary rename;
-    // on Windows it is the case the directive names.
-    test('[edge 8] a case-only rename still rewrites the inbound link', async function () {
+    // A rename that changes only letter case. Two platforms, two proofs:
+    //
+    // On a case-sensitive filesystem (Linux) VS Code renames the file and the
+    // participant sees both spellings -- the inbound link must follow.
+    //
+    // On a case-insensitive filesystem (Windows, observed 2026-09-08 in this
+    // suite's trace) VS Code canonicalises the target URI onto the existing
+    // resource before any file operation: the participant received
+    // newUri == oldUri, the file on disk kept its old spelling, and
+    // applyEdit still returned true. That is the editor's behaviour for a
+    // rename requested through WorkspaceEdit.renameFile, not the server's;
+    // the server then must answer an identity rename with no edit at all --
+    // the first Windows run of this test found it rewriting every href to
+    // its own spelling and leaving the linker dirty for nothing.
+    test('[edge 8] a case-only rename rewrites the inbound link, or is an identity the server leaves alone', async function () {
         this.timeout(60_000);
+        const onDisk = (): string[] => fs.readdirSync(path.join(ws(), 'docs')).filter((n) => /ixedcase/i.test(n));
         await renameFiles([[docPath('MixedCase.md'), docPath('mixedcase.md')]]);
         const linker = await buffer('mixedlink.md');
-        // On failure, say what the filesystem and the editor actually hold,
-        // not only what the buffer says: which spelling is on disk after the
-        // rename, and whether any participant edit left the linker dirty.
-        const state = (): string =>
-            `on disk: ${fs.readdirSync(path.join(ws(), 'docs')).filter((n) => /ixed/i.test(n)).join(', ')}; ` +
-            `linker dirty: ${linker.isDirty}; buffer: ${linker.getText()}`;
-        await until(() => linker.getText().includes('(mixedcase.md)'), 20_000, `mixedlink.md not rewritten -- ${state()}`);
-        assert.ok(!linker.getText().includes('(MixedCase.md)'), 'old spelling survived');
+        const state = (): string => `on disk: ${onDisk().join(', ')}; linker dirty: ${linker.isDirty}; buffer: ${linker.getText()}`;
+        if (onDisk().includes('mixedcase.md')) {
+            await until(() => linker.getText().includes('(mixedcase.md)'), 20_000, `mixedlink.md not rewritten -- ${state()}`);
+            assert.ok(!linker.getText().includes('(MixedCase.md)'), 'old spelling survived');
+            return;
+        }
+        // The platform canonicalised the target: nothing was renamed.
+        assert.deepStrictEqual(onDisk(), ['MixedCase.md'], state());
+        // Give a wrong server time to apply its no-op edit, then pin that none came.
+        await new Promise((r) => setTimeout(r, 3000));
+        assert.ok(linker.getText().includes('(MixedCase.md)'), state());
+        assert.strictEqual(linker.isDirty, false, `an identity rename produced an edit -- ${state()}`);
     });
 });

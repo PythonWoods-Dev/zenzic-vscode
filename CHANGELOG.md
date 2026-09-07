@@ -18,8 +18,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   is exercised across a single rename, a batch rename, two links to one target and a folder
   rename (skipped by design). Two more renames turn on letter case: a lowercase href to a
   mixed-case file, and a rename that changes only case. The first failed on the suite's first
-  Windows run and led to a server-side fix (see the core CHANGELOG). Both now run on every
-  platform. Two documented limits are pinned too: an unsaved just-typed link
+  Windows run and led to a server-side fix (see the core CHANGELOG). The second found, from
+  the Windows trace, that VS Code canonicalises a case-only target requested through
+  `WorkspaceEdit.renameFile` onto the existing file: the participant receives the old URI
+  twice and nothing is renamed. On that platform the test therefore pins the editor's
+  behaviour, and that the server answers such an identity rename with no edit. Both run on
+  every platform.
+  Two documented limits are pinned too: an unsaved just-typed link
   is not repaired, because the link index is built from disk, and a canonical-URL collision is
   rewritten without being detected. CI runs the suite on the
   Linux job under `xvfb-run` and natively on the Windows job, in about 30 seconds each. Locally, point `ZENZIC_HOST_TEST_EXECUTABLE`
