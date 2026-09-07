@@ -47,7 +47,14 @@ suite('extension host: activation', () => {
     });
 
     test('a contributed command responds when executed', async () => {
-        // showStatus is informational and does not require a running server.
-        await vscode.commands.executeCommand('zenzic.showStatus');
+        // showStatus opens a QuickPick and awaits the user's choice. Headless,
+        // nobody chooses, so the promise only settles when the picker is
+        // dismissed -- which is why earlier runs of this test took anywhere
+        // from 2s to the 60s timeout. Dismiss it deliberately: the assertion
+        // is that the handler ran to its await and returned once dismissed.
+        const invoked = vscode.commands.executeCommand('zenzic.showStatus');
+        await new Promise((r) => setTimeout(r, 500));
+        await vscode.commands.executeCommand('workbench.action.closeQuickOpen');
+        await invoked;
     });
 });

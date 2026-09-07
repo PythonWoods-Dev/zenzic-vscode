@@ -1,3 +1,6 @@
 {
-    "zenzic.autoProvision": false
+    "zenzic.autoProvision": false,
+    "zenzic.autoFixOnSave": true,
+    "zenzic.autoRepairLinksOnRename": true,
+    "zenzicLanguageServer.trace.server": "verbose"
 }
