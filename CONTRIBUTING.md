@@ -117,6 +117,13 @@ stay hidden.
 Set `VSCODE_TEST_VERSION` to run against something else — `stable`, `insiders`, or an exact
 version — for an on-demand check before a release or after an upstream change.
 
+**Why the floor is 1.91.0.** Not because of this extension's own calls: of the 37 VS Code
+APIs it uses, 34 exist since at least 1.60 and the newest three (`LogOutputChannel`,
+`LogLevel`) arrived in 1.74. The binding constraint is `vscode-languageclient` 10.x, which
+declares `engines.vscode ^1.91.0` and carries the file-operation forwarding the rename
+feature depends on. Lowering the floor would mean downgrading the language client, which
+is not worth a fourteen-month-old host.
+
 **When to bump the floor.** Bump `engines.vscode` (and `@types/vscode` with it) when the
 code needs an API the current floor lacks, or when the floor is older than what users
 realistically run. Never bump it only to make the suite pass.

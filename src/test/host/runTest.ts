@@ -79,7 +79,34 @@ async function main(): Promise<void> {
     });
 }
 
+/**
+ * On failure, print the language server's output channel. CI captures only
+ * the runner's stdout; the server's own trace -- initialize options, every
+ * request and response, its log messages -- lands in VS Code's log folder
+ * and would otherwise be lost with the runner. The first Windows failure of
+ * this suite was diagnosed blind because of exactly that.
+ */
+function dumpServerChannel(extensionDevelopmentPath: string): void {
+    const logsRoot = path.join(extensionDevelopmentPath, '.vscode-test', 'user-data', 'logs');
+    const found: string[] = [];
+    const walk = (dir: string): void => {
+        if (!fs.existsSync(dir)) { return; }
+        for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+            const full = path.join(dir, entry.name);
+            if (entry.isDirectory()) { walk(full); }
+            else if (entry.name.includes('Zenzic Language Server')) { found.push(full); }
+        }
+    };
+    walk(logsRoot);
+    if (found.length === 0) { console.error('(no Zenzic Language Server channel log found)'); return; }
+    found.sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
+    console.error(`\n===== Zenzic Language Server channel (${found[0]}) =====`);
+    console.error(fs.readFileSync(found[0], 'utf8').slice(-20000));
+    console.error('===== end of server channel =====\n');
+}
+
 main().catch((err) => {
     console.error('extension-host suite failed to run:', err);
+    dumpServerChannel(path.resolve(__dirname, '../../../'));
     process.exit(1);
 });
