@@ -52,7 +52,10 @@ verify: _check-hooks check
 	# are deliberately non-compliant.
 	# Absent locally -- resolution falls through to ../zenzic -- which is why
 	# this passed here and failed in CI.
-	npx -y markdownlint-cli@0.41.0 '**/*.md' --ignore node_modules --ignore _zenzic_core
+	# src/test/host/fixtures is the extension-host suite's test data: tiny,
+	# deliberately non-compliant Markdown (a bare URL *is* the Z515 fixture).
+	# Same reasoning as _zenzic_core above -- not this repo's documentation.
+	npx -y markdownlint-cli@0.41.0 '**/*.md' --ignore node_modules --ignore _zenzic_core --ignore src/test/host/fixtures
 	npx tsc --noEmit
 	just test-cov
 	@if ! command -v reuse > /dev/null 2>&1; then \
