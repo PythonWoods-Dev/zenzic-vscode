@@ -178,3 +178,21 @@ suite('extension host: auto-repair links on rename (willRenameFiles)', () => {
         assert.ok(fs.existsSync(docPath('e.md')), 'e.md must still exist -- the collision is real');
     });
 });
+
+suite('extension host: case-insensitive path comparison (Windows only)', () => {
+    // Rename edge case (6). The href is written in lowercase, the file is
+    // mixed-case. On a case-sensitive filesystem the link does not resolve to
+    // the file at all, so there is nothing to repair and nothing to assert;
+    // on Windows it does resolve, and the repair must match the file
+    // case-insensitively. Skipped rather than faked elsewhere.
+    test('[edge 6] a lowercase href to a mixed-case file is repaired on rename', async function () {
+        this.timeout(60_000);
+        if (process.platform !== 'win32') {
+            this.skip();
+        }
+        await renameFiles([[docPath('CaseTarget.md'), docPath('CaseTarget2.md')]]);
+        const linker = await buffer('caselink.md');
+        await until(() => linker.getText().includes('CaseTarget2.md'), 20_000, `caselink.md buffer is: ${linker.getText()}`);
+        assert.ok(linker.getText().includes('(CaseTarget2.md)'), linker.getText());
+    });
+});

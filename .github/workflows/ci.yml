@@ -106,12 +106,9 @@ jobs:
       # development mode, a live `zenzic lsp` from the Sovereign-Resolution
       # checkout above. Everything vitest cannot reach -- activation, the LSP
       # client, willSaveWaitUntil, willRenameFiles -- is only observable here.
-      # Linux only: the headless run needs xvfb, preinstalled on ubuntu-latest.
-      # Windows can run @vscode/test-electron without xvfb and is not wired
-      # yet -- doing so is the one way to exercise the rename edge case that
-      # depends on case-insensitive path comparison.
+      # Linux runs under xvfb (preinstalled on ubuntu-latest); Windows runs
+      # natively below.
       - name: Build Zenzic Core venv for the extension-host suite
-        if: runner.os == 'Linux'
         run: uv sync --project _zenzic_core
 
       - name: Extension-host suite (xvfb)
@@ -119,6 +116,15 @@ jobs:
         env:
           ZENZIC_HOST_TEST_EXECUTABLE: ${{ github.workspace }}/_zenzic_core/.venv/bin/zenzic
         run: xvfb-run -a npm run test:host
+
+      # Windows needs no display server for @vscode/test-electron, and it is
+      # the only runner with a case-insensitive filesystem -- the rename edge
+      # case that depends on it runs here and skips itself everywhere else.
+      - name: Extension-host suite (Windows)
+        if: runner.os == 'Windows'
+        env:
+          ZENZIC_HOST_TEST_EXECUTABLE: ${{ github.workspace }}\_zenzic_core\.venv\Scripts\zenzic.exe
+        run: npm run test:host
 
       - name: Test VSIX Packaging
         run: npx @vscode/vsce package
