@@ -96,9 +96,13 @@ It only resolves inside a running Extension Host. Pure, `vscode`-independent log
 version-comparison helper in `semver.ts`) is deliberately kept in its own module for exactly this
 reason, mirroring `coreVersion.ts`'s existing pattern — extract before you can unit-test.
 
-Full Extension Host integration testing (`@vscode/test-electron`) is not yet wired up; it requires
-a display server (Xvfb on headless Linux CI) that this repository's automation does not currently
-provision.
+Extension Host integration tests live in `src/test/host/` and run with `npm run test:host`,
+which downloads a VS Code build once (cached under `.vscode-test/`), loads the extension in
+development mode and drives a real `zenzic lsp`. Point `ZENZIC_HOST_TEST_EXECUTABLE` at the
+`zenzic` binary to use (for example a sibling core checkout's `.venv/bin/zenzic`); the launcher
+writes it into a throwaway copy of the fixture workspace. On headless Linux wrap the command in
+`xvfb-run -a`, which is what CI does. The fixture under `src/test/host/fixtures/` is deliberately
+tiny and deliberately broken and is excluded from this repository's own lint and audit gates.
 
 ---
 

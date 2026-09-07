@@ -11,6 +11,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Extension-Host Test Suite (`npm run test:host`)**: twelve tests that launch a real VS Code
+  via `@vscode/test-electron`, load the extension in development mode and drive a live
+  `zenzic lsp`. They cover activation on Markdown, registration of every contributed command,
+  a published `Z101` diagnostic, and auto-fix-on-save rewriting a bare URL. Auto-repair-on-rename
+  is exercised across a single rename, a batch rename, two links to one target and a folder
+  rename (skipped by design). Two documented limits are pinned too: an unsaved just-typed link
+  is not repaired, because the link index is built from disk, and a canonical-URL collision is
+  rewritten without being detected. CI runs the suite on the
+  Linux job under `xvfb-run` in about 30 seconds. Locally, point `ZENZIC_HOST_TEST_EXECUTABLE`
+  at a `zenzic` binary; the launcher writes it into a throwaway copy of the fixture workspace,
+  because VS Code rebuilds the extension host's environment from the login shell and ignores an
+  inherited `PATH`. The suite also pins one behaviour the settings' descriptions do not state:
+  a rename repair lands in the editor buffer and leaves the linking file dirty. It is not
+  written to disk until saved.
 - **`Zenzic: Report Finding as GitHub Issue` Command**: opens a prefilled GitHub issue form for the finding under the cursor — carrying the finding code, file and line, the diagnostic message, and the extension and VS Code versions. Invoked from anywhere else in a file, it lists that file's findings and asks which to report. Implemented with `vscode.env.openExternal` and a query-string URL: no authentication, no token storage, no GitHub API call, and therefore no rate limit and no sign-in step. With no network it is the browser that reports the failure rather than the editor, and nothing is submitted until the prefilled form is reviewed and sent by hand. The issue body is bounded by construction (truncated to stay well inside GitHub's URL limit) rather than relying on finding messages being short.
 
 - **Unit Test Suite & Coverage Gate**: previously this extension had zero automated tests of any
@@ -21,9 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `extension.ts` into its own `vscode`-import-free module (`src/semver.ts`, mirroring
   `coreVersion.ts`'s existing pattern) specifically so it can be loaded by a plain Node test
   runner — `vscode` is a virtual module that only resolves inside a running Extension Host.
-  Full `@vscode/test-electron` integration testing is not yet wired up: it requires a display
-  server (Xvfb) not available in this project's automation today; see `CONTRIBUTING.md`'s new
-  "Testing" section.
+  Extension-Host behaviour is covered separately by the `@vscode/test-electron` suite below.
 - **`zenzic.autoFixOnSave` Setting — Auto-Apply Quick Fixes on Save (Opt-In, Off by Default)**:
   - New boolean setting; when enabled, saving a Markdown/MDX file auto-applies Zenzic's deterministic Quick Fixes (bare URLs, untagged code blocks, empty link text, malformed lists, heading punctuation). Off by default: silently rewriting file content on every save can surprise a workflow or conflict with another formatter also running on save. All trigger and fix logic lives server-side (Zenzic Core's LSP now implements `textDocument/willSaveWaitUntil`) — the extension only reads the setting, passes it via `initializationOptions` at startup, and forwards live changes through `workspace/didChangeConfiguration`, no server restart needed. The actual save hook is `vscode-languageclient`'s standard, automatic `workspace.onWillSaveTextDocument` → `textDocument/willSaveWaitUntil` forwarding — no client-side save-handling code was written, consistent with the Thin Client Architecture (ADR-075).
 - **`zenzic.autoRepairLinksOnRename` Setting — Auto-Repair Inbound Links on Rename (Opt-In, Off by Default)**:
