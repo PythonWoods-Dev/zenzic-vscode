@@ -118,8 +118,11 @@ jobs:
         run: xvfb-run -a npm run test:host
 
       # Windows needs no display server for @vscode/test-electron, and it is
-      # the only runner with a case-insensitive filesystem -- the rename edge
-      # case that depends on it runs here and skips itself everywhere else.
+      # the only runner with a case-insensitive filesystem. The rename edge
+      # cases that turn on letter case run on both runners -- the server's
+      # repair is platform-independent -- but only here does the filesystem
+      # itself resolve a case-mismatched name, which is what first exposed
+      # the defect.
       - name: Extension-host suite (Windows)
         if: runner.os == 'Windows'
         env:

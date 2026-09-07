@@ -179,20 +179,32 @@ suite('extension host: auto-repair links on rename (willRenameFiles)', () => {
     });
 });
 
-suite('extension host: case-insensitive path comparison (Windows only)', () => {
+suite('extension host: case-insensitive identity on rename', () => {
     // Rename edge case (6). The href is written in lowercase, the file is
-    // mixed-case. On a case-sensitive filesystem the link does not resolve to
-    // the file at all, so there is nothing to repair and nothing to assert;
-    // on Windows it does resolve, and the repair must match the file
-    // case-insensitively. Skipped rather than faked elsewhere.
+    // mixed-case. The server identifies the renamed file up to letter case
+    // when no other route differs from it only by case, so the repair is the
+    // same on NTFS and on ext4 -- which is why this no longer skips on Linux.
+    // (Before the fix, a real Windows run showed the link left untouched: the
+    // lowercase href indexed under `/casetarget/`, the file's route was
+    // `/CaseTarget/`, and the exact lookup found nothing.)
     test('[edge 6] a lowercase href to a mixed-case file is repaired on rename', async function () {
         this.timeout(60_000);
-        if (process.platform !== 'win32') {
-            this.skip();
-        }
         await renameFiles([[docPath('CaseTarget.md'), docPath('CaseTarget2.md')]]);
         const linker = await buffer('caselink.md');
         await until(() => linker.getText().includes('CaseTarget2.md'), 20_000, `caselink.md buffer is: ${linker.getText()}`);
         assert.ok(linker.getText().includes('(CaseTarget2.md)'), linker.getText());
+    });
+
+    // A rename that changes only letter case. On a case-insensitive
+    // filesystem the new name already "exists" (it is the old file), so a
+    // server that resolved the new path through the filesystem would see
+    // old == new and rewrite nothing. On Linux this is an ordinary rename;
+    // on Windows it is the case the directive names.
+    test('[edge 8] a case-only rename still rewrites the inbound link', async function () {
+        this.timeout(60_000);
+        await renameFiles([[docPath('MixedCase.md'), docPath('mixedcase.md')]]);
+        const linker = await buffer('mixedlink.md');
+        await until(() => linker.getText().includes('(mixedcase.md)'), 20_000, `mixedlink.md buffer is: ${linker.getText()}`);
+        assert.ok(!linker.getText().includes('(MixedCase.md)'), 'old spelling survived');
     });
 });

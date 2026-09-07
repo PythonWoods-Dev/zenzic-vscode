@@ -11,15 +11,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Extension-Host Test Suite (`npm run test:host`)**: twelve tests that launch a real VS Code
+- **Extension-Host Test Suite (`npm run test:host`)**: fourteen tests that launch a real VS Code
   via `@vscode/test-electron`, load the extension in development mode and drive a live
   `zenzic lsp`. They cover activation on Markdown, registration of every contributed command,
   a published `Z101` diagnostic, and auto-fix-on-save rewriting a bare URL. Auto-repair-on-rename
   is exercised across a single rename, a batch rename, two links to one target and a folder
-  rename (skipped by design). Two documented limits are pinned too: an unsaved just-typed link
+  rename (skipped by design). Two more renames turn on letter case: a lowercase href to a
+  mixed-case file, and a rename that changes only case. The first failed on the suite's first
+  Windows run and led to a server-side fix (see the core CHANGELOG). Both now run on every
+  platform. Two documented limits are pinned too: an unsaved just-typed link
   is not repaired, because the link index is built from disk, and a canonical-URL collision is
   rewritten without being detected. CI runs the suite on the
-  Linux job under `xvfb-run` in about 30 seconds. Locally, point `ZENZIC_HOST_TEST_EXECUTABLE`
+  Linux job under `xvfb-run` and natively on the Windows job, in about 30 seconds each. Locally, point `ZENZIC_HOST_TEST_EXECUTABLE`
   at a `zenzic` binary; the launcher writes it into a throwaway copy of the fixture workspace,
   because VS Code rebuilds the extension host's environment from the login shell and ignores an
   inherited `PATH`. The suite also pins one behaviour the settings' descriptions do not state:
