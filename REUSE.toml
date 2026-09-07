@@ -9,6 +9,8 @@ path = [
   "package-lock.json",
   "package.json",
   "tsconfig.json",
+  "tsconfig.host-test.json",
+  "src/test/host/fixtures/**",
   "LICENSE",
   "NOTICE",
   "REUSE.toml",

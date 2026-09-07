@@ -4,11 +4,12 @@
 //
 // Covers only modules with zero `vscode` import (currently: src/semver.ts).
 // Any file importing `vscode` at module scope cannot load under plain Node —
-// that module only resolves inside a running VS Code Extension Host, which
-// requires `@vscode/test-electron` and a display server. This repo's dev
-// environment has neither Xvfb nor passwordless sudo to install it, so
-// Extension-Host integration testing is tracked separately as a known,
-// environment-blocked gap (see CHANGELOG.md), not attempted here.
+// that module only resolves inside a running VS Code Extension Host. Those
+// behaviours are covered by the separate extension-host suite under
+// src/test/host/ (`npm run test:host`), which launches a real VS Code via
+// @vscode/test-electron. The two suites collect disjoint file patterns
+// (test/**/*.test.ts here, **/*.host.test.js there) so neither can pick up
+// the other's files by accident.
 
 import { defineConfig } from 'vitest/config';
 

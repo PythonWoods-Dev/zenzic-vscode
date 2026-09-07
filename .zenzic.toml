@@ -31,6 +31,7 @@ excluded_dirs = [
     ".vscode-test",  # VS Code extension test harness artefacts
     "coverage",      # vitest coverage report output
     "LICENSES",      # REUSE license files — machine-readable, not documentation
+    "src/test/host/fixtures",  # extension-host test data: tiny deliberately-broken docs, not documentation
 ]
 excluded_file_patterns = [
     "RELEASE.md",
