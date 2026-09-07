@@ -53,7 +53,24 @@ async function main(): Promise<void> {
         console.log(`extension-host suite: zenzic.executablePath = ${exe}`);
     }
 
+    // Version policy: pin to the engines.vscode floor, the oldest host the
+    // extension claims to support -- that is the host most likely to lack an
+    // API the code has started to use, so it is the one worth testing against
+    // by default. Floating on latest stable would instead let an upstream
+    // change break the suite outside this project's control, and hide a
+    // floor regression behind a newer host that happens to tolerate it.
+    // VSCODE_TEST_VERSION overrides ('stable', 'insiders', or an exact
+    // version) for an on-demand check against something newer. Bump the
+    // floor by changing engines.vscode in package.json; this reads it.
+    const pkg = JSON.parse(
+        fs.readFileSync(path.join(extensionDevelopmentPath, 'package.json'), 'utf8')
+    ) as { engines: { vscode: string } };
+    const floor = pkg.engines.vscode.replace(/^[\^~>=]+/, '');
+    const version = process.env.VSCODE_TEST_VERSION ?? floor;
+    console.log(`extension-host suite: VS Code ${version} (engines floor ${floor})`);
+
     await runTests({
+        version,
         extensionDevelopmentPath,
         extensionTestsPath,
         // --disable-extensions removes every *other* installed extension so the

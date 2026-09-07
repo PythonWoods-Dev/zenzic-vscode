@@ -104,6 +104,29 @@ writes it into a throwaway copy of the fixture workspace. On headless Linux wrap
 `xvfb-run -a`, which is what CI does. The fixture under `src/test/host/fixtures/` is deliberately
 tiny and deliberately broken and is excluded from this repository's own lint and audit gates.
 
+### Which VS Code the suite runs against
+
+The suite is **pinned to the `engines.vscode` floor** in `package.json` (currently 1.91.0).
+The launcher reads that field, so there is one number to maintain. The floor is the oldest
+host the extension claims to support, and therefore the one most likely to lack an API the
+code has started to use. Testing there catches a floor regression that a newer host would
+tolerate silently. Floating on the latest release would do the opposite: an upstream change
+could break the suite outside this project's control, and a genuine floor regression would
+stay hidden.
+
+Set `VSCODE_TEST_VERSION` to run against something else — `stable`, `insiders`, or an exact
+version — for an on-demand check before a release or after an upstream change.
+
+**When to bump the floor.** Bump `engines.vscode` (and `@types/vscode` with it) when the
+code needs an API the current floor lacks, or when the floor is older than what users
+realistically run. Never bump it only to make the suite pass.
+
+**What to check when bumping.** Run the suite on the new floor *and* on `stable`. Check
+the test runner's own dependencies against the floor's Node version, not just the
+extension: the floor's Electron ships an older Node, and a runner dependency that is
+ESM-only will fail to load there with `ERR_REQUIRE_ESM` before a single test runs. That is
+why `mocha` is held on the 11.x line.
+
 ---
 
 ## Useful Commands (`justfile`)

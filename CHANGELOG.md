@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   inherited `PATH`. The suite also pins one behaviour the settings' descriptions do not state:
   a rename repair lands in the editor buffer and leaves the linking file dirty. It is not
   written to disk until saved.
+  The suite runs against the `engines.vscode` floor (1.91.0) by default, with
+  `VSCODE_TEST_VERSION` to override; see `CONTRIBUTING.md` for the version policy.
 - **`Zenzic: Report Finding as GitHub Issue` Command**: opens a prefilled GitHub issue form for the finding under the cursor — carrying the finding code, file and line, the diagnostic message, and the extension and VS Code versions. Invoked from anywhere else in a file, it lists that file's findings and asks which to report. Implemented with `vscode.env.openExternal` and a query-string URL: no authentication, no token storage, no GitHub API call, and therefore no rate limit and no sign-in step. With no network it is the browser that reports the failure rather than the editor, and nothing is submitted until the prefilled form is reviewed and sent by hand. The issue body is bounded by construction (truncated to stay well inside GitHub's URL limit) rather than relying on finding messages being short.
 
 - **Unit Test Suite & Coverage Gate**: previously this extension had zero automated tests of any
