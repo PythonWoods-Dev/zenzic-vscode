@@ -43,7 +43,12 @@ async function main(): Promise<void> {
     // passing run never leaves the committed fixture -- or the git tree --
     // modified.
     const fixture = path.resolve(extensionDevelopmentPath, 'src/test/host/fixtures/workspace');
-    const workspace = fs.mkdtempSync(path.join(os.tmpdir(), 'zenzic-host-'));
+    // realpathSync.native: on the Windows runners os.tmpdir() is an 8.3 short
+    // name (C:\Users\RUNNER~1\...). VS Code keeps whatever spelling it was
+    // given, while a server that resolves paths publishes the long form, and
+    // the two never compare equal as URI strings. Opening the workspace by its
+    // real path removes a runner artefact so the suite measures the product.
+    const workspace = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), 'zenzic-host-')));
     fs.cpSync(fixture, workspace, { recursive: true });
     if (exe) {
         const settingsPath = path.join(workspace, '.vscode', 'settings.json');
