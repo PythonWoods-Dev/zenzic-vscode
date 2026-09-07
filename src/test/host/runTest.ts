@@ -105,8 +105,23 @@ function dumpServerChannel(extensionDevelopmentPath: string): void {
     walk(logsRoot);
     if (found.length === 0) { console.error('(no Zenzic Language Server channel log found)'); return; }
     found.sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
+    // Print the whole channel, minus the publishDiagnostics payloads: they
+    // are the bulk of the trace and, after a rename, they filled a 20 KB
+    // tail entirely -- the second Windows failure lost the willRenameFiles
+    // request and response to exactly that cut.
+    const raw = fs.readFileSync(found[0], 'utf8');
+    const kept: string[] = [];
+    let skipping = false;
+    for (const line of raw.split('\n')) {
+        if (line.includes("'textDocument/publishDiagnostics'")) { skipping = true; kept.push(line + '  [payload omitted]'); continue; }
+        if (skipping) {
+            if (line.startsWith('[Trace') || line.startsWith('[Info') || line.startsWith('[Error') || line.startsWith('[Warn')) { skipping = false; }
+            else { continue; }
+        }
+        kept.push(line);
+    }
     console.error(`\n===== Zenzic Language Server channel (${found[0]}) =====`);
-    console.error(fs.readFileSync(found[0], 'utf8').slice(-20000));
+    console.error(kept.join('\n').slice(-60000));
     console.error('===== end of server channel =====\n');
 }
 

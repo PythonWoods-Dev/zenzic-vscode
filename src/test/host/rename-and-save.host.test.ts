@@ -204,7 +204,13 @@ suite('extension host: case-insensitive identity on rename', () => {
         this.timeout(60_000);
         await renameFiles([[docPath('MixedCase.md'), docPath('mixedcase.md')]]);
         const linker = await buffer('mixedlink.md');
-        await until(() => linker.getText().includes('(mixedcase.md)'), 20_000, `mixedlink.md buffer is: ${linker.getText()}`);
+        // On failure, say what the filesystem and the editor actually hold,
+        // not only what the buffer says: which spelling is on disk after the
+        // rename, and whether any participant edit left the linker dirty.
+        const state = (): string =>
+            `on disk: ${fs.readdirSync(path.join(ws(), 'docs')).filter((n) => /ixed/i.test(n)).join(', ')}; ` +
+            `linker dirty: ${linker.isDirty}; buffer: ${linker.getText()}`;
+        await until(() => linker.getText().includes('(mixedcase.md)'), 20_000, `mixedlink.md not rewritten -- ${state()}`);
         assert.ok(!linker.getText().includes('(MixedCase.md)'), 'old spelling survived');
     });
 });
