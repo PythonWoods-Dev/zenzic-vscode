@@ -89,7 +89,7 @@
         "zenzic.autoRepairLinksOnRename": {
           "type": "boolean",
           "default": false,
-          "description": "Automatically rewrite inbound relative links when a Markdown/MDX file is renamed or moved. Off by default: unlike auto-fix-on-save, this can rewrite files you didn't directly touch (every file that linked to the renamed one) -- enable it once you're comfortable reviewing multi-file changes from a single rename. Docs-root-relative ('/...') and '@site/...' alias links are always left untouched (ambiguous to rewrite safely) even when this is on."
+          "description": "Automatically rewrite inbound relative links when a Markdown/MDX file is renamed or moved. Off by default: unlike auto-fix-on-save, this can rewrite files you didn't directly touch (every file that linked to the renamed one) -- enable it once you're comfortable reviewing multi-file changes from a single rename. Docs-root-relative ('/...') and '@site/...' alias links are always left untouched (ambiguous to rewrite safely) even when this is on. Repairs are applied to the open editor buffers and left unsaved, so you can review them before writing to disk."
         }
       }
     }
