@@ -11,8 +11,11 @@ example/
 # CI-only Zenzic Core checkout (sovereign parity dogfooding, see justfile `check`)
 _zenzic_core/
 
-# Internal workspace — never commit to version control
+# Internal workspace — never commit to version control.
+# Both trees are listed even though only .claude/ exists here: the
+# protection should not depend on which tree happens to be present.
 .claude/
+.human/
 
 # Zenzic quality scores — derived local metadata
 .zenzic-score.json
