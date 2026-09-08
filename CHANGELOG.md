@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`Zenzic: Show Quality Status Panel` Command — Governance Metrics in a WebView**:
+  - New command `zenzic.showQualityPanel` opens a panel showing three governance metrics for the current workspace: Quality Score, Suppression Cap Usage, and Baseline Freshness. Deliberately framed as operational visibility rather than as credits, budget or a quota — the panel reports what the repository's state *is*, not an allowance being spent.
+  - No new subprocess call or LSP surface: it reuses the existing `zenzic.computeDQS` bridge (`zenzic score --json`) for all three rows, the same determinism rationale already established for the DQS status-bar item.
+
 - **Extension-Host Test Suite (`npm run test:host`)**: fourteen tests that launch a real VS Code
   via `@vscode/test-electron`, load the extension in development mode and drive a live
   `zenzic lsp`. They cover activation on Markdown, registration of every contributed command,
@@ -56,6 +60,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Integrated Zenzic Core v0.31.0 Language Server Protocol diagnostics for GFM Table AST parsing and real-time squiggles for rules `Z521`, `Z522`, `Z523`, and `Z412`.
 
 ### Changed
+
+- **Smaller Package — Development Tooling and Orphaned Assets No Longer Ship**:
+  - The packaged extension no longer contains `.markdownlint.json`, `.pre-commit-config.yaml`, `vitest.config.mts` or `tsconfig.host-test.json`. These configure the linters and test runners used to *build* the extension; an installed copy has neither, so they were inert files on every seat. Two 42-byte placeholder GIFs (`images/demo-security.gif`, `images/demo-topology.gif`) and two unreferenced SVG wordmarks were removed from the repository — the SVGs after verifying they appear on no surface, including the published package's own rewritten README. The `.vsix` goes from 34 to 29 entries. No runtime behaviour changes: the extension code, the configuration schema and the icon are untouched.
 
 - **Brand & Positioning Alignment**:
   - Updated extension description and README value proposition: *"Formatters handle syntax. Prose linters handle grammar. Zenzic protects the graph—and optionally enforces lightweight editorial policy without a separate tool."*

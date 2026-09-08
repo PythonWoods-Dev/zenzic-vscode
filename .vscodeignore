@@ -14,7 +14,14 @@ justfile
 RELEASE.md
 REUSE.toml
 tsconfig.json
+tsconfig.host-test.json
 esbuild.js
+vitest.config.mts
+# Dev tooling with no runtime purpose. These configure the linters and test
+# runners used to BUILD the extension; a user's install has no linter and no
+# test runner to configure, so they were shipping 5 KB of noise to every seat.
+.markdownlint.json
+.pre-commit-config.yaml
 optimize-gif.js
 eslint.config.mjs
 package-lock.json
@@ -37,5 +44,10 @@ coverage/**
 .zenzic_cache/**
 example/**
 _zenzic_core/**
+# The demo-capture sandbox is build/marketing tooling, not extension runtime:
+# it is committed (unlike .claude/), but a Marketplace user has no use for it
+# and it would ship a Dockerfile inside every install (Rule 30 -- .gitignore
+# and the packaging manifest are different files and neither implies the other).
+docker/**
 ROADMAP.md
 images/demo*.gif
