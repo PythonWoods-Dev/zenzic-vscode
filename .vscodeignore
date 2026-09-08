@@ -44,6 +44,18 @@ coverage/**
 .zenzic_cache/**
 example/**
 _zenzic_core/**
+# A local Python virtualenv at the repository root. CI never has one here (it
+# syncs the core into _zenzic_core/, excluded above), so CI's VSIX is clean and
+# its 5 MB size guard never fired -- but `vsce package` run on a developer
+# machine that has one would ship every file in it. Found by listing what the
+# packaged VSIX actually contains rather than trusting the guard that had never
+# been given the chance to fail.
+.venv/**
+# Compiled extension-host test code. `tests/**` and `tsconfig.host-test.json`
+# are already excluded above; this is the same material after `tsc`, and it
+# additionally carries a runtime `require('glob')` that resolves only through a
+# devDependency. The suite runs from the working tree, never from the VSIX.
+out/test/**
 # The demo-capture sandbox is build/marketing tooling, not extension runtime:
 # it is committed (unlike .claude/), but a Marketplace user has no use for it
 # and it would ship a Dockerfile inside every install (Rule 30 -- .gitignore
