@@ -11,19 +11,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **README Promised Inline MDX Analysis That a Stock VS Code Never Delivers**: the tagline
-  said findings are caught "in Markdown and MDX — inline, as you type". The engine and the
-  Language Server do treat `.mdx` exactly as `.md` — same diagnostics, same codes, same
-  caret positions, verified by driving the server over stdio against both. The editor does
-  not. VS Code has no built-in `mdx` language, this extension contributes none, and so on a
-  stock install a `.mdx` file opens as **Plain Text**: neither `onLanguage:markdown` nor
-  `onLanguage:mdx` fires and the extension never activates. Verified side by side with
-  byte-identical content — the `.md` twin showed two problems and a running server, the
-  `.mdx` file showed `Plain Text` and zero. The tagline now states the requirement, and a
-  new **MDX** section records what MDX-specific syntax does and does not do. `<a>` and
-  `<img>` participate in every link, asset and scheme check, in any letter case. Other JSX
-  components such as `<Link to="...">` are invisible to the link graph. A Markdown link
-  inside an MDX `{/* comment */}` or a JSX string attribute is still reported.
+- **The Extension Declared MDX Support and Was Silently Inert on It**: `activationEvents`
+  listed `onLanguage:mdx` and the language client's `documentSelector` covered
+  `language: 'mdx'`, but nothing contributed that language and VS Code has none built in.
+  On a stock install a `.mdx` file therefore opened as **plaintext**: neither activation
+  event fired and the extension never started, on exactly the file type the README
+  advertised. The symptom was silence — no squiggles, no status-bar item, no error.
+  `contributes.languages` now declares `mdx` with the `.mdx` extension, and
+  `workspaceContains:**/*.mdx` activates a workspace holding MDX before any file is opened.
+  Proven from cold with the `.mdx` opened first, against a byte-identical `.md` twin: both
+  report `[Z101]` at `Ln 3, Col 1` and `[Z502]` at `Ln 1, Col 1`, with the status bar
+  showing `MDX` and `Zenzic: Running`. A host-suite test pins the language resolution and
+  fails with `.mdx resolved to 'plaintext'` when the contribution is removed.
+  **Installing a third-party MDX extension alongside changes nothing about the findings.**
+  Checked with `unifiedjs.vscode-mdx` v1.8.18 installed: the language still resolves to
+  `mdx`, and Zenzic still reports the same diagnostics at the same positions. That
+  extension supplies the syntax highlighting Zenzic does not, since Zenzic contributes the
+  language identifier but no grammar.
+
+  The README's MDX section also records what MDX-specific syntax does and does not do.
+  `<a>` and `<img>` participate in every link, asset and scheme check, in any letter case.
+  Other JSX components such as `<Link to="...">` are invisible to the link graph. A
+  Markdown link inside an MDX `{/* comment */}` or a JSX string attribute is still
+  reported.
 
 - **Demo GIF in the README and in the packaged extension**: the Marketplace listing and the
   repository README now open with a 23-second recording of the real in-editor sequence. An

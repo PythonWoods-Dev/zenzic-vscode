@@ -40,6 +40,34 @@ suite('extension host: activation', () => {
         assert.strictEqual(ext.isActive, true, 'extension did not activate');
     });
 
+    test('an .mdx document resolves to the mdx language, not plaintext', async () => {
+        // The defect this pins: `activationEvents` declared `onLanguage:mdx`
+        // and the client's documentSelector covered `language: 'mdx'`, but
+        // nothing contributed that language. VS Code has no built-in `mdx`,
+        // so on a stock install the file opened as **plaintext**, neither
+        // activation event fired, and the extension was silently inert on
+        // exactly the file type the README advertised.
+        //
+        // The host runs with only this extension loaded, which is the stock
+        // condition: if the language resolves here, it resolves because this
+        // package contributes it and not because something else did.
+        //
+        // Deliberately NOT asserting `ext.isActive` here: an earlier test in
+        // this same host already activated the extension, so that assertion
+        // would pass whatever the trigger did. Activation from cold, with the
+        // .mdx opened first, is proven in the capture container instead.
+        const folder = vscode.workspace.workspaceFolders?.[0];
+        assert.ok(folder, 'fixture workspace not opened');
+        const doc = await vscode.workspace.openTextDocument(
+            path.join(folder.uri.fsPath, 'docs', 'mdx-probe.mdx')
+        );
+        assert.strictEqual(
+            doc.languageId,
+            'mdx',
+            `.mdx resolved to '${doc.languageId}' — the extension must contribute the mdx language`
+        );
+    });
+
     test('every contributed command is registered in the real command registry', async () => {
         const registered = new Set(await vscode.commands.getCommands(true));
         const missing = CONTRIBUTED_COMMANDS.filter((c) => !registered.has(c));

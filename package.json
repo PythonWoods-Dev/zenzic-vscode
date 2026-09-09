@@ -28,10 +28,23 @@
   "homepage": "https://github.com/PythonWoods-Dev/zenzic-vscode",
   "activationEvents": [
     "onLanguage:markdown",
-    "onLanguage:mdx"
+    "onLanguage:mdx",
+    "workspaceContains:**/*.mdx"
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "languages": [
+      {
+        "id": "mdx",
+        "aliases": [
+          "MDX",
+          "mdx"
+        ],
+        "extensions": [
+          ".mdx"
+        ]
+      }
+    ],
     "commands": [
       {
         "command": "zenzic.restartServer",

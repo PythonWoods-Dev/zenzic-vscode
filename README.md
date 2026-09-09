@@ -16,7 +16,7 @@ SPDX-License-Identifier: Apache-2.0
 <h1 align="center">Zenzic: Markdown Link Checker &amp; Docs Linter for VS Code</h1>
 
 <p align="center">
-  <strong>Catches broken links, missing anchors, orphan pages, and leaked credentials in Markdown — inline, as you type. MDX too, once an MDX language extension is installed.</strong>
+  <strong>Catches broken links, missing anchors, orphan pages, and leaked credentials in Markdown and MDX — inline, as you type.</strong>
 </p>
 
 <p align="center">
@@ -117,13 +117,19 @@ The engine treats `.mdx` exactly as it treats `.md`, and the Language Server
 publishes the same diagnostics at the same positions for both. Verified by
 execution, not by reading the extension's file-type list.
 
-**One requirement, and it is not optional.** VS Code has no built-in `mdx`
-language. Unless some extension contributes that language identifier — the
-official MDX extension does — a `.mdx` file opens as **Plain Text**, neither
-`onLanguage:markdown` nor `onLanguage:mdx` fires, and Zenzic never starts. The
-symptom is silence: no squiggles, no status-bar item, no error. Opening any
-`.md` file in the same window activates Zenzic, and the `.mdx` files in that
-workspace are then analysed too.
+**No other extension is required.** VS Code has no built-in `mdx` language, so
+this extension contributes it: opening a `.mdx` file resolves the language,
+fires `onLanguage:mdx`, and starts Zenzic. A workspace that merely *contains*
+`.mdx` files activates it too, before anything is opened. Verified from cold
+with a `.mdx` opened first, against a byte-identical `.md` twin: same findings,
+same codes, same lines, same columns.
+
+**An MDX language extension is still worth having, and does not conflict.**
+Zenzic contributes the language identifier but no grammar, so on its own a
+`.mdx` file is analysed without being syntax-highlighted. Install the official
+MDX extension and it supplies the highlighting while Zenzic keeps reporting —
+checked with both installed together: one language, one set of diagnostics, no
+duplicates.
 
 **What MDX-specific syntax does and does not do.** MDX is parsed as Markdown
 with raw HTML, so Markdown links, images, headings and credentials all behave
