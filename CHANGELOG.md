@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Demo GIF in the README and in the packaged extension**: the Marketplace listing and the
+  repository README now open with a 23-second recording of the real in-editor sequence. An
+  empty Markdown link is underlined as a `Z108` error. The hover explains it, `Ctrl+.`
+  applies the Quick Fix, and the `TODO` placeholder that fix injects is then replaced with
+  real link text until the file reports zero findings. The clip deliberately runs past the
+  Quick Fix: the injected `TODO` is itself flagged `Z501 PLACEHOLDER_TEXT`, so stopping at
+  the fix would have ended on a warning. `images/demo.gif` is 1280×560, 12.5 fps, 430 KB;
+  `.vscodeignore` no longer excludes `images/demo*.gif`, so the asset ships inside the
+  `.vsix` (668 KB, against the 5 MB packaging ceiling enforced in CI).
+
 - **`Zenzic: Show Quality Status Panel` Command — Governance Metrics in a WebView**:
   - New command `zenzic.showQualityPanel` opens a panel showing three governance metrics for the current workspace: Quality Score, Suppression Cap Usage, and Baseline Freshness. Deliberately framed as operational visibility rather than as credits, budget or a quota — the panel reports what the repository's state *is*, not an allowance being spent.
   - No new subprocess call or LSP surface: it reuses the existing `zenzic.computeDQS` bridge (`zenzic score --json`) for all three rows, the same determinism rationale already established for the DQS status-bar item.

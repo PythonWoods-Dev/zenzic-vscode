@@ -69,7 +69,23 @@ RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
 https://packages.microsoft.com/repos/code stable main" \
         > /etc/apt/sources.list.d/vscode.list \
     && apt-get update && apt-get install -y --no-install-recommends code \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    # Pruned in the SAME layer as the install, because a later `rm` in its own
+    # RUN removes nothing from the image -- the bytes stay in the layer below.
+    # Measured with `du` inside the built image, not estimated:
+    #   the bundled assistant extension         178 MB
+    #   its prebuilt native runtimes            136 MB
+    #   bin/code-tunnel                          33 MB
+    #   locales/*.pak except en-US               46 MB
+    # The assistant extension is not only weight: it draws inline suggestions,
+    # which could appear in a marketing frame of a recording whose whole point
+    # is that what you see is this repository's engine and nothing else. The
+    # remote-tunnel client is never invoked here, and the capture runs in one
+    # locale. What is NOT removed, and why, is in README.md.
+    && rm -rf /usr/share/code/resources/app/extensions/copilot \
+              /usr/share/code/resources/app/node_modules.asar.unpacked/@github \
+              /usr/share/code/bin/code-tunnel \
+    && find /usr/share/code/locales -type f -name '*.pak' ! -name 'en-US.pak' -delete
 
 # VS Code refuses to run as root without --no-sandbox; a real user is cleaner
 # and matches how a human would actually run it.

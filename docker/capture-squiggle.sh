@@ -29,11 +29,12 @@ code --list-extensions --show-versions | grep -i zenzic
 
 echo
 echo "### 2b. PROVENANCE GATE -- the checks that actually discriminate"
-if [ -f "$CORE/.claude/scripts/verify_local_provenance.py" ]; then
-    PROV="$CORE/.claude/scripts/verify_local_provenance.py"
-else
-    PROV=/home/demo/verify_local_provenance.py
-fi
+# The verifier is supplied by the operator, not hardcoded here: it proves the
+# engine and the extension came from the mounted checkouts rather than from a
+# published release, and where it lives is the operator's business. Point
+# PROVENANCE_SCRIPT at it (see README.md); the default is a copy placed in the
+# container.
+PROV="${PROVENANCE_SCRIPT:-/home/demo/verify_local_provenance.py}"
 if [ -f "$PROV" ]; then
     python3 "$PROV" --mount "$CORE" --extensions /home/demo/.vscode/extensions || {
         echo "REFUSING TO CAPTURE: this is not provably the local build." >&2

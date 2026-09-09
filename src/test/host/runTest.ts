@@ -15,8 +15,8 @@ import * as path from 'path';
 import { runTests } from '@vscode/test-electron';
 
 async function main(): Promise<void> {
-    // When this launcher itself runs from a terminal inside VS Code (Claude
-    // Code, an integrated terminal, a task), the shell carries
+    // When this launcher itself runs from a terminal inside VS Code (an
+    // integrated terminal, a task, any tool that spawns one), the shell carries
     // ELECTRON_RUN_AS_NODE=1. The child VS Code inherits it, starts as a bare
     // Node process, and tries to `require()` the workspace folder as a script:
     //   Error: Cannot find module '.../fixtures/workspace'

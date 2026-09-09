@@ -45,6 +45,11 @@ breakage inline the moment you introduce it. No save, no rebuild.
 It runs the same engine as the Zenzic CLI and your CI pipeline, so what you see underlined in the
 editor is exactly what the pull request gate will report.
 
+![Zenzic in VS Code: an empty Markdown link is underlined as a Z108 error, the hover explains it, Ctrl+. applies the quick fix that inserts a TODO placeholder, the placeholder is itself flagged Z501, and typing real link text leaves the file with zero findings](images/demo.gif)
+
+One error, one hover, one Quick Fix — and the placeholder the fix leaves behind is flagged
+too, until the link says something a screen reader can read.
+
 ---
 
 ## ⚡ Quick Start (< 30 Seconds)

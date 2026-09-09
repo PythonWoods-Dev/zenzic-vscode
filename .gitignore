@@ -12,8 +12,8 @@ example/
 _zenzic_core/
 
 # Internal workspace — never commit to version control.
-# Both trees are listed even though only .claude/ exists here: the
-# protection should not depend on which tree happens to be present.
+# Both are listed even though only one of them exists in this checkout: the
+# protection should not depend on which happens to be present.
 .claude/
 .human/
 

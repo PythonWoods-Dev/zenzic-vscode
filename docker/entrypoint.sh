@@ -6,8 +6,8 @@
 #
 # Every step here is verified rather than assumed: Xvfb is polled until it
 # actually answers an X query, because a `sleep 2` that happens to be long
-# enough on this machine is not a control (Rule 31 -- a check whose result is
-# only consumed by `echo` is decorative).
+# enough on this machine is not a control: a check whose result is only
+# consumed by `echo` is decorative.
 set -euo pipefail
 
 : "${DISPLAY:=:99}"

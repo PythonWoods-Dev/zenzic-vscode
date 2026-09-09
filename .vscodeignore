@@ -56,10 +56,15 @@ _zenzic_core/**
 # additionally carries a runtime `require('glob')` that resolves only through a
 # devDependency. The suite runs from the working tree, never from the VSIX.
 out/test/**
-# The demo-capture sandbox is build/marketing tooling, not extension runtime:
-# it is committed (unlike .claude/), but a Marketplace user has no use for it
-# and it would ship a Dockerfile inside every install (Rule 30 -- .gitignore
-# and the packaging manifest are different files and neither implies the other).
+# The demo-capture sandbox is build/marketing tooling, not extension runtime.
+# Unlike the entries above it is committed, but a Marketplace user has no use
+# for it and it would ship a Dockerfile inside every install. Being tracked and
+# being packaged are different questions: this file and .gitignore are separate
+# manifests, and neither one implies the other.
 docker/**
 ROADMAP.md
-images/demo*.gif
+# images/demo*.gif was excluded here by the v0.23.3 package-optimisation
+# pass, before any such file existed. The demo GIF now exists, and unlike the
+# internal entries above it is public marketing content, so it ships with the
+# package: well under a tenth of the 5 MB CI ceiling on a 256 KB baseline.
+# Deliberate inclusion, not an oversight.
