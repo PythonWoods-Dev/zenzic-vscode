@@ -16,7 +16,7 @@ SPDX-License-Identifier: Apache-2.0
 <h1 align="center">Zenzic: Markdown Link Checker &amp; Docs Linter for VS Code</h1>
 
 <p align="center">
-  <strong>Catches broken links, missing anchors, orphan pages, and leaked credentials in Markdown and MDX — inline, as you type.</strong>
+  <strong>Catches broken links, missing anchors, orphan pages, and leaked credentials in Markdown — inline, as you type. MDX too, once an MDX language extension is installed.</strong>
 </p>
 
 <p align="center">
@@ -110,6 +110,35 @@ The extension automatically detects the `zenzic` Python CLI engine. If it is not
 > To disable auto-provisioning entirely, set `"zenzic.autoProvision": false`.
 
 ---
+
+## MDX
+
+The engine treats `.mdx` exactly as it treats `.md`, and the Language Server
+publishes the same diagnostics at the same positions for both. Verified by
+execution, not by reading the extension's file-type list.
+
+**One requirement, and it is not optional.** VS Code has no built-in `mdx`
+language. Unless some extension contributes that language identifier — the
+official MDX extension does — a `.mdx` file opens as **Plain Text**, neither
+`onLanguage:markdown` nor `onLanguage:mdx` fires, and Zenzic never starts. The
+symptom is silence: no squiggles, no status-bar item, no error. Opening any
+`.md` file in the same window activates Zenzic, and the `.mdx` files in that
+workspace are then analysed too.
+
+**What MDX-specific syntax does and does not do.** MDX is parsed as Markdown
+with raw HTML, so Markdown links, images, headings and credentials all behave
+as they do in `.md`. Three consequences follow from that, and none of them is
+a bug in disguise:
+
+- `<a>` and `<img>` participate fully in link, asset and forbidden-scheme
+  checks, in any letter case. A `<Img src="...">` component is checked too,
+  because the tag name matches `img`.
+- Other JSX components do not. `<Link to="./page.mdx">` — Docusaurus's own
+  internal link — is invisible to the link graph, so a broken target there is
+  not reported.
+- A Markdown link written inside an MDX comment (`{/* ... */}`) or inside a
+  JSX string attribute is still reported, even though neither renders as a
+  link.
 
 ## 🎯 What It Catches
 

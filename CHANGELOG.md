@@ -11,6 +11,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **README Promised Inline MDX Analysis That a Stock VS Code Never Delivers**: the tagline
+  said findings are caught "in Markdown and MDX — inline, as you type". The engine and the
+  Language Server do treat `.mdx` exactly as `.md` — same diagnostics, same codes, same
+  caret positions, verified by driving the server over stdio against both. The editor does
+  not. VS Code has no built-in `mdx` language, this extension contributes none, and so on a
+  stock install a `.mdx` file opens as **Plain Text**: neither `onLanguage:markdown` nor
+  `onLanguage:mdx` fires and the extension never activates. Verified side by side with
+  byte-identical content — the `.md` twin showed two problems and a running server, the
+  `.mdx` file showed `Plain Text` and zero. The tagline now states the requirement, and a
+  new **MDX** section records what MDX-specific syntax does and does not do. `<a>` and
+  `<img>` participate in every link, asset and scheme check, in any letter case. Other JSX
+  components such as `<Link to="...">` are invisible to the link graph. A Markdown link
+  inside an MDX `{/* comment */}` or a JSX string attribute is still reported.
+
 - **Demo GIF in the README and in the packaged extension**: the Marketplace listing and the
   repository README now open with a 23-second recording of the real in-editor sequence. An
   empty Markdown link is underlined as a `Z108` error. The hover explains it, `Ctrl+.`
