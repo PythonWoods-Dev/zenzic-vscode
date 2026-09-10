@@ -136,6 +136,39 @@ why `mocha` is held on the 11.x line.
 
 ---
 
+## The Nightly Stable Run, and How to Trigger It by Hand
+
+`Zenzic VS Code CI` runs the extension-host suite against the `engines.vscode`
+floor — the oldest host we claim to support, and where a regression hides.
+That floor is not what users run, so a separate workflow,
+`.github/workflows/nightly-stable.yml`, runs the same suite against VS Code's
+**stable** channel on a schedule.
+
+It is deliberately not part of the pull-request gate: `stable` is a moving
+target we do not control, and an upstream release breaking something would put
+a red X on a pull request whose author did nothing wrong. A red X that means
+"not your fault" is learned as noise.
+
+**To run it by hand** — before a release, or to confirm an upstream breakage:
+
+> GitHub → **Actions** → **Nightly (VS Code stable)** → **Run workflow** →
+> pick the branch → **Run workflow**.
+
+That button exists because the workflow declares a `workflow_dispatch` trigger;
+without it the schedule would be the only way to run it.
+
+Or from the CLI:
+
+```bash
+gh workflow run nightly-stable.yml --repo PythonWoods/zenzic-vscode
+gh run list --workflow nightly-stable.yml --limit 1   # then watch it
+```
+
+A failure here means the extension breaks on the VS Code version users actually
+have, while the PR gate stays green against the floor. That combination is the
+signal this workflow exists to produce, and it belongs to the maintainer rather
+than to whoever pushed last.
+
 ## Useful Commands (`justfile`)
 
 | Task | Command | Description |
