@@ -66,6 +66,11 @@ die() { echo "FAIL: $*" >&2; exit 1; }
 # ---------------------------------------------------------------------------
 redcount() {
     local f=$1
+    # A measurement that cannot be taken is not a measurement of zero. Every
+    # numeric guard below compares this value, and returning 0 from a failed
+    # convert reads as "no error pixels" -- clean -- the exact inversion the
+    # chat-panel guard produced from an empty value.
+    [ -s "$f" ] || { echo "MEASUREMENT-FAILED"; return 0; }
     # -depth 8 so the hex column is #RRGGBB regardless of the build's quantum
     # depth; a Q16 ImageMagick otherwise prints twelve hex digits. Parsed with
     # POSIX awk only -- Ubuntu's default awk is mawk, whose match() has no
@@ -81,7 +86,7 @@ redcount() {
             }
             return v
         }
-        {
+        { seen = 1
             hex = ""
             for (i = 1; i <= NF; i++) if (substr($i, 1, 1) == "#") hex = $i
             if (hex == "") next
@@ -91,10 +96,26 @@ redcount() {
             g = h2(substr(hex, 2 + w, w))
             b = h2(substr(hex, 2 + 2 * w, w))
             if (r < 0 || g < 0 || b < 0) next
-            mx = (g > b) ? g : b
-            if (r - mx > 40 && r > 90) total += ($1 + 0)
-        }
-        END { print total + 0 }'
+              # Proximity to editorError.foreground (#F14C4C), not a generic
+              # redness test: the old predicate also matched the salmon used for
+              # Markdown link syntax and the error badge, so it counted pixels
+              # that are not the squiggle and could not tell them apart.
+              dr = r - 241; dg = g - 76; db = b - 76
+              if (dr*dr + dg*dg + db*db < 2025) total += ($1 + 0)   # 45^2
+          }
+          END { if (seen == 0) { print "MEASUREMENT-FAILED"; exit 0 } print total + 0 }'
+}
+
+# Guard helper: refuse to compare anything that is not a number. Bash's `-lt`
+# on an empty string is a syntax error whose message ("integer expression
+# expected") is easy to read past, and on "MEASUREMENT-FAILED" it is the same.
+# Both mean the same thing and must stop the run rather than yield a verdict.
+require_number() {
+    local label=$1 value=$2
+    case "$value" in
+        ""|*[!0-9-]*) die "$label could not be measured (got: '"'"'${value}'"'"') -- refusing to conclude from a failed measurement" ;;
+    esac
+    printf '%s' "$value"
 }
 
 grab() {
@@ -223,7 +244,7 @@ aux_header_colours() {
     convert /tmp/aux.png -crop "400x60+$((SW - 450))+55" +repage \
         -depth 8 -format %c histogram:info:- 2>/dev/null | wc -l
 }
-AUX="$(aux_header_colours)"
+AUX="$(require_number "chat panel header colours" "$(aux_header_colours)")"
 echo "distinct colours where the chat panel header would be: $AUX"
 [ "$AUX" -lt 40 ] \
     || die "the chat panel is still on screen ($AUX colours) -- a recording of Zenzic should not be a third someone else's product"
@@ -283,7 +304,7 @@ RED_WITHOUT=0
 for sweep in 1 2 3; do
     for n in 0 1 2; do
         goto_empty_link
-        RED_TRY="$(probe_red)"
+        RED_TRY="$(require_number "red pixels before fix" "$(probe_red)")"
         k ctrl+period; sleep 2
         if [ "$n" -gt 0 ]; then
             for _ in $(seq 1 "$n"); do k Down; sleep 0.3; done
@@ -296,7 +317,7 @@ for sweep in 1 2 3; do
             '- [TODO](guide.md)'*)
                 FIX_INDEX="$n"
                 RED_WITH="$RED_TRY"
-                RED_WITHOUT="$(probe_red)"
+                RED_WITHOUT="$(require_number "red pixels after fix" "$(probe_red)")"
                 ;;
         esac
         # Put the file back and prove it went back, whether or not this entry
