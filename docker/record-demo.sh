@@ -50,7 +50,13 @@ DSF=${DEVICE_SCALE_FACTOR:-2}
 # fixture is a 19-line file -- at the full 1540 the bottom third of every frame
 # was empty editor. 1120 device px is 560 logical px: title bar, tab, the whole
 # document, room for the lightbulb menu under line 10, and the status bar.
-CAP_H=${CAPTURE_HEIGHT:-1120}
+# Never larger than the screen: x11grab fails outright when the requested
+# geometry exceeds the display, every grab() then produces no file, and each
+# measurement built on it returns nothing. That is what made the chat-panel
+# guard conclude from an empty value -- the guard was the symptom, this is the
+# cause. Defaults to the screen height rather than a constant that was correct
+# only for a 2560x1600 display.
+CAP_H=${CAPTURE_HEIGHT:-$SH}
 FPS=${RECORD_FPS:-25}
 mkdir -p "$OUT"
 
@@ -113,7 +119,13 @@ redcount() {
 require_number() {
     local label=$1 value=$2
     case "$value" in
-        ""|*[!0-9-]*) die "$label could not be measured (got: '"'"'${value}'"'"') -- refusing to conclude from a failed measurement" ;;
+        # Returns non-zero rather than calling die: this runs inside $( ), a
+        # subshell, where exit would end the subshell and let the caller carry
+        # on with an empty value -- which is precisely the failure being guarded
+        # against. The caller must check the status.
+        ""|*[!0-9-]*)
+            echo "FAIL: $label could not be measured (got: '"'"'${value}'"'"')" >&2
+            return 1 ;;
     esac
     printf '%s' "$value"
 }
@@ -244,7 +256,8 @@ aux_header_colours() {
     convert /tmp/aux.png -crop "400x60+$((SW - 450))+55" +repage \
         -depth 8 -format %c histogram:info:- 2>/dev/null | wc -l
 }
-AUX="$(require_number "chat panel header colours" "$(aux_header_colours)")"
+AUX="$(require_number "chat panel header colours" "$(aux_header_colours)")" \
+    || die "cannot measure the chat panel header -- refusing to record blind"
 echo "distinct colours where the chat panel header would be: $AUX"
 [ "$AUX" -lt 40 ] \
     || die "the chat panel is still on screen ($AUX colours) -- a recording of Zenzic should not be a third someone else's product"
@@ -297,14 +310,28 @@ echo "###    squiggle actually exist? Both answered by one intervention."
 # The server offers two code actions; their ORDER in the menu is client-side
 # presentation and is not readable from the server. Determined here by
 # execution, unrecorded, so the recorded pass never gambles on a blind Return.
+#
+# The menu is NOT just the server's two entries. VS Code bundles
+# markdown-language-features, which contributes its own Markdown refactors --
+# "Convert to reference link" among them, which rewrites [](guide.md) to
+# [][def]. That is what the earlier run kept applying: a real quick fix, from
+# another extension, sitting above Zenzic's. Verified against the server
+# directly over stdio: it offers exactly two actions and the placeholder fix is
+# index 0 in three consecutive runs, so the ordering the recording sees is
+# entirely the client's doing.
+#
+# Hence the sweep spans six entries rather than three, and the assertion is on
+# the resulting TEXT rather than on the entry's position -- position is the
+# thing that is not ours to predict.
 sleep 20            # settle, not a check: the checks are the assertions below
 FIX_INDEX=-1
 RED_WITH=0
 RED_WITHOUT=0
 for sweep in 1 2 3; do
-    for n in 0 1 2; do
+    for n in 0 1 2 3 4 5; do
         goto_empty_link
-        RED_TRY="$(require_number "red pixels before fix" "$(probe_red)")"
+        RED_TRY="$(require_number "red pixels before fix" "$(probe_red)")" \
+            || die "cannot measure the diagnostic before the fix"
         k ctrl+period; sleep 2
         if [ "$n" -gt 0 ]; then
             for _ in $(seq 1 "$n"); do k Down; sleep 0.3; done
@@ -317,7 +344,8 @@ for sweep in 1 2 3; do
             '- [TODO](guide.md)'*)
                 FIX_INDEX="$n"
                 RED_WITH="$RED_TRY"
-                RED_WITHOUT="$(require_number "red pixels after fix" "$(probe_red)")"
+                RED_WITHOUT="$(require_number "red pixels after fix" "$(probe_red)")" \
+                    || die "cannot measure the diagnostic after the fix"
                 ;;
         esac
         # Put the file back and prove it went back, whether or not this entry
