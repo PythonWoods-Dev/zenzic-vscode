@@ -142,9 +142,10 @@ a bug in disguise:
 - Other JSX components do not. `<Link to="./page.mdx">` — Docusaurus's own
   internal link — is invisible to the link graph, so a broken target there is
   not reported.
-- A Markdown link written inside an MDX comment (`{/* ... */}`) or inside a
-  JSX string attribute is still reported, even though neither renders as a
-  link.
+- A Markdown link written inside a comment — MDX (`{/* ... */}`) or HTML
+  (`<!-- ... -->`) — or inside a JSX string attribute is **not** reported, since
+  none of them renders as a link. Links inside a JSX *expression* attribute
+  (`to={"./page.mdx"}`) are not analysed either way.
 
 ## 🎯 What It Catches
 

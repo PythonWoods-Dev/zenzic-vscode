@@ -32,8 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   The README's MDX section also records what MDX-specific syntax does and does not do.
   `<a>` and `<img>` participate in every link, asset and scheme check, in any letter case.
   Other JSX components such as `<Link to="...">` are invisible to the link graph. A
-  Markdown link inside an MDX `{/* comment */}` or a JSX string attribute is still
-  reported.
+  Markdown link inside a comment or a JSX string attribute is not reported (see the
+  Fixed entry below).
 
 - **Demo GIF in the README and in the packaged extension**: the Marketplace listing and the
   repository README now open with a 23-second recording of the real in-editor sequence. An
@@ -102,6 +102,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated extension description and README value proposition: *"Formatters handle syntax. Prose linters handle grammar. Zenzic protects the graph—and optionally enforces lightweight editorial policy without a separate tool."*
 
 ### Fixed
+
+- **No More False Broken-Link Squiggles in Comments and JSX Attributes**:
+  - A Markdown link inside an MDX comment (`{/* ... */}`), an HTML comment (`<!-- ... -->`), or a JSX string attribute produced a red `Z101` underline on text that does not render as a link. Fixed in Zenzic Core; the editor shows the corrected diagnostics with no change to the extension itself. The HTML-comment case affected `.md` as well as `.mdx`.
+  - Genuine broken links in the same file are still reported, and positions are unchanged: the masking that removes the false positives is length-preserving, so squiggle columns and caret offsets stay where they were.
 
 - **Packaging: a Local `.venv` and the Compiled Host-Test Code Could Be Included in the VSIX**:
   `.vscodeignore` excluded `_zenzic_core/**` — the path CI syncs the engine into — but not a
