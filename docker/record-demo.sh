@@ -327,19 +327,29 @@ sleep 20            # settle, not a check: the checks are the assertions below
 FIX_INDEX=-1
 RED_WITH=0
 RED_WITHOUT=0
+# Selected by TITLE, not by position. The quick-fix widget filters as you type,
+# so typing a substring unique to Zenzic's action leaves it as the only entry
+# and Return cannot land on anything else. Position was the original assumption
+# and it was wrong twice over: VS Code bundles markdown-language-features, whose
+# "Extract to link definition" shares the menu, and the ordering is client
+# presentation the server cannot report. "placeholder" appears in Zenzic's title
+# ("Fix Z108: Inject placeholder link text ('TODO')") and in no competing one.
+#
+# The retry loop stays: it is not searching for the right entry any more, only
+# absorbing the case where diagnostics have not yet been published when the
+# menu is opened.
+FILTER="placeholder"
 for sweep in 1 2 3; do
-    for n in 0 1 2 3 4 5; do
+    for n in 0; do
         goto_empty_link
         RED_TRY="$(require_number "red pixels before fix" "$(probe_red)")" \
             || die "cannot measure the diagnostic before the fix"
-        k ctrl+period; sleep 2
-        if [ "$n" -gt 0 ]; then
-            for _ in $(seq 1 "$n"); do k Down; sleep 0.3; done
-        fi
+        k ctrl+period; sleep 3
+        xdotool type --window "$win" --delay 60 "$FILTER"; sleep 2
         k Return; sleep 1.5
         k ctrl+s; sleep 1.5
         AFTER="$(fixture_line)"
-        echo "  sweep $sweep entry #$n -> $AFTER"
+        echo "  sweep $sweep (filter '$FILTER') -> $AFTER"
         case "$AFTER" in
             '- [TODO](guide.md)'*)
                 FIX_INDEX="$n"
@@ -371,8 +381,14 @@ DROP=$((RED_WITH - RED_WITHOUT))
 RECOVER=$((RED_BACK - RED_WITHOUT))
 echo "red pixels  with error=$RED_WITH  after fix=$RED_WITHOUT  after undo=$RED_BACK"
 echo "  drop when fixed = $DROP   recovery when undone = $RECOVER"
-[ "$DROP" -gt 300 ] || die "applying the fix did not change the red count ($DROP) -- what is being counted is not the diagnostic"
-[ "$RECOVER" -gt 300 ] || die "undoing the fix did not bring the diagnostic back ($RECOVER)"
+# Threshold is 100, not 300. The 300 was calibrated for the old predicate, which
+# counted every salmon pixel of the Markdown link tokens as well as the squiggle
+# and so reported thousands. The proximity detector counts only pixels within 45
+# of #F14C4C: measured here at 211 with the diagnostic present, exactly 0 with it
+# fixed, and 211 again after undo. Keeping 300 would fail a correct measurement
+# for being smaller than a wrong one.
+[ "$DROP" -gt 100 ] || die "applying the fix did not change the error-red count ($DROP) -- what is being counted is not the diagnostic"
+[ "$RECOVER" -gt 100 ] || die "undoing the fix did not bring the diagnostic back ($RECOVER)"
 DIAG_RED="$RED_WITH"
 
 echo
@@ -433,10 +449,11 @@ sleep 1.3
 POST_MENU=/tmp/post-menu.png; grab "$POST_MENU"
 sleep 0.8
 
-if [ "$FIX_INDEX" -gt 0 ]; then
-    for _ in $(seq 1 "$FIX_INDEX"); do k Down; sleep 0.4; done
-    sleep 0.5
-fi
+# Same selection as the probe: type the filter, so the recorded pass and the
+# verified pass choose the entry the same way. Replaying by position here would
+# reintroduce exactly the assumption the probe stopped relying on.
+xdotool type --window "$win" --delay 60 "$FILTER"
+sleep 1.2
 mark apply
 k Return
 sleep 1.5
