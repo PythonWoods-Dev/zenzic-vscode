@@ -9,6 +9,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 *Upcoming changes for the next release.*
 
+### ⚠ Upgrade notice — verify before rolling out
+
+This release ships the v0.31.0 engine, and two of its security-tier changes can make a
+workspace that is clean today report findings after upgrading. **The new findings are
+non-suppressible** — an inline `<!-- zenzic:ignore -->` will not clear them. Neither change
+is a regression: both close a path by which a Tier-0 code was silenced. Run the CLI against
+the repository before rolling the extension out to a team:
+
+```bash
+zenzic check all
+```
+
+The editor shows the same findings as squiggles, but the CLI is what a gate keys on, and its
+exit code is the thing to check: `2` for a forbidden scheme or credential, `3` for a path
+traversal.
+
+**1. The security tier no longer reads the quality tier's masked text.** Comments, inline
+math spans and everything after an unterminated code fence are now in security scope for
+`Z202`/`Z203`/`Z205`. The sharpest case needs no MDX and no intent — this line was silent
+and now reports, because two dollar signs on one line masked the span between them:
+
+```text
+Cost is $5 - [c](javascript:alert(1)) - or $10.
+```
+
+A **closed, well-formed code fence stays out of scope by design** — fence a legitimate example and it is quiet again.
+
+**2. A site-absolute link whose first segment names an OS system directory now reaches
+`Z203` unless declared.** The fourteen names are `bin`, `boot`, `dev`, `etc`, `proc`,
+`programdata`, `root`, `sbin`, `sys`, `system32`, `usr`, `var`, `windows`, `winnt`. A
+workspace with a real `docs/etc/` section linked as `/etc/install` now needs an entry in
+`.zenzic.toml`:
+
+```toml
+# root-level keys go above the first table, or the parser swallows them
+absolute_path_allowlist = ["/etc/"]
+```
+
+**The verdict no longer depends on whether the target exists**, which is the point of the
+change: previously a file in the repository downgraded the finding, making repository content
+a suppression mechanism for a non-suppressible code. Relative links are unaffected and need
+no configuration.
+
+Full detail in the [engine CHANGELOG](https://github.com/PythonWoods/zenzic/blob/main/CHANGELOG.md).
+
 ### Added
 
 - **The Extension Declared MDX Support and Was Silently Inert on It**: `activationEvents`
