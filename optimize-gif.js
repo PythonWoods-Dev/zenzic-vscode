@@ -110,12 +110,25 @@ function main() {
   const palette = path.join(paletteDir, "palette.png");
 
   try {
-    // Pass 1 — stats_mode=diff weights colours by what actually changes between
-    // frames, so the palette is spent on the moving parts rather than the large
-    // static background of an editor window.
+      // Pass 1 — stats_mode=full, NOT diff. `diff` weights the palette by what
+      // changes between frames, which sounds right for a screencast and is wrong
+      // for this one: the error squiggle is a 1-2px antialiased underline that is
+      // *static* once drawn, so it changes least and gets no palette entry at all.
+      // It is then dithered into the surrounding salmon of the Markdown link
+      // tokens, and the GIF ends up demonstrating a diagnostic absent from its own
+      // frames -- which is what shipped in v0.30.0.
+      //
+      // Measured on identical input (same frames, same dithering, only this
+      // parameter differing): diff -> 0 pixels within 45 of #F14C4C, full -> 60.
+      // The correct palette cost 65 bytes.
+      //
+      // Verify a regenerated GIF by colour proximity to #F14C4C
+      // (editorError.foreground), never by a raw red-pixel count: syntax
+      // highlighting paints link tokens salmon and satisfies such a count on its
+      // own, which is how the original defect passed its own check.
     ffmpeg([
       ...trim, "-i", input,
-      "-vf", `${chain},palettegen=max_colors=${opts.colors}:stats_mode=diff`,
+      "-vf", `${chain},palettegen=max_colors=${opts.colors}:stats_mode=full`,
       "-y", palette,
     ]);
 
