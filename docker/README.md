@@ -87,6 +87,38 @@ over the whole window.
 The window was also tall enough that the bottom third of each frame was empty
 editor. `CAPTURE_HEIGHT` sets it, and defaults to 1120 device pixels.
 
+## The CLI demo assets, and their own image
+
+Two further assets are recorded here, and neither needs an editor:
+`record-precommit-demo.sh` (the pre-commit refusal, in the core README) and
+`record-lab-demo.sh` (`zenzic lab z201`, on the security examples page). Both use
+asciinema on a real pty and render with `agg`. That makes the `.cast` the
+complete source of every pixel. A token absent from the cast cannot appear in a
+frame, so "the raw key does not appear" is a complete check rather than a sample
+of frames.
+
+They build on [`Dockerfile.recorder`](./Dockerfile.recorder), not on the editor
+image above. A terminal recording needs a pty, a Python and a renderer; it needs
+no VS Code, no Xvfb and no xdotool. The editor image is 1.74 GB and exists for a
+different job, and depending on it meant this pipeline broke the day that image
+was unavailable. The recorder image is 393 MB.
+
+```bash
+docker build -f docker/Dockerfile.recorder -t zenzic-recorder:1 .
+mkdir -p .demo-out && chmod 777 .demo-out
+docker run --rm \
+  -v /path/to/zenzic:/work/zenzic:ro \
+  -v "$PWD/.demo-out":/out \
+  -v "$PWD/docker/record-lab-demo.sh":/home/demo/rec.sh:ro \
+  --entrypoint bash zenzic-recorder:1 /home/demo/rec.sh
+```
+
+Both scripts refuse to produce an asset rather than produce a wrong one. The
+provenance gate aborts if `zenzic` is on `PATH` before the local editable
+install. The outcome is asserted from `git` or from the process exit code, never
+from how the terminal looked. The credential measurements run before `agg` is
+invoked, so a bad asset is never written to disk.
+
 ## Things that are not obvious
 
 - **VS Code needs `--no-sandbox --disable-gpu --disable-dev-shm-usage`** in a
