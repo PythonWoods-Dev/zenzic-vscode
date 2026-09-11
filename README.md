@@ -139,9 +139,14 @@ a bug in disguise:
 - `<a>` and `<img>` participate fully in link, asset and forbidden-scheme
   checks, in any letter case. A `<Img src="...">` component is checked too,
   because the tag name matches `img`.
-- Other JSX components do not. `<Link to="./page.mdx">` — Docusaurus's own
-  internal link — is invisible to the link graph, so a broken target there is
-  not reported.
+- JSX components participate too. A capitalised tag carrying `to`, `href` or
+  `src` — `<Link to="./page.mdx">`, `<Anchor href="...">`, `<Thumb src="...">` —
+  is analysed like an `<a>`: a broken target is reported, and a forbidden scheme
+  in it exits 2. The rule is the JSX convention itself, not a list of component
+  names, so a component nobody has invented yet is covered on the day it is
+  written. A component carrying none of those three props is not a link and
+  reports nothing; its other props are not HTML attributes and are not audited
+  as such.
 - A Markdown link written inside a comment — MDX (`{/* ... */}`) or HTML
   (`<!-- ... -->`) — or inside a JSX string attribute is **not** reported, since
   none of them renders as a link. Links inside a JSX *expression* attribute
