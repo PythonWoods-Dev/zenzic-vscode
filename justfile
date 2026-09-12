@@ -160,10 +160,9 @@ versions:
 release-tag *args:
 	#!/usr/bin/env bash
 	set -euo pipefail
-	# Separate from `release` for a structural reason, not a stylistic one. `main`
-	# carries a `pull_request` ruleset rule with no bypass actors, so the bump
-	# commit reaches the default branch through a pull request; by the time there
-	# is something to tag, the branch the bump was made on is behind. Tagging
+	# Separate from `release` for a structural reason, not a stylistic one. The
+	# bump commit reaches the default branch through a pull request; by the time
+	# there is something to tag, the branch the bump was made on is behind. Tagging
 	# inside `release` would tag the wrong commit.
 	_push=false
 	for _arg in {{args}}; do [[ "$_arg" == "--push" ]] && _push=true; done
@@ -181,9 +180,8 @@ release-tag *args:
 	fi
 
 	# -s, always. A lightweight `git tag ${tag}` produces an object GitHub reports
-	# as type `commit` with no signature of its own; no repository in this
-	# ecosystem has a ruleset targeting tags, so nothing rejects it, and it still
-	# triggers release.yml. The wrong form must not be reachable from here.
+	# as type `commit` with no signature of its own, and it still triggers
+	# release.yml. The wrong form must not be reachable from here.
 	git tag -s "${tag}" -m "${tag}"
 
 	if [[ "$(git cat-file -t "${tag}")" != "tag" ]]; then

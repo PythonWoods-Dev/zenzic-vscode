@@ -127,7 +127,9 @@ is not worth a fourteen-month-old host.
 
 **When to bump the floor.** Bump `engines.vscode` (and `@types/vscode` with it) when the
 code needs an API the current floor lacks, or when the floor is older than what users
-realistically run. Never bump it only to make the suite pass.
+realistically run. Never bump it only to make the suite pass: the floor is the oldest VS Code an
+install can have, so raising it removes the extension from those users' update
+feed entirely.
 
 **What to check when bumping.** Run the suite on the new floor *and* on `stable`. Check
 the test runner's own dependencies against the floor's Node version, not just the
@@ -140,10 +142,21 @@ why `mocha` is held on the 11.x line.
 ## The Nightly Stable Run, and How to Trigger It by Hand
 
 `Zenzic VS Code CI` runs the extension-host suite against the `engines.vscode`
-floor — the oldest host we claim to support, and where a regression hides.
+floor — the oldest host we claim to support, and where a regression hides. It
+needs no configuration to do so: `src/test/host/runTest.ts` reads
+`engines.vscode` from `package.json` and uses it unless `VSCODE_TEST_VERSION`
+overrides it, and every run prints the version it resolved
+(`extension-host suite: VS Code 1.91.0 (engines floor 1.91.0)`).
+
 That floor is not what users run, so a separate workflow,
 `.github/workflows/nightly-stable.yml`, runs the same suite against VS Code's
 **stable** channel on a schedule.
+
+**On Linux only.** The pull-request job runs a matrix of `ubuntu-latest` and
+`windows-latest`; the nightly job is `ubuntu-latest` alone. So it covers the
+version axis and not the platform axis, and a defect that only appears on
+Windows is not something it can find — `willRenameFiles` on a case-insensitive
+filesystem being the obvious example.
 
 It is deliberately not part of the pull-request gate: `stable` is a moving
 target we do not control, and an upstream release breaking something would put
@@ -158,10 +171,15 @@ a red X on a pull request whose author did nothing wrong. A red X that means
 That button exists because the workflow declares a `workflow_dispatch` trigger;
 without it the schedule would be the only way to run it.
 
+GitHub registers `workflow_dispatch` from the **default branch**, so both the
+button and the CLI below appear once a branch carrying this workflow has been
+merged into `main`. Until then the workflow file exists but the trigger does
+not, and `gh workflow list` does not report it.
+
 Or from the CLI:
 
 ```bash
-gh workflow run nightly-stable.yml --repo PythonWoods/zenzic-vscode
+gh workflow run nightly-stable.yml --repo PythonWoods-Dev/zenzic-vscode
 gh run list --workflow nightly-stable.yml --limit 1   # then watch it
 ```
 
