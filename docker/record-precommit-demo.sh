@@ -107,6 +107,32 @@ if git rev-parse HEAD >/dev/null 2>&1; then
 fi
 echo "  git log: no commit on main -- the commit was refused"
 
+say "the credential measurements -- BEFORE rendering, so a bad asset is never written"
+# Constraint 4 from the header, which until now was stated and never executed:
+# `$KEY` was assigned on line 28, used once to write the fixture, and never
+# looked at again. The cast was recorded and rendered without being read. The
+# comment claimed "both measurements are made"; neither was.
+#
+# The cast is the right place to measure, and makes this a COMPLETE check rather
+# than a sample: asciinema records every byte written to the terminal, so a
+# token absent from the cast cannot appear in any frame. Inspecting rendered
+# frames would need OCR and would still only cover the frames chosen.
+[ -s "$OUT/demo.cast" ] || { echo "FAIL: no cast was recorded" >&2; exit 1; }
+
+if grep -qF "$KEY" "$OUT/demo.cast"; then
+  echo "FAIL: the raw credential ${KEY:0:4}... appears in the recording. The asset would publish it." >&2
+  exit 1
+fi
+echo "  raw key: absent from the cast"
+
+# The masked form is the other half, and it is a different measurement: a
+# recording that showed nothing at all would pass the check above.
+if ! grep -qE 'AKIA\.{3}MPLE|AKIA\*+MPLE' "$OUT/demo.cast"; then
+  echo "FAIL: the masked credential is not in the recording -- the Secret Guard table did not render, so the asset shows no finding." >&2
+  exit 1
+fi
+echo "  masked form: present in the cast"
+
 say "render"
 agg --font-size 17 --theme asciinema --speed 1 "$OUT/demo.cast" "$OUT/demo.gif"
 ls -la "$OUT/demo.gif"
