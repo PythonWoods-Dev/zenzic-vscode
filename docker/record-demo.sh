@@ -2,8 +2,15 @@
 # SPDX-FileCopyrightText: 2026 PythonWoods <dev@pythonwoods.dev>
 # SPDX-License-Identifier: Apache-2.0
 #
-# Phase 1: record the full in-editor sequence -- squiggle, hover, quick fix,
-# applied fix -- as an MP4 that `optimize-gif.js` turns into the README asset.
+# Phase 1: record the in-editor sequence -- squiggle, quick fix, applied fix,
+# and the warning the fix leaves behind -- as an MP4 that `optimize-gif.js`
+# turns into the README and Marketplace asset.
+#
+# The hover was in this sequence and is deliberately gone; see `mark start`.
+# What replaced it is nothing: the asset is shorter, because a Marketplace
+# listing is a loop a visitor sees for a few seconds rather than a video they
+# watch from the beginning, and every second of dwell is a second in which the
+# entry point they land on shows no transition.
 #
 # This extends the proven Phase 0 flow (docker/capture-squiggle.sh) rather than
 # replacing it: same engine install, same provenance gate, same fixture, same
@@ -28,39 +35,87 @@
 #      presentation and cannot be read from the server, so this script probes
 #      it by execution first and asserts the result afterwards.
 #
-#   4. Capture is at 2x device pixels with the window at its natural size.
-#      SCREEN_GEOMETRY is 2560x1600 and VS Code runs with
-#      --force-device-scale-factor=2, so a window filling that screen is a
-#      natural 1280x800 window rendered into 2560x1600 device pixels -- a
-#      supersample. The failure mode being avoided is the opposite: maximizing
-#      a 1x window on a 2x screen and downscaling the whole frame, which
-#      shrinks the logical text and nearly erases the squiggle, because
-#      VS Code draws it at a fixed device-pixel width.
+#   4. Capture is at DSF x device pixels and the output is downscaled by
+#      EXACTLY that factor. The window is sized to the full capture region, so
+#      its LOGICAL size is SW/DSF x CAP_H/DSF -- a natural 800x450 window
+#      supersampled into 1600x900 device pixels.
+#
+#      This constraint was stated before and still shipped violated, which is
+#      why it now has a gate instead of a paragraph. v0.30.x's demo.gif ran at
+#      the entrypoint's DEFAULT SCREEN_GEOMETRY (1280x800) with
+#      --force-device-scale-factor=2, so the logical viewport was only 640x400
+#      and every glyph was drawn at 32 device px; `optimize-gif.js --width 1280`
+#      then applied scale='min(1280,iw)' to a capture already 1280 wide -- a
+#      no-op. Nothing scaled it back. Measured on the shipped asset: line pitch
+#      44 px and glyph x-height 17 px, against a GitHub README prose x-height of
+#      9 px. The editor text was 1.9x the size of the prose around it.
+#
+#      WHERE THE GATE FOR IT HAD TO GO, which is not where it was first put.
+#      The obvious place is in here, measuring the frame before recording. That
+#      does not work, and the reason is worth stating because it is easy to
+#      build the useless version twice: a glyph's DEVICE-pixel size is
+#      fontSize * DSF and nothing else. It does not depend on the screen
+#      geometry at all. Measured both ways -- 17 device px at the broken
+#      1280x800 geometry and 16 at the correct 1600x924 one. A gate in here
+#      would have passed the asset that shipped.
+#
+#      What was actually wrong is the RATIO between the capture width and the
+#      output width, and this script never sees the output. So the gate that
+#      catches it lives on the host, in `verify-demo-gif.js`, and it measures
+#      the encoded GIF's glyph x-height against the README's prose x-height
+#      directly. `assert_proportion` below is kept for what it can see -- a
+#      wrong DSF or a wrong editor.fontSize, which are real and which it does
+#      discriminate -- and it is explicitly NOT the check for the defect above.
 set -uo pipefail
 
 CORE=/mnt/zenzic-core
 EXT_SRC=/mnt/zenzic-vscode
 OUT=${OUT:-/out}
-GEOM=${SCREEN_GEOMETRY:-2560x1600x24}
+GEOM=${SCREEN_GEOMETRY:-1600x924x24}
 SW=${GEOM%%x*}
 SH=$(echo "$GEOM" | cut -dx -f2)
 DSF=${DEVICE_SCALE_FACTOR:-2}
-# Window height AND capture height, in device pixels. Two things set it: the
-# fluxbox toolbar at the bottom of the screen must stay out of frame, and the
-# fixture is a 19-line file -- at the full 1540 the bottom third of every frame
-# was empty editor. 1120 device px is 560 logical px: title bar, tab, the whole
-# document, room for the lightbulb menu under line 10, and the status bar.
+# Window height AND capture height, in device pixels. 900 is 450 logical px at
+# DSF 2: title bar, tab, the document, room for the lightbulb menu under line
+# 10, and the status bar -- and nothing else. The previous default was $SH, the
+# whole screen, which put fluxbox's own toolbar in frame under VS Code's status
+# bar and gave a third of every frame to empty editor.
+#
 # Never larger than the screen: x11grab fails outright when the requested
 # geometry exceeds the display, every grab() then produces no file, and each
 # measurement built on it returns nothing. That is what made the chat-panel
 # guard conclude from an empty value -- the guard was the symptom, this is the
-# cause. Defaults to the screen height rather than a constant that was correct
-# only for a 2560x1600 display.
-CAP_H=${CAPTURE_HEIGHT:-$SH}
+# cause.
+CAP_H=${CAPTURE_HEIGHT:-900}
+# The window manager's toolbar, in device pixels, measured rather than assumed:
+# a flat 22-row band of #AEA79F at the bottom of the root window at every
+# geometry tried. It is 1x-rendered -- fluxbox knows nothing of Electron's
+# device scale factor -- so this is a constant, not a function of DSF.
+TOOLBAR_PX=${TOOLBAR_PX:-22}
 FPS=${RECORD_FPS:-25}
+# The x-height of GitHub README body text, in CSS pixels: `.markdown-body` is
+# 16px in a system sans stack, whose x-height renders 9px. Measured, not
+# assumed -- the comparison the whole gate exists to make is against this one
+# number, so it is named once here and used by both halves of the check.
+PROSE_XHEIGHT=${PROSE_XHEIGHT:-9}
+EXPECT_XHEIGHT=$((PROSE_XHEIGHT * DSF))
+GIF_W=$((SW / DSF))
+GIF_H=$((CAP_H / DSF))
 mkdir -p "$OUT"
 
 die() { echo "FAIL: $*" >&2; exit 1; }
+
+# Geometry has to be self-consistent before anything is launched, because every
+# downstream measurement is expressed in one of these units.
+[ $((SW % DSF)) -eq 0 ] && [ $((CAP_H % DSF)) -eq 0 ] \
+    || die "capture ${SW}x${CAP_H} is not divisible by DSF=$DSF -- the downscale would resample glyphs instead of halving them"
+[ "$CAP_H" -le "$((SH - TOOLBAR_PX))" ] \
+    || die "capture height $CAP_H leaves no room for the ${TOOLBAR_PX}px window-manager toolbar on a ${SH}px screen -- it would be in frame (screen must be at least $((CAP_H + TOOLBAR_PX)))"
+echo "geometry: screen ${SW}x${SH}, capture ${SW}x${CAP_H} at DSF ${DSF}" \
+     "-> logical window ${GIF_W}x${GIF_H}, output GIF ${GIF_W}x${GIF_H}"
+echo "proportion target: ${PROSE_XHEIGHT}px prose x-height, so the device-pixel" \
+     "glyph x-height must be ${EXPECT_XHEIGHT} before the /${DSF} downscale"
+
 
 # ---------------------------------------------------------------------------
 # Red-pixel measurement. Used as the diagnostics detector, so it needs a
@@ -142,6 +197,118 @@ probe_red() {
 }
 
 fixture_line() { sed -n '10p' "$WS/docs/index.md"; }
+
+# ---------------------------------------------------------------------------
+# THE PROPORTION GATE.
+#
+# Measures the glyph x-height in DEVICE pixels off a real frame and requires it
+# to match the README's own prose x-height times DSF. x-height is the quantity
+# the eye actually compares between an embedded image and the text around it,
+# and it is the quantity the acceptance criterion is written in, so it is
+# measured directly rather than derived from a font size and a ratio.
+#
+# READ THE HEADER'S CONSTRAINT 4 BEFORE TRUSTING THIS FOR MORE THAN IT DOES.
+# It catches a wrong DSF and a wrong editor.fontSize. It does NOT catch the
+# proportion defect that shipped in v0.30.x, because device-pixel glyph size is
+# invariant under screen geometry; `verify-demo-gif.js` on the host is the check
+# for that. Saying so here rather than letting the name imply otherwise: a gate
+# named for an outcome it cannot verify is worse than no gate, because the next
+# person stops looking for the real one.
+#
+# TWO STATISTICS WERE TRIED AND REJECTED, because each reported a number the
+# renderer never drew:
+#   - the minimum gap between text bands. Antialiasing splits one text row into
+#     sub-bands, so the minimum is a gap inside a glyph. Measured 20 on a frame
+#     whose real pitch is 44.
+#   - the autocorrelation peak of the ink profile. The fixture alternates
+#     blank/heading/blank/text, so the profile's strongest period is the
+#     DOCUMENT's four-line structure. Measured 88 on a frame whose real pitch
+#     is 22.
+# Both were caught by a positive control: the instrument was required to report
+# the known value on the shipped frame AND on the same frame halved. Neither
+# did. The half-max band height does -- 17 and 9 respectively -- and it is what
+# remains.
+# ---------------------------------------------------------------------------
+glyph_xheight() {
+    local f=$1
+    [ -s "$f" ] || { echo "MEASUREMENT-FAILED"; return 0; }
+    # The right half of the frame below the tab bar is editor text at every
+    # geometry: the sidebar is on the left and the status bar is at the bottom.
+    # Cropping by fraction rather than by constant keeps that true if the
+    # capture size changes.
+    convert "$f" \
+        -crop "$((SW / 2 - 40))x$((CAP_H * 58 / 100))+$((SW / 2))+$((CAP_H * 27 / 100))" \
+        +repage -colorspace Gray -depth 8 txt:- 2>/dev/null | python3 -c '
+import re, sys
+ink = {}
+seen = False
+maxy = 0
+row = re.compile(r"^(\d+),(\d+):\s*\(([0-9.]+)")
+for line in sys.stdin:
+    m = row.match(line)
+    if not m:
+        continue
+    seen = True
+    y = int(m.group(2))
+    if y > maxy:
+        maxy = y
+    if float(m.group(3)) > 100:
+        ink[y] = ink.get(y, 0) + 1
+if not seen:
+    print("MEASUREMENT-FAILED"); sys.exit(0)
+# Contiguous inked rows are one band: one rendered row of text.
+ys = [y for y in sorted(ink) if ink[y] >= 3]
+bands, prev = [], None
+for y in ys:
+    if prev is not None and y - prev <= 3:
+        bands[-1].append(y)
+    else:
+        bands.append([y])
+    prev = y
+# A band touching the first or last row of the crop is a text row the crop cut
+# through, and its height measures where the crop landed rather than how large
+# the text is. Including them dragged the median from 16 to 14 and failed a
+# correct render -- the first thing this gate did was reject a good frame.
+bands = [b for b in bands if b[0] > 0 and b[-1] < maxy]
+# Four bands is the floor for a median to mean anything. Fewer means the crop
+# landed somewhere without text, which is a failed measurement and not a small
+# x-height -- the distinction the chat-panel guard did not make.
+if len(bands) < 4:
+    print("MEASUREMENT-FAILED"); sys.exit(0)
+# Within one band the x-height region is the plateau: ascenders and descenders
+# are a minority of the ink, so the rows carrying at least half the band peak
+# are the x-height rows. The median over bands discards the heading that is
+# larger and the band that is half outside the crop.
+heights = sorted(sum(1 for y in b if ink[y] >= 0.5 * max(ink[v] for v in b)) for b in bands)
+print(heights[len(heights) // 2])
+'
+}
+
+assert_proportion() {
+    grab /tmp/prop.png || die "could not grab a frame to measure proportion"
+    # A gate that refuses should leave behind what it refused on. Without this
+    # the only way to see why the number was wrong is to re-run the whole
+    # pipeline, which takes minutes and may not reproduce.
+    cp /tmp/prop.png "$OUT/frame-proportion-probe.png" 2>/dev/null
+    local measured
+    measured="$(require_number "glyph x-height" "$(glyph_xheight /tmp/prop.png)")" \
+        || die "cannot measure the glyph x-height -- refusing to record at an unknown scale"
+    # +/-3, not +/-2. The editor font and the README's sans have different
+    # x-height ratios at the same em -- Liberation Mono 0.53, the sans 0.55 --
+    # so the correct render measures 16-17 against a nominal 18 and a tight
+    # band would reject it. The tolerance is set by that measurement; it is
+    # still far narrower than the 2x it has to catch.
+    local lo=$((EXPECT_XHEIGHT - 3)) hi=$((EXPECT_XHEIGHT + 3))
+    echo "glyph x-height: ${measured} device px (expected ${EXPECT_XHEIGHT} = ${PROSE_XHEIGHT} prose px x DSF ${DSF}, tolerance ${lo}-${hi})"
+    if [ "$measured" -lt "$lo" ] || [ "$measured" -gt "$hi" ]; then
+        die "x-height ${measured} against an expected ${EXPECT_XHEIGHT}: the editor is drawing at $(awk -v m="$measured" -v e="$EXPECT_XHEIGHT" 'BEGIN{printf "%.2f", m/e}')x the intended scale.
+  This is what shipped in v0.30.x, at 1.89x. Check that SCREEN_GEOMETRY
+  (${SW}x${SH}) was actually passed: the entrypoint defaults to 1280x800, which
+  at DSF ${DSF} halves the logical viewport and doubles every glyph."
+    fi
+    echo "proportion OK: after the /${DSF} downscale the ${GIF_W}x${GIF_H} GIF will carry" \
+         "${PROSE_XHEIGHT}px x-height text -- the size of the prose around it"
+}
 
 echo "### 1. engine: editable install from the mounted local repo"
 pip install --quiet -e "$CORE" 2>&1 | tail -2
@@ -261,6 +428,10 @@ AUX="$(require_number "chat panel header colours" "$(aux_header_colours)")" \
 echo "distinct colours where the chat panel header would be: $AUX"
 [ "$AUX" -lt 40 ] \
     || die "the chat panel is still on screen ($AUX colours) -- a recording of Zenzic should not be a third someone else's product"
+
+echo
+echo "### 4b. PROPORTION GATE -- is the editor drawing at the intended scale?"
+assert_proportion
 
 echo
 echo "### 5. interaction primitives"
@@ -397,10 +568,21 @@ find /home/demo/.config/Code/logs -type f -name '*.log' 2>/dev/null \
     | xargs grep -ilE 'zenzic' 2>/dev/null | head -5
 
 echo
-echo "### 7b. ready to record: fixture restored, cursor parked at the top"
+echo "### 7b. ready to record: fixture restored, caret already in the link"
 [ "$(fixture_line)" = "$ORIGINAL_LINE" ] || die "fixture not restored before recording"
-xdotool windowactivate "$win"; sleep 0.3
-k ctrl+Home; sleep 1
+# Positioning happens HERE, before ffmpeg starts, and that is a change from the
+# previous take rather than an optimisation of it. Ctrl+G opens a Go-to-Line
+# overlay that covers three lines of the document for about two seconds; the
+# shipped GIF spends that time showing a dialog whose text is ":10". A viewer
+# arriving mid-loop saw editor chrome, not the product.
+#
+# Recording from an already-parked caret also removes the wait for diagnostics:
+# the squiggle is on screen in frame one, so every entry point into the loop is
+# immediately legible. The assertion on the line's text after the fix is what
+# still proves the caret was where this claims -- position is verified by
+# outcome, not by having typed the keystrokes.
+goto_empty_link
+sleep 0.5
 
 echo
 echo "### 8. write probe on the output directory"
@@ -425,38 +607,42 @@ sleep 1
 kill -0 "$FFPID" 2>/dev/null || die "ffmpeg died immediately"
 
 mark start
-sleep 1.2                    # a beat on the untouched file, squiggle in frame
-goto_empty_link
-sleep 0.8
-
-# Hover, by keybinding. Frames are grabbed now and MEASURED after the take:
-# an ImageMagick histogram mid-take freezes the picture for over a second,
-# and three of those were most of the difference between a 36-second clip and
-# a 22-second one. Grabbing is cheap; measuring is not.
-PRE_HOVER=/tmp/pre-hover.png; grab "$PRE_HOVER"
-mark hover
-k ctrl+k ctrl+i
+# A beat on the untouched file with the squiggle already in frame. Frames are
+# grabbed now and MEASURED after the take: an ImageMagick histogram mid-take
+# freezes the picture for over a second, and three of those were most of the
+# difference between a 36-second clip and a 22-second one. Grabbing is cheap;
+# measuring is not.
+#
+# This grab is also the colour-fidelity reference. It is the squiggle as the
+# product actually renders it, in lossless PNG at full device resolution,
+# before ffmpeg has touched it -- so the encoded GIF can be compared against
+# the source rather than against a judgement of how the GIF looks.
+FRAME_SRC=/tmp/src-squiggle.png; grab "$FRAME_SRC"
+cp "$FRAME_SRC" "$OUT/frame-src-squiggle.png"
 sleep 1.2
-POST_HOVER=/tmp/post-hover.png; grab "$POST_HOVER"
-sleep 1.5
 
-k Escape; sleep 0.6
-
+# The hover is deliberately NOT recorded any more, and this is a content
+# decision rather than a saving. It cost 4.3 of the previous take's 24.8
+# seconds to restate what the squiggle already says, and it produced the least
+# legible frame in the asset: a text panel covering the code, which is what a
+# Marketplace visitor arriving mid-loop was most likely to land on. The hover
+# is still verified -- by `zenzic`'s own LSP tests -- it is just not the thing
+# this image is for.
 PRE_MENU=/tmp/pre-menu.png; grab "$PRE_MENU"
 mark menu
 k ctrl+period
-sleep 1.3
+sleep 1.1
 POST_MENU=/tmp/post-menu.png; grab "$POST_MENU"
-sleep 0.8
+sleep 0.6
 
 # Same selection as the probe: type the filter, so the recorded pass and the
 # verified pass choose the entry the same way. Replaying by position here would
 # reintroduce exactly the assumption the probe stopped relying on.
 xdotool type --window "$win" --delay 60 "$FILTER"
-sleep 1.2
+sleep 1.0
 mark apply
 k Return
-sleep 1.5
+sleep 1.2
 k ctrl+s
 sleep 0.8
 
@@ -470,7 +656,8 @@ case "$FIXED_LINE" in
        die "the applied action did not produce [TODO](guide.md) -- it was: $FIXED_LINE" ;;
 esac
 FRAME_FIXED=/tmp/after-quickfix.png; grab "$FRAME_FIXED"
-sleep 1.5
+cp "$FRAME_FIXED" "$OUT/frame-src-todo.png"
+sleep 1.2
 
 # ---------------------------------------------------------------------------
 # The quick fix does not end the story, and pretending it does would be the
@@ -484,9 +671,9 @@ sleep 1.5
 mark replace
 park_on_link
 for _ in 1 2 3 4; do k shift+Right; sleep 0.1; done
-sleep 0.5
+sleep 0.4
 xdotool type --delay 70 "Setup guide"
-sleep 0.8
+sleep 0.6
 k ctrl+s
 sleep 1.2
 
@@ -498,15 +685,15 @@ case "$FINAL_LINE" in
        die "typing real link text did not land: $FINAL_LINE" ;;
 esac
 FRAME_END=/tmp/after-typing.png; grab "$FRAME_END"
+cp "$FRAME_END" "$OUT/frame-src-clean.png"
 mark end
-sleep 2
+sleep 1.5
 
 kill -INT "$FFPID" 2>/dev/null
 wait "$FFPID" 2>/dev/null
 
 echo
 echo "### 10b. the mid-take checks, computed now that the take is over"
-echo "hover changed pixels: $(compare -metric AE "$PRE_HOVER" "$POST_HOVER" null: 2>&1 | tr -d '\n')"
 echo "menu changed pixels:  $(compare -metric AE "$PRE_MENU" "$POST_MENU" null: 2>&1 | tr -d '\n')"
 RED_FIXED="$(redcount "$FRAME_FIXED")"
 RED_AFTER="$(redcount "$FRAME_END")"
@@ -521,7 +708,20 @@ ffprobe -v error -select_streams v:0 \
 stat -c 'demo.mp4 bytes=%s' "$MP4"
 
 # Frames from the recorded pass, for the record and for cropping decisions.
-cp /tmp/post-hover.png "$OUT/frame-hover.png" 2>/dev/null
 cp /tmp/post-menu.png  "$OUT/frame-menu.png"  2>/dev/null
 grab "$OUT/frame-fixed.png"
-echo "wrote frame-hover.png frame-menu.png frame-fixed.png"
+echo "wrote frame-menu.png frame-fixed.png frame-src-squiggle.png frame-src-todo.png frame-src-clean.png"
+
+echo
+echo "### 12. ENCODE AND GATE"
+# The encoding half runs here so the whole path -- record, encode, seed, verify
+# -- is one `docker run`. It is a separate script because encoding costs seconds
+# where capture costs minutes, so a palette change can be re-measured against an
+# existing demo.mp4 without re-capturing; see docker/encode-demo.sh.
+#
+# Called from the MOUNT rather than from the copy at /home/demo/ext: the copy
+# exists to be packaged as a .vsix and `npm ci` has rewritten parts of it.
+[ -x "$EXT_SRC/docker/encode-demo.sh" ] || [ -f "$EXT_SRC/docker/encode-demo.sh" ] \
+    || die "no encode-demo.sh under $EXT_SRC/docker -- the recording is on disk but cannot be encoded"
+OUT="$OUT" EXT_DIR="$EXT_SRC" MP4="$MP4" bash "$EXT_SRC/docker/encode-demo.sh" \
+    || die "the recording succeeded and the encode gate refused the result; demo.mp4 is kept at $MP4 so the encode can be re-run alone"

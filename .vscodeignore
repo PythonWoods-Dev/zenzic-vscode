@@ -27,6 +27,22 @@ eslint.config.mjs
 package-lock.json
 node_modules/**
 .pytest_cache/**
+# The other two tool caches, and the reason they need naming when
+# .pytest_cache did not: all three are invisible to `git status` here because a
+# GLOBAL gitignore covers them, and a global gitignore protects git and nothing
+# else. `vsce package` does not read it. So .mypy_cache/ -- 8.9 MB of type-stub
+# data -- was being packaged into every install, while every manifest and every
+# status command in the repository looked clean. Found by noticing an
+# unexplained 445 KB jump in the VSIX and listing what it actually contained.
+.mypy_cache/**
+.ruff_cache/**
+# Build configuration with no runtime purpose, same category as the linter
+# configs above: a user's install has no npm to configure.
+.npmrc
+# The root-level unit test. `**/*.ts` above already excludes its only file, so
+# this changes nothing today and states the intent rather than relying on a
+# glob that happens to cover it.
+test/**
 *.vsix
 **/*.ts
 **/*.map
@@ -62,6 +78,17 @@ out/test/**
 # being packaged are different questions: this file and .gitignore are separate
 # manifests, and neither one implies the other.
 docker/**
+# The recording scratch directory, and the reason it needs its own line: it is
+# in .gitignore, and .gitignore is not .vscodeignore. `vsce package` on a
+# developer machine that has just regenerated the demo packaged 1.8 MB of it --
+# the MP4 intermediate, six probe frames and a duplicate of the GIF -- into
+# every install. Found by hashing what the VSIX actually contains rather than
+# by reading either manifest. Same shape as the .venv/** entry above.
+.demo-out/**
+# The demo asset's verification gate. Build/marketing tooling like docker/**
+# and optimize-gif.js, both excluded above; a Marketplace user has no GIF to
+# verify.
+scripts/**
 ROADMAP.md
 # images/demo*.gif was excluded here by the v0.23.3 package-optimisation
 # pass, before any such file existed. The demo GIF now exists, and unlike the

@@ -17,6 +17,18 @@ _zenzic_core/
 .claude/
 .human/
 
+# Tool caches. Covered by this machine's global gitignore, which is exactly why
+# they are named here: a global gitignore is one developer's configuration, and
+# a repository that depends on it is protected on one machine. The same gap let
+# .mypy_cache/ into the packaged .vsix, where no global gitignore applies.
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Recording scratch directory. docker/README.md tells the operator to create
+# it, and it fills with multi-megabyte MP4 intermediates and probe frames.
+.demo-out/
+
 # Zenzic quality scores — derived local metadata
 .zenzic-score.json
 .zenzic-history.jsonl
