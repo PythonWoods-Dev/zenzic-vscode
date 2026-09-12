@@ -241,10 +241,10 @@ def fidelity(frames: list[Path]) -> dict[str, tuple[float, int]]:
 
 # ---------------------------------------------------------------------------
 # Self-test. Runs before any verdict, so a broken instrument cannot report a
-# clean asset. Rule 39: a zero-result sweep is not evidence until the instrument
-# has been shown to find something -- so each control is asserted in BOTH
-# directions, and the negative controls are the real values that got past the
-# previous check rather than invented ones.
+# clean asset. A passing check and a check that stopped looking produce the same
+# silence, so each control is asserted in BOTH directions -- and the negative
+# controls are the real values that got past the previous check rather than
+# invented ones.
 # ---------------------------------------------------------------------------
 def _swatch(tmp: Path, name: str, colour: tuple[int, int, int]) -> Path:
     p = tmp / name
