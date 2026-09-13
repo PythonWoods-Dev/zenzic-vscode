@@ -300,7 +300,7 @@ export async function activate(context: vscode.ExtensionContext) {
                         vscode.commands.executeCommand('workbench.action.openSettings', 'zenzic.executablePath');
                     } else if (action === 'Open Docs') {
                         vscode.env.openExternal(vscode.Uri.parse(
-                            'https://github.com/PythonWoods/zenzic-vscode#requirements'
+                            'https://github.com/PythonWoods-Dev/zenzic-vscode#requirements'
                         ));
                     }
                 };
@@ -340,7 +340,7 @@ export async function activate(context: vscode.ExtensionContext) {
                         vscode.commands.executeCommand('workbench.action.openSettings', 'zenzic.executablePath');
                     } else if (action === 'Open Docs') {
                         vscode.env.openExternal(vscode.Uri.parse(
-                            'https://github.com/PythonWoods/zenzic-vscode#requirements'
+                            'https://github.com/PythonWoods-Dev/zenzic-vscode#requirements'
                         ));
                     }
                 };
@@ -368,7 +368,7 @@ export async function activate(context: vscode.ExtensionContext) {
                         vscode.commands.executeCommand('workbench.action.openSettings', 'zenzic.executablePath');
                     } else if (action === 'Open Docs') {
                         vscode.env.openExternal(vscode.Uri.parse(
-                            'https://github.com/PythonWoods/zenzic-vscode#requirements'
+                            'https://github.com/PythonWoods-Dev/zenzic-vscode#requirements'
                         ));
                     }
                 };
@@ -396,7 +396,7 @@ export async function activate(context: vscode.ExtensionContext) {
                         terminal.sendText('uv tool install zenzic', true);
                     } else if (action === 'Open Docs') {
                         vscode.env.openExternal(vscode.Uri.parse(
-                            'https://github.com/PythonWoods/zenzic-vscode#requirements'
+                            'https://github.com/PythonWoods-Dev/zenzic-vscode#requirements'
                         ));
                     }
                 };
@@ -439,7 +439,7 @@ export async function activate(context: vscode.ExtensionContext) {
                         vscode.commands.executeCommand('workbench.action.openSettings', 'zenzic.executablePath');
                     } else if (action === 'Open Docs') {
                         vscode.env.openExternal(vscode.Uri.parse(
-                            'https://github.com/PythonWoods/zenzic-vscode#requirements'
+                            'https://github.com/PythonWoods-Dev/zenzic-vscode#requirements'
                         ));
                     }
                 } else {
@@ -476,7 +476,7 @@ export async function activate(context: vscode.ExtensionContext) {
                     vscode.commands.executeCommand('workbench.action.openSettings', 'zenzic.executablePath');
                 } else if (action === 'Open Docs') {
                     vscode.env.openExternal(vscode.Uri.parse(
-                        'https://github.com/PythonWoods/zenzic-vscode#requirements'
+                        'https://github.com/PythonWoods-Dev/zenzic-vscode#requirements'
                     ));
                 }
             };
@@ -683,7 +683,7 @@ export async function activate(context: vscode.ExtensionContext) {
         } else if (selected.label.includes('Open Settings')) {
             vscode.commands.executeCommand('workbench.action.openSettings', 'zenzic');
         } else if (selected.label.includes('Open Documentation')) {
-            vscode.env.openExternal(vscode.Uri.parse('https://github.com/PythonWoods/zenzic-vscode#readme'));
+            vscode.env.openExternal(vscode.Uri.parse('https://github.com/PythonWoods-Dev/zenzic-vscode#readme'));
         }
     };
 
@@ -907,13 +907,13 @@ export async function activate(context: vscode.ExtensionContext) {
 
         // Bound the URL by construction rather than trusting message length: a
         // finding message can interpolate matched text of unpredictable size.
-        const overhead = `https://github.com/PythonWoods/zenzic/issues/new?title=${encodeURIComponent(title)}&body=`.length;
+        const overhead = `https://github.com/PythonWoods-Dev/zenzic/issues/new?title=${encodeURIComponent(title)}&body=`.length;
         while (encodeURIComponent(body).length + overhead > ISSUE_URL_BUDGET && body.length > 200) {
             body = body.slice(0, Math.floor(body.length * 0.8)) + '\n\n… (truncated)\n';
         }
 
         const url =
-            `https://github.com/PythonWoods/zenzic/issues/new` +
+            `https://github.com/PythonWoods-Dev/zenzic/issues/new` +
             `?title=${encodeURIComponent(title)}` +
             `&body=${encodeURIComponent(body)}`;
 
