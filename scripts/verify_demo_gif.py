@@ -73,6 +73,11 @@ from pathlib import Path
 #: being unavailable and the asset being wrong are different outcomes and must
 #: not produce the same one.
 _MAGICK = shutil.which("magick") or shutil.which("convert")
+#: ffprobe is the second hard dependency, and it was the unguarded one: with it
+#: absent, geometry() raised FileNotFoundError out of main(), the traceback went
+#: to stderr, and the process still exited 0 -- a gate reporting that an asset
+#: may ship on the strength of a measurement it never took.
+_FFPROBE = shutil.which("ffprobe")
 
 
 #: The x-height of GitHub README body text, in CSS pixels. `.markdown-body` is
@@ -347,6 +352,14 @@ def main() -> int:
         print(f"FATAL: no such file: {gif}", file=sys.stderr)
         return 2
 
+    # Checked here, not at the top: --self-test and the usage path measure no GIF,
+    # so neither needs ffprobe, and refusing them for a missing dependency would
+    # break the very self-test that proves this instrument works.
+    if _FFPROBE is None:
+        print("FATAL: `ffprobe` is not on PATH. This gate cannot run, which is not the "
+              "same as the asset being wrong -- install ffmpeg.", file=sys.stderr)
+        return 2
+
     w, h, dur, frames_n = geometry(gif)
     print(f"verify-demo-gif: {gif.name}  {w}x{h}  {dur:.2f}s  {frames_n} frames  "
           f"{gif.stat().st_size / 1024:.0f} KB")
@@ -402,4 +415,18 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    # An unhandled exception must not reach the interpreter's default handler: it
+    # prints a traceback and leaves the exit code to whatever ran last, which is
+    # how this script reported success while crashing. Anything unexpected is a
+    # failure to measure, and a failure to measure is exit 2.
+    try:
+        sys.exit(main())
+    except SystemExit:
+        raise
+    except BaseException as exc:  # noqa: BLE001 - deliberate catch-all at the boundary
+        import traceback
+
+        traceback.print_exc()
+        print(f"FATAL: the gate crashed and measured nothing: "
+              f"{type(exc).__name__}: {exc}", file=sys.stderr)
+        sys.exit(2)
