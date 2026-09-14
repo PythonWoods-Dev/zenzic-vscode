@@ -161,6 +161,18 @@ Full detail in the [engine CHANGELOG](https://github.com/PythonWoods/zenzic/blob
 
 ### Fixed
 
+- **Eight Dead `directory_policies` Entries Removed — They Suppressed Nothing and Failed the Gate**:
+  `.zenzic.toml` carried suppressions for `changelogs/**`, `ROADMAP.md` and `CODE_OF_CONDUCT.md`
+  that `Z620` reported as never used. Four of the five codes they named — `Z411`, `Z502`,
+  `Z511`, `Z513` — became **opt-in** in the v0.31.0 engine, so a suppression for them silences
+  nothing: the check does not run at all unless its `[policies]` flag is set. `Z410` is a
+  different case and worth separating: it is still on by default, and its entry was simply
+  stale. The three keys are removed rather than emptied, because an empty policy is itself dead
+  configuration, and the removal is recorded in place with the condition for restoring any of
+  them — enable the flag first, or the entry is dead again on arrival. `assets/**` and
+  `images/**` keep their `Z405` suppressions: both directories hold real files and those
+  entries are doing work. The repository now scores **100/100** and `just check` passes.
+
 - **No More False Broken-Link Squiggles in Comments and JSX Attributes**:
   - A Markdown link inside an MDX comment (`{/* ... */}`), an HTML comment (`<!-- ... -->`), or a JSX string attribute produced a red `Z101` underline on text that does not render as a link. Fixed in Zenzic Core; the editor shows the corrected diagnostics with no change to the extension itself. The HTML-comment case affected `.md` as well as `.mdx`.
   - Genuine broken links in the same file are still reported, and positions are unchanged: the masking that removes the false positives is length-preserving, so squiggle columns and caret offsets stay where they were.

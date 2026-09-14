@@ -69,17 +69,19 @@ brand_obsolescence = [
 # BEHAVIOR: Matched findings are silently dropped — ZERO debt added.
 #
 [governance.directory_policies]
-# changelogs: historical entries — long sentences from release notes (Z511),
-# topological dead-ends (Z410/Z411), editorial (Z513). Z512 removed: never
-# used to suppress a finding here (Z620).
-"changelogs/**"      = ["Z410", "Z411", "Z513", "Z511"]
 # assets/ and images/: design assets not yet linked from documentation.
 "assets/**"          = ["Z405"]
 "images/**"          = ["Z405"]
-# ROADMAP.md: intentionally short, single-topic page; structural dead-end by design.
-"ROADMAP.md"         = ["Z411", "Z502"]
-# CODE_OF_CONDUCT.md: topological dead-ends and long clauses by design.
-"CODE_OF_CONDUCT.md" = ["Z411", "Z511"]
+#
+# Removed 2026-09-14, all eight entries reported dead by Z620:
+#   "changelogs/**"      = ["Z410", "Z411", "Z513", "Z511"]
+#   "ROADMAP.md"         = ["Z411", "Z502"]
+#   "CODE_OF_CONDUCT.md" = ["Z411", "Z511"]
+# Four of the five codes named there — Z411, Z502, Z511, Z513 — became opt-in in
+# the v0.31.0 engine, so a suppression for them silences nothing: the check does
+# not run unless its [policies] flag is set. Z410 is a different case, still
+# on by default, and its entry was simply stale. Restoring any of these means
+# enabling the corresponding flag first, or the entry is dead again on arrival.
 
 # --- CUSTOM RULES (Optional) ---
 [[custom_rules]]
