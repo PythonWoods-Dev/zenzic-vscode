@@ -188,6 +188,38 @@ have, while the PR gate stays green against the floor. That combination is the
 signal this workflow exists to produce, and it belongs to the maintainer rather
 than to whoever pushed last.
 
+## The Demo Asset Check, and How to Trigger It by Hand
+
+`.github/workflows/demo-asset.yml` runs `scripts/verify_demo_gif.py` against
+`images/demo.gif`, the animation the README and the Marketplace listing show. The
+script measures the encoded file itself — glyph size against the README's prose,
+and the two colours the demo exists to show — so it rejects a wrongly produced
+asset whichever command produced it.
+
+It runs when a pull request or a push to `main` changes the GIF, the script,
+`docker/` or the workflow. It is informational: it reports a result, and merging
+does not wait for it. It needs `ffmpeg`, ImageMagick and Ghostscript on the
+runner, and a check that turns red because a dependency is
+missing teaches people to read red as noise. A red result is still worth reading:
+exit `1` means the asset must not ship, exit `2` means the instrument could not
+measure.
+
+**To run it by hand:**
+
+> GitHub → **Actions** → **Zenzic VS Code Demo Asset** → **Run workflow** → pick
+> the branch → **Run workflow**.
+
+```bash
+gh workflow run demo-asset.yml --repo PythonWoods-Dev/zenzic-vscode
+```
+
+GitHub registers `workflow_dispatch` from the **default branch**, so the command
+works once this workflow is on `main`. Locally, with the same tools installed:
+
+```bash
+python3 scripts/verify_demo_gif.py images/demo.gif
+```
+
 ## Useful Commands (`justfile`)
 
 | Task | Command | Description |
