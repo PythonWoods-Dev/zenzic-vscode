@@ -1,0 +1,99 @@
+# SPDX-FileCopyrightText: 2026 PythonWoods <dev@pythonwoods.dev>
+# SPDX-License-Identifier: Apache-2.0
+
+# Precedence: .zenzic.toml is shared baseline; .zenzic.local.toml overrides locally.
+# Keep secrets and workstation-only values in .zenzic.local.toml.
+
+# --- CORE SETTINGS ---
+# ---------------------------------------------------------------------------
+# docs_dir
+# ---------------------------------------------------------------------------
+# Set to "." to scan the entire repository root (no docs/ folder exists in
+# this TypeScript/npm project — docs live at root level: README.md,
+# CHANGELOG.md, CONTRIBUTING.md, RELEASE.md).
+# L1 system exclusions (node_modules, .git, etc.) apply automatically.
+#
+docs_dir = "."
+
+strict = true
+# fail_under = 100 - suppression_cap, the relation the generated configuration states
+# (fail_under <= 100 - suppression_cap). With the cap declared at 1 this is 99.
+fail_under = 99
+# exit_zero = false
+# respect_vcs_ignore = true
+
+excluded_external_urls = []
+
+# --- EXCLUSION ZONES (Full bypass — use sparingly) ---
+# Paths listed here are INVISIBLE to Zenzic: no findings, no audit trail.
+# Prefer [governance.per_file_ignores] for targeted suppression.
+excluded_dirs = [
+    "out",           # TypeScript build output
+    "dist",          # Alternative build output dir
+    ".vscode-test",  # VS Code extension test harness artefacts
+    "coverage",      # vitest coverage report output
+    "LICENSES",      # REUSE license files — machine-readable, not documentation
+    "src/test/host/fixtures",  # extension-host test data: tiny deliberately-broken docs, not documentation
+]
+excluded_file_patterns = [
+    "RELEASE.md",
+]
+
+# --- PLACEHOLDERS & CODE SNIPPETS (Optional) ---
+placeholder_patterns = []
+
+# --- ENGINE CONTEXT ---
+[build_context]
+engine         = "standalone" # No docs framework — standalone markdown files at root
+base_url       = "/"
+default_locale = "en"
+
+# --- BRAND INTEGRITY ---
+[project_metadata]
+release_name = "Magnetite"
+badge_stamp_files = ["README.md"]
+
+[governance]
+# suppression_cap = 1: the one exemption this project defends, counted in use on 2026-09-15 --
+# images/logo.png is the Marketplace icon named by package.json, not a documentation asset.
+# A cap of 0 demanded zero debt from a project that carried this one. The default of 30 is
+# not calibrated for any project: it began as the free allowance of a retired scoring model.
+suppression_cap = 1
+suppression_cap_fail_hard = true
+
+brand_obsolescence = [
+    "Basalt",
+    "Quartz",
+    "Obsidian",
+    "Graphite",
+]
+
+# ---------------------------------------------------------------------------
+# directory_policies
+# ---------------------------------------------------------------------------
+# Strategic exemptions for entire directory trees or specific files.
+# BEHAVIOR: Matched findings are dropped; each (pattern, code) pair in use costs one point.
+#
+[governance.directory_policies]
+# images/: logo.png is the Marketplace icon named by package.json, not a documentation asset.
+# `"assets/**" = ["Z405"]` was removed 2026-09-15: the wordmarks in assets/ are referenced from
+# README.md through <source srcset>, which the unused-asset check now reads, so the entry
+# suppressed nothing and was reported as dead configuration.
+"images/**"          = ["Z405"]
+#
+# Removed 2026-09-14, all eight entries reported dead by Z620:
+#   "changelogs/**"      = ["Z410", "Z411", "Z513", "Z511"]
+#   "ROADMAP.md"         = ["Z411", "Z502"]
+#   "CODE_OF_CONDUCT.md" = ["Z411", "Z511"]
+# Four of the five codes named there — Z411, Z502, Z511, Z513 — became opt-in in
+# the v0.31.0 engine, so a suppression for them silences nothing: the check does
+# not run unless its [policies] flag is set. Z410 is a different case, still
+# on by default, and its entry was simply stale. Restoring any of these means
+# enabling the corresponding flag first, or the entry is dead again on arrival.
+
+# --- CUSTOM RULES (Optional) ---
+[[custom_rules]]
+id       = "ZZ-NOCLICKHERE"
+pattern  = "(?i)\\bclick here\\b|\\bclicca qui\\b"
+message  = "Avoid generic link text. Use a meaningful description for accessibility."
+severity = "error"
