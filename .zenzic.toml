@@ -69,8 +69,10 @@ brand_obsolescence = [
 # BEHAVIOR: Matched findings are silently dropped — ZERO debt added.
 #
 [governance.directory_policies]
-# assets/ and images/: design assets not yet linked from documentation.
-"assets/**"          = ["Z405"]
+# images/: logo.png is the Marketplace icon named by package.json, not a documentation asset.
+# `"assets/**" = ["Z405"]` was removed 2026-09-15: the wordmarks in assets/ are referenced from
+# README.md through <source srcset>, which the unused-asset check now reads, so the entry
+# suppressed nothing and was reported as dead configuration.
 "images/**"          = ["Z405"]
 #
 # Removed 2026-09-14, all eight entries reported dead by Z620:
