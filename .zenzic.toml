@@ -16,7 +16,9 @@
 docs_dir = "."
 
 strict = true
-fail_under = 100
+# fail_under = 100 - suppression_cap, the relation the generated configuration states
+# (fail_under <= 100 - suppression_cap). With the cap declared at 1 this is 99.
+fail_under = 99
 # exit_zero = false
 # respect_vcs_ignore = true
 
@@ -52,7 +54,11 @@ release_name = "Magnetite"
 badge_stamp_files = ["README.md"]
 
 [governance]
-suppression_cap = 0
+# suppression_cap = 1: the one exemption this project defends, counted in use on 2026-09-15 --
+# images/logo.png is the Marketplace icon named by package.json, not a documentation asset.
+# A cap of 0 demanded zero debt from a project that carried this one. The default of 30 is
+# not calibrated for any project: it began as the free allowance of a retired scoring model.
+suppression_cap = 1
 suppression_cap_fail_hard = true
 
 brand_obsolescence = [
@@ -66,7 +72,7 @@ brand_obsolescence = [
 # directory_policies
 # ---------------------------------------------------------------------------
 # Strategic exemptions for entire directory trees or specific files.
-# BEHAVIOR: Matched findings are silently dropped — ZERO debt added.
+# BEHAVIOR: Matched findings are dropped; each (pattern, code) pair in use costs one point.
 #
 [governance.directory_policies]
 # images/: logo.png is the Marketplace icon named by package.json, not a documentation asset.
