@@ -54,6 +54,24 @@ no configuration.
 
 Full detail in the [engine CHANGELOG](https://github.com/PythonWoods/zenzic/blob/main/CHANGELOG.md).
 
+### Changed
+
+- **Engine v0.31.0: pages MkDocs does not build no longer produce findings**: a page declared by
+  `exclude_docs` or `draft_docs` in `mkdocs.yml` is absent from the published site, so its squiggles
+  disappear from the editor along with them. `draft_docs` follows `mkdocs build` rather than
+  `mkdocs serve` — a draft is not in the published site, and the extension reports what a reader
+  would get. Credential findings are unaffected: a secret in an unbuilt file is still flagged, still
+  non-suppressible. If a workspace pins a Zenzic baseline, regenerate it — it lists findings that no
+  longer exist.
+- **A malformed pattern in those keys is now reported instead of ignored**: `Z407`
+  (`INVALID_ENGINE_PATTERN`) appears on `mkdocs.yml` when a gitignore-style pattern cannot be parsed.
+  Previously the declaration silently had no effect, and the only visible trace was the finding it
+  was meant to suppress, still showing. A malformed pattern also used to abort the whole scan, which
+  left the Problems panel empty rather than wrong.
+- **`Z620`'s message names both reasons a policy can be unused**: the entry may be genuinely dead, or
+  its pattern may never have matched what its author intended. The quick-fix advice no longer assumes
+  the first.
+
 ### Added
 
 - **The Extension Declared MDX Support and Was Silently Inert on It**: `activationEvents`
