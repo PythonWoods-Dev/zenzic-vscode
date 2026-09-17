@@ -125,8 +125,19 @@ function dumpServerChannel(extensionDevelopmentPath: string): void {
     console.error('===== end of server channel =====\n');
 }
 
-main().catch((err) => {
-    console.error('extension-host suite failed to run:', err);
-    dumpServerChannel(path.resolve(__dirname, '../../../'));
-    process.exit(1);
-});
+main().then(
+    () => {
+        // runTests() resolving means the host reported exit code 0. Node itself
+        // exits only once every handle is closed, and @vscode/test-electron does
+        // not guarantee that: on 2026-09-16 two aborted download attempts left
+        // their tar/gzip pipes open, the suite passed in seven seconds, and the
+        // process then sat for six hours until the platform cancelled the job.
+        // The verdict is already in; leave nothing to the event loop.
+        process.exit(0);
+    },
+    (err) => {
+        console.error('extension-host suite failed to run:', err);
+        dumpServerChannel(path.resolve(__dirname, '../../../'));
+        process.exit(1);
+    }
+);
