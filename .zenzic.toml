@@ -22,7 +22,11 @@ fail_under = 99
 # exit_zero = false
 # respect_vcs_ignore = true
 
-excluded_external_urls = []
+# The Marketplace listing answers HEAD with 404 and GET with 200 (measured 2026-09-17:
+# curl -I -> 404, curl/urllib GET -> 200, gallery API finds pythonwoods.zenzic-vscode).
+# The engine probes with HEAD and falls back to GET only on 405, so it reports the
+# working link as broken; excluded here with that measurement, not as a policy choice.
+excluded_external_urls = ["https://marketplace.visualstudio.com/items?itemName=pythonwoods.zenzic-vscode"]
 
 # --- EXCLUSION ZONES (Full bypass — use sparingly) ---
 # Paths listed here are INVISIBLE to Zenzic: no findings, no audit trail.
@@ -51,7 +55,6 @@ default_locale = "en"
 # --- BRAND INTEGRITY ---
 [project_metadata]
 release_name = "Magnetite"
-badge_stamp_files = ["README.md"]
 
 [governance]
 # suppression_cap = 1: the one exemption this project defends, counted in use on 2026-09-15 --

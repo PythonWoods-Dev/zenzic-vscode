@@ -64,7 +64,7 @@ If you prefer a manual install (a one-off alternative, not the default): `uv too
 
 ### 2. Install the Extension
 
-Search for **Zenzic** in the VS Code Extensions Marketplace (`Ctrl+Shift+X`) and click **Install**.
+Search for **Zenzic** in the VS Code Extensions Marketplace (`Ctrl+Shift+X`) and click **Install**, or open the [Marketplace listing](https://marketplace.visualstudio.com/items?itemName=pythonwoods.zenzic-vscode).
 
 ### 3. Open Any Markdown File
 
@@ -174,9 +174,9 @@ suppressible.
 
 | Area | Codes | What you get |
 | :--- | :--- | :--- |
-| **Accessibility & semantics** | `Z513`, `Z514`, `Z515`, `Z516`, `Z517`, `Z520` | Duplicate headings, generic image alt text, bare URLs, multiple H1s, heading punctuation, malformed lists — most with a one-key fix. |
-| **Editorial policy** | `Z610`, `Z611`, `Z612`, `Z613`, `Z614`, `Z615`, `Z616`, `Z617`, `Z618`, `Z619` | Required/forbidden frontmatter, external-domain allowlisting, cross-namespace limits, forbidden terms, document complexity caps. |
-| **Prose heuristics** | `Z518`, `Z519` | Passive voice and weasel words. RE2 pattern matching, not NLP — it flags candidates ("was reviewed by", "it is believed that"), not every instance a human editor would catch. |
+| **Accessibility & semantics** | `Z513`, `Z514`, `Z515`, `Z516`, `Z517`, `Z520` | Duplicate headings, generic image alt text, bare URLs, multiple H1s, heading punctuation, malformed lists — most with a one-key fix. `Z513` and `Z517` are opt-in flags in `[policies]`; the other four are on by default. |
+| **Editorial policy** | `Z610`, `Z611`, `Z612`, `Z613`, `Z614`, `Z615`, `Z616`, `Z617`, `Z618`, `Z619` | Required/forbidden frontmatter, external-domain allowlisting, cross-namespace limits, forbidden terms, document complexity caps. All ten are inert until their `[policies]` data (the key list, the allowlist, the cap) is declared. |
+| **Prose heuristics** | `Z518`, `Z519` | Passive voice (opt-in flag) and weasel words (inert until the word list is declared). RE2 pattern matching, not NLP — it flags candidates ("was reviewed by", "it is believed that"), not every instance a human editor would catch. |
 
 ### Fixing what it finds
 
@@ -242,7 +242,7 @@ The extension contains no parsing logic, no regex engines, and no validation rul
 
 Two consequences worth knowing:
 
-- **One engine, everywhere.** The editor runs the same rules, config loader, and adapters as your CLI and CI, so a finding means the same thing in all three. One exception: orphan and dead-end page detection currently uses two independent algorithms in the LSP and the CLI — see the Core's [`CHANGELOG.md` Known Limitations](https://github.com/PythonWoods-Dev/zenzic/blob/main/CHANGELOG.md#unreleased).
+- **One engine, everywhere.** The editor runs the same rules, config loader, and adapters as your CLI and CI, so a finding means the same thing in all three. One exception: orphan and dead-end page detection currently uses two independent algorithms in the LSP and the CLI — see the Core's [`CHANGELOG.md` Known Limitations](https://github.com/PythonWoods-Dev/zenzic/blob/main/CHANGELOG.md#known-limitations).
 - **Upgrades need no extension release.** Upgrading the `zenzic` CLI gives the extension every new rule and fix immediately.
 
 Full architecture: [zenzic.dev](https://zenzic.dev).
@@ -255,6 +255,7 @@ Zenzic provides a unified quality platform across your entire development lifecy
 
 - **[Zenzic CLI (Core Engine)](https://github.com/PythonWoods-Dev/zenzic)**: High-speed terminal static analyzer, batch auto-fixer, and quality-scoring engine.
 - **[Zenzic GitHub Action](https://github.com/PythonWoods-Dev/zenzic-action)**: Zero-config CI/CD quality gate with SARIF code scanning and PR annotations.
+- **[Zenzic MCP Server](https://github.com/PythonWoods-Dev/zenzic-mcp)**: The same engine for LLM agents over MCP — pre-release, source only.
 - **[Official Documentation](https://zenzic.dev)**: For deep architectural explanations, full finding taxonomies, and configuration playbooks, visit [zenzic.dev](https://zenzic.dev).
 
 ---
