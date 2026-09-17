@@ -15,6 +15,12 @@ permissions:
 jobs:
   verify:
     name: Verify & Package
+    # A healthy leg finishes in about three minutes on either runner. Without a
+    # bound, a hung step holds the runner until the platform's own six-hour limit
+    # cancels it -- observed once, on the xvfb extension-host suite, 6h01m on
+    # PR #88. Twenty minutes is several times the slowest healthy run and still
+    # turns a hang into a readable red within the hour.
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
