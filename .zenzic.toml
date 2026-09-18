@@ -22,11 +22,12 @@ fail_under = 99
 # exit_zero = false
 # respect_vcs_ignore = true
 
-# The Marketplace listing answers HEAD with 404 and GET with 200 (measured 2026-09-17:
-# curl -I -> 404, curl/urllib GET -> 200, gallery API finds pythonwoods.zenzic-vscode).
-# The engine probes with HEAD and falls back to GET only on 405, so it reports the
-# working link as broken; excluded here with that measurement, not as a policy choice.
-excluded_external_urls = ["https://marketplace.visualstudio.com/items?itemName=pythonwoods.zenzic-vscode"]
+# The Marketplace listing needed an exemption here from 2026-09-17 to 2026-09-18: it
+# answers HEAD with 404 and GET with 200, and the core probe retried only on 405, so a
+# listing that exists was reported broken. The core now retries on any HEAD failure that
+# is not an access restriction, so the exemption suppressed nothing and was removed --
+# verified: with the list empty this repository scores 99/100 with no Z101.
+excluded_external_urls = []
 
 # --- EXCLUSION ZONES (Full bypass — use sparingly) ---
 # Paths listed here are INVISIBLE to Zenzic: no findings, no audit trail.
