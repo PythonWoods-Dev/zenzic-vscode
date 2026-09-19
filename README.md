@@ -191,11 +191,40 @@ your CI computes it — the number you see locally is the number CI will report.
 Global DQS** refreshes it; the **Quality Status Panel** breaks down suppression-cap usage and
 baseline freshness.
 
-Beside it, the Status Bar names the engine producing your diagnostics and the documentation
-generator detected in the workspace — `Zenzic: standalone · Astro`. Hover for how the engine
-was chosen and, when a generator was detected that the engine is not reading routes from, what
-that costs you: URLs derived from file paths rather than from the generator's own routing. It
-is a working configuration, not an error, and one worth knowing you are in.
+Beside it, the Status Bar names the engine producing your diagnostics and, when there is one
+to name, the documentation generator detected in the workspace — `Zenzic: standalone · Astro`,
+or `Zenzic: mkdocs` on a project whose engine reads its own configuration.
+
+Hover for how the engine was chosen — `configured`, `auto-detected` or `default` — and for the
+generator. On an engine with a native adapter the hover says *not applicable* rather than *none
+detected*, because nothing was looked for: MkDocs and Zensical have already answered that
+question. And when a generator **was** detected while the engine is not reading routes from it,
+the hover says what that costs you: URLs derived from file paths rather than from the
+generator's own routing. That is a working configuration, not an error, and one worth knowing
+you are in.
+
+The project line needs Zenzic Core v0.31.0 or newer. Against an older core the hover says so,
+so "the bar shows no engine" is never a silent failure.
+
+---
+
+## Does it work with my stack?
+
+The extension analyses what you type; the Core decides how a source file becomes
+a URL. Four adapters cover that, and the status bar names the one in use.
+
+| Your generator | What to use | Notes |
+| :--- | :--- | :--- |
+| MkDocs / Material | `mkdocs` | Detected from `mkdocs.yml`; the nav tree and Material's anchor slugification are read directly. |
+| Zensical | `zensical` | Detected from `zensical.toml`. |
+| **Astro / Starlight** | `prebuilt` | `zenzic init` recognises `astro.config.*` and sets `docs_dir` for you. `prebuilt` reads `.zenzic-vsm.json`, a source-path-to-URL map you generate — for Astro, from the source tree, because its routing is positional. |
+| **Docusaurus** | `prebuilt` | `zenzic init` recognises `docusaurus.config.*`. Generate the manifest from `npm run build`: Docusaurus routing is not derivable from filenames. Its `blog/` is a second content tree — add it with `content_roots`. |
+| Anything else | `standalone` | Derives every URL from the path it reads. Works on any folder of Markdown, with no configuration. |
+
+Astro and Docusaurus are named because both were measured against real
+repositories. A generator Zenzic has not been run against is not listed.
+
+[Configure an adapter](https://zenzic.dev/how-to/configure-adapter/)
 
 ---
 

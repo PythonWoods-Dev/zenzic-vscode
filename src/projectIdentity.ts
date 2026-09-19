@@ -23,6 +23,19 @@ export interface ProjectIdentity {
     engineSource: string;
     /** The detected documentation generator, or null when none was found. */
     generator: string | null;
+    /**
+     * Whether the generator question applies at all.
+     *
+     * False for an engine with a native adapter — MkDocs, Zensical — which has
+     * already answered it by reading that generator's own configuration. On
+     * those projects nothing is looked for, and "none detected" reads as a
+     * detection that failed. The core decides this and reports it, rather than
+     * each surface re-deriving which engines are native.
+     *
+     * Defaults to true against a core that does not report the field, which is
+     * the pre-v0.31.0 behaviour and errs towards the wording that was there.
+     */
+    generatorApplies: boolean;
 }
 
 /**
@@ -49,7 +62,9 @@ export function parseProjectIdentity(raw: string): ProjectIdentity | null {
     return {
         engine: obj.engine,
         engineSource: typeof obj.engine_source === 'string' ? obj.engine_source : 'unknown',
-        generator: typeof obj.generator === 'string' ? obj.generator : null
+        generator: typeof obj.generator === 'string' ? obj.generator : null,
+        generatorApplies:
+            typeof obj.generator_applies === 'boolean' ? obj.generator_applies : true
     };
 }
 
@@ -83,15 +98,36 @@ export function statusBarText(identity: ProjectIdentity | null): string {
  */
 export function isEngineGeneratorMismatch(identity: ProjectIdentity | null): boolean {
     if (identity === null || identity.generator === null) { return false; }
+    if (!identity.generatorApplies) { return false; }
     return identity.engine !== 'prebuilt';
 }
 
-/** The identity lines appended to the status bar's hover tooltip. */
+/**
+ * The identity lines appended to the status bar's hover tooltip.
+ *
+ * When there is no identity, the tooltip says so rather than saying nothing.
+ * "The status bar does not show the engine" is otherwise indistinguishable
+ * from three different causes — a core too old to report it, a lookup that
+ * failed, and an extension build that predates the feature — and a person
+ * looking at the bar cannot tell which. The line names the first two and the
+ * version that introduced the fields, so the remaining possibility is the
+ * build.
+ */
 export function identityTooltipLines(identity: ProjectIdentity | null): string[] {
-    if (identity === null) { return []; }
+    if (identity === null) {
+        return [
+            '- **Project**: _not reported_ — needs Zenzic Core v0.31.0 or newer'
+            + ' (`zenzic env --json` must carry an `engine` field).'
+        ];
+    }
+    const generatorLine = identity.generator
+        ? `\`${identity.generator}\``
+        : identity.generatorApplies
+            ? '_none detected_'
+            : `_not applicable — \`${identity.engine}\` has its own adapter_`;
     const lines = [
         `- **Engine**: \`${identity.engine}\` (${identity.engineSource})`,
-        `- **Generator**: ${identity.generator ? `\`${identity.generator}\`` : '_none detected_'}`
+        `- **Generator**: ${generatorLine}`
     ];
     if (isEngineGeneratorMismatch(identity)) {
         lines.push(

@@ -22,7 +22,8 @@ describe('parseProjectIdentity', () => {
         expect(parseProjectIdentity(ASTRO_STANDALONE)).toEqual({
             engine: 'standalone',
             engineSource: 'auto-detected',
-            generator: 'astro'
+            generator: 'astro',
+            generatorApplies: true
         });
     });
 
@@ -82,6 +83,43 @@ describe('isEngineGeneratorMismatch', () => {
     });
 });
 
+describe('the three generator states', () => {
+    const mkdocs = JSON.stringify({
+        engine: 'mkdocs', engine_source: 'auto-detected',
+        generator: null, generator_applies: false
+    });
+    const standaloneBare = JSON.stringify({
+        engine: 'standalone', engine_source: 'default',
+        generator: null, generator_applies: true
+    });
+
+    it('says "not applicable" where nothing was looked for', () => {
+        // "none detected" on an MkDocs project reads as a detection that
+        // failed. The engine reads its generator's own configuration, so the
+        // question never arose.
+        const lines = identityTooltipLines(parseProjectIdentity(mkdocs)).join('\n');
+        expect(lines).toContain('not applicable');
+        expect(lines).not.toContain('none detected');
+    });
+
+    it('keeps "none detected" where something was looked for and not found', () => {
+        const lines = identityTooltipLines(parseProjectIdentity(standaloneBare)).join('\n');
+        expect(lines).toContain('none detected');
+    });
+
+    it('defaults to applicable against a core that does not report the field', () => {
+        const old = JSON.stringify({ engine: 'standalone', generator: null });
+        expect(parseProjectIdentity(old)?.generatorApplies).toBe(true);
+    });
+
+    it('is never a mismatch when the question does not apply', () => {
+        const withGenerator = JSON.stringify({
+            engine: 'mkdocs', generator: 'astro', generator_applies: false
+        });
+        expect(isEngineGeneratorMismatch(parseProjectIdentity(withGenerator))).toBe(false);
+    });
+});
+
 describe('identityTooltipLines', () => {
     it('explains the mismatch instead of only flagging it', () => {
         const lines = identityTooltipLines(parseProjectIdentity(ASTRO_STANDALONE)).join('\n');
@@ -96,7 +134,14 @@ describe('identityTooltipLines', () => {
         expect(lines).toHaveLength(2);
     });
 
-    it('contributes no lines when there is no identity', () => {
-        expect(identityTooltipLines(null)).toEqual([]);
+    it('says why there is nothing to show, rather than nothing', () => {
+        // "The bar does not show the engine" has three causes a person cannot
+        // tell apart from the bar: an old core, a failed lookup, or an
+        // extension build predating the feature. The tooltip names the first
+        // two and the version, leaving only the third.
+        const lines = identityTooltipLines(null);
+        expect(lines).toHaveLength(1);
+        expect(lines[0]).toContain('not reported');
+        expect(lines[0]).toContain('v0.31.0');
     });
 });
