@@ -74,6 +74,20 @@ Full detail in the [engine CHANGELOG](https://github.com/PythonWoods/zenzic/blob
 
 ### Added
 
+- **The Status Bar Now Names the Engine, and the Generator It Was Detected Beside**: the
+  status bar reported whether the language server was running and nothing about what it was
+  running against. The engine producing every squiggle in the editor appeared in exactly one
+  place a person could read it — the telemetry line of a `zenzic check` run in a terminal.
+  After a successful start the extension now asks the core (`zenzic env --json`, read-only,
+  one process, no documentation touched) and shows, for example, `$(check) Zenzic: standalone
+  · Astro`. The hover adds how the engine was chosen — `configured`, `auto-detected` or
+  `default` — and, when a generator was detected while the engine is not `prebuilt`, one
+  sentence on what that costs: URLs derived from file paths rather than read from the
+  generator's routing, so the site map may not match the published site. The lookup fails
+  silently by design — an older core, a timeout or a non-zero exit all mean "nothing extra
+  to display", and the health text is unchanged. Requires core v0.31.0; against an older
+  core the status bar reads `Zenzic: Running` exactly as before.
+
 - **The Extension Declared MDX Support and Was Silently Inert on It**: `activationEvents`
   listed `onLanguage:mdx` and the language client's `documentSelector` covered
   `language: 'mdx'`, but nothing contributed that language and VS Code has none built in.

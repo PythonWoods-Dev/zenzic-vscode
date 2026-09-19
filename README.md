@@ -191,6 +191,12 @@ your CI computes it — the number you see locally is the number CI will report.
 Global DQS** refreshes it; the **Quality Status Panel** breaks down suppression-cap usage and
 baseline freshness.
 
+Beside it, the Status Bar names the engine producing your diagnostics and the documentation
+generator detected in the workspace — `Zenzic: standalone · Astro`. Hover for how the engine
+was chosen and, when a generator was detected that the engine is not reading routes from, what
+that costs you: URLs derived from file paths rather than from the generator's own routing. It
+is a working configuration, not an error, and one worth knowing you are in.
+
 ---
 
 ## ⚙️ Extension Settings & Commands

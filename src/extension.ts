@@ -16,6 +16,12 @@ import { ensureZenzicEngine } from './provisioning';
 import { showQualityPanel, updateQualityPanel, QualityPanelReport } from './qualityPanel';
 import { MIN_CORE_VERSION } from './coreVersion';
 import { compareSemver } from './semver';
+import {
+    ProjectIdentity,
+    identityTooltipLines,
+    parseProjectIdentity,
+    statusBarText
+} from './projectIdentity';
 
 // A4 fix: typed as | undefined — initialized in activate(), disposed via subscriptions.
 let client: LanguageClient | undefined;
@@ -220,7 +226,11 @@ export async function activate(context: vscode.ExtensionContext) {
         return (context.extension?.packageJSON as { version?: string })?.version || 'unknown';
     };
 
-    const createSuccessTooltip = (coreVersion: string | undefined, activePath: string): vscode.MarkdownString => {
+    const createSuccessTooltip = (
+        coreVersion: string | undefined,
+        activePath: string,
+        identity: ProjectIdentity | null = null
+    ): vscode.MarkdownString => {
         const extVersion = getExtVersion();
         const isAutoProvisioned = activePath.includes(context.globalStorageUri.fsPath);
         const coreVerStr = coreVersion ? `v${coreVersion}` : 'unknown';
@@ -230,11 +240,37 @@ export async function activate(context: vscode.ExtensionContext) {
             `- **Core Version**: \`${coreVerStr}\``,
             `- **Extension Version**: \`v${extVersion}\``,
             `- **Executable Path**: \`${activePath}\``,
-            `- **Auto-Provisioned**: \`${isAutoProvisioned ? 'Yes' : 'No'}\``
+            `- **Auto-Provisioned**: \`${isAutoProvisioned ? 'Yes' : 'No'}\``,
+            ...identityTooltipLines(identity)
         ];
         const tip = new vscode.MarkdownString(lines.join('  \n'), true);
         tip.isTrusted = true;
         return tip;
+    };
+
+    // Ask the core what this project is. `zenzic env --json` is a read-only
+    // command that touches no documentation, so it costs a process start and
+    // a handful of stat calls. It runs once per successful server start; the
+    // answer changes only when the configuration or a marker file does, and a
+    // restart is what follows either.
+    //
+    // Failure is silent by design. The identity is a label on a status bar
+    // whose actual job is reporting whether the language server is up — an
+    // older core with no `engine` field, a timeout, a non-zero exit, all mean
+    // "nothing extra to display", never "the server is broken".
+    const fetchProjectIdentity = async (
+        binaryPath: string,
+        workspaceRoot: string
+    ): Promise<ProjectIdentity | null> => {
+        const cp = await import('child_process');
+        return new Promise<ProjectIdentity | null>((resolve) => {
+            cp.execFile(
+                binaryPath,
+                ['env', '--json'],
+                { cwd: workspaceRoot, timeout: 10000, encoding: 'utf-8' },
+                (_err, stdout) => resolve(parseProjectIdentity(stdout || ''))
+            );
+        });
     };
 
     const createErrorTooltip = (header: string, attemptedPath: string, reason: string): vscode.MarkdownString => {
@@ -582,6 +618,18 @@ export async function activate(context: vscode.ExtensionContext) {
             statusBarItem!.text = '$(check) Zenzic: Running';
             statusBarItem!.tooltip = createSuccessTooltip(coreVersion, resolvedPath);
             lastErrorPrompt = undefined;
+
+            // Then refine it, without blocking the "server is up" signal on a
+            // second process: the health of the language server is the thing a
+            // person is waiting to see, and the project label is not worth
+            // delaying it by a process start.
+            if (workspaceRoot) {
+                void fetchProjectIdentity(resolvedPath, workspaceRoot).then((identity) => {
+                    if (!statusBarItem || identity === null) { return; }
+                    statusBarItem.text = statusBarText(identity);
+                    statusBarItem.tooltip = createSuccessTooltip(coreVersion, resolvedPath, identity);
+                });
+            }
         } catch (err: unknown) {
             // A1 fix: err is unknown; narrow to Error before accessing .message to
             // avoid producing "Error: undefined" when a non-Error value is thrown.
