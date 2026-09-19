@@ -13,6 +13,15 @@ import {
     Executable
 } from 'vscode-languageclient/node';
 import { ensureZenzicEngine } from './provisioning';
+import { showQualityPanel, updateQualityPanel, QualityPanelReport } from './qualityPanel';
+import { MIN_CORE_VERSION } from './coreVersion';
+import { compareSemver } from './semver';
+import {
+    ProjectIdentity,
+    identityTooltipLines,
+    parseProjectIdentity,
+    statusBarText
+} from './projectIdentity';
 
 // A4 fix: typed as | undefined — initialized in activate(), disposed via subscriptions.
 let client: LanguageClient | undefined;
@@ -25,8 +34,10 @@ let restarting = false;
 // covering the case where the binary lives in the extension's isolated
 // globalStorageUri environment (not on the system PATH).
 let activeZenzicPath: string | undefined;
-
-const MIN_CORE_VERSION = '0.30.0';
+// Last successfully parsed `zenzic score --json` report — shared between the
+// DQS status bar item and the Quality Status webview panel so opening the
+// panel does not require a second, redundant subprocess call.
+let lastQualityReport: QualityPanelReport | undefined;
 
 /**
  * Expand supported user-facing path variables in zenzic.executablePath.
@@ -136,23 +147,6 @@ export async function resolveExecutablePath(cmd: string, workspaceRoot?: string)
  * Compare two SemVer strings (MAJOR.MINOR.PATCH).
  * Returns > 0 if v1 > v2, < 0 if v1 < v2, and 0 if v1 === v2.
  */
-export function compareSemver(v1: string, v2: string): number {
-    const parse = (v: string) => {
-        const match = v.match(/^(\d+)\.(\d+)\.(\d+)/);
-        if (!match) {
-            throw new Error(`Invalid SemVer format: '${v}'`);
-        }
-        return [parseInt(match[1], 10), parseInt(match[2], 10), parseInt(match[3], 10)];
-    };
-
-    const [major1, minor1, patch1] = parse(v1);
-    const [major2, minor2, patch2] = parse(v2);
-
-    if (major1 !== major2) { return major1 - major2; }
-    if (minor1 !== minor2) { return minor1 - minor2; }
-    return patch1 - patch2;
-}
-
 export interface CoreVersionCheckResult {
     status: 'ok' | 'outdated' | 'not_found' | 'error';
     version?: string;
@@ -232,7 +226,11 @@ export async function activate(context: vscode.ExtensionContext) {
         return (context.extension?.packageJSON as { version?: string })?.version || 'unknown';
     };
 
-    const createSuccessTooltip = (coreVersion: string | undefined, activePath: string): vscode.MarkdownString => {
+    const createSuccessTooltip = (
+        coreVersion: string | undefined,
+        activePath: string,
+        identity: ProjectIdentity | null = null
+    ): vscode.MarkdownString => {
         const extVersion = getExtVersion();
         const isAutoProvisioned = activePath.includes(context.globalStorageUri.fsPath);
         const coreVerStr = coreVersion ? `v${coreVersion}` : 'unknown';
@@ -242,11 +240,37 @@ export async function activate(context: vscode.ExtensionContext) {
             `- **Core Version**: \`${coreVerStr}\``,
             `- **Extension Version**: \`v${extVersion}\``,
             `- **Executable Path**: \`${activePath}\``,
-            `- **Auto-Provisioned**: \`${isAutoProvisioned ? 'Yes' : 'No'}\``
+            `- **Auto-Provisioned**: \`${isAutoProvisioned ? 'Yes' : 'No'}\``,
+            ...identityTooltipLines(identity)
         ];
         const tip = new vscode.MarkdownString(lines.join('  \n'), true);
         tip.isTrusted = true;
         return tip;
+    };
+
+    // Ask the core what this project is. `zenzic env --json` is a read-only
+    // command that touches no documentation, so it costs a process start and
+    // a handful of stat calls. It runs once per successful server start; the
+    // answer changes only when the configuration or a marker file does, and a
+    // restart is what follows either.
+    //
+    // Failure is silent by design. The identity is a label on a status bar
+    // whose actual job is reporting whether the language server is up — an
+    // older core with no `engine` field, a timeout, a non-zero exit, all mean
+    // "nothing extra to display", never "the server is broken".
+    const fetchProjectIdentity = async (
+        binaryPath: string,
+        workspaceRoot: string
+    ): Promise<ProjectIdentity | null> => {
+        const cp = await import('child_process');
+        return new Promise<ProjectIdentity | null>((resolve) => {
+            cp.execFile(
+                binaryPath,
+                ['env', '--json'],
+                { cwd: workspaceRoot, timeout: 10000, encoding: 'utf-8' },
+                (_err, stdout) => resolve(parseProjectIdentity(stdout || ''))
+            );
+        });
     };
 
     const createErrorTooltip = (header: string, attemptedPath: string, reason: string): vscode.MarkdownString => {
@@ -312,7 +336,7 @@ export async function activate(context: vscode.ExtensionContext) {
                         vscode.commands.executeCommand('workbench.action.openSettings', 'zenzic.executablePath');
                     } else if (action === 'Open Docs') {
                         vscode.env.openExternal(vscode.Uri.parse(
-                            'https://github.com/PythonWoods/zenzic-vscode#requirements'
+                            'https://github.com/PythonWoods-Dev/zenzic-vscode#requirements'
                         ));
                     }
                 };
@@ -352,7 +376,7 @@ export async function activate(context: vscode.ExtensionContext) {
                         vscode.commands.executeCommand('workbench.action.openSettings', 'zenzic.executablePath');
                     } else if (action === 'Open Docs') {
                         vscode.env.openExternal(vscode.Uri.parse(
-                            'https://github.com/PythonWoods/zenzic-vscode#requirements'
+                            'https://github.com/PythonWoods-Dev/zenzic-vscode#requirements'
                         ));
                     }
                 };
@@ -380,7 +404,7 @@ export async function activate(context: vscode.ExtensionContext) {
                         vscode.commands.executeCommand('workbench.action.openSettings', 'zenzic.executablePath');
                     } else if (action === 'Open Docs') {
                         vscode.env.openExternal(vscode.Uri.parse(
-                            'https://github.com/PythonWoods/zenzic-vscode#requirements'
+                            'https://github.com/PythonWoods-Dev/zenzic-vscode#requirements'
                         ));
                     }
                 };
@@ -408,7 +432,7 @@ export async function activate(context: vscode.ExtensionContext) {
                         terminal.sendText('uv tool install zenzic', true);
                     } else if (action === 'Open Docs') {
                         vscode.env.openExternal(vscode.Uri.parse(
-                            'https://github.com/PythonWoods/zenzic-vscode#requirements'
+                            'https://github.com/PythonWoods-Dev/zenzic-vscode#requirements'
                         ));
                     }
                 };
@@ -451,7 +475,7 @@ export async function activate(context: vscode.ExtensionContext) {
                         vscode.commands.executeCommand('workbench.action.openSettings', 'zenzic.executablePath');
                     } else if (action === 'Open Docs') {
                         vscode.env.openExternal(vscode.Uri.parse(
-                            'https://github.com/PythonWoods/zenzic-vscode#requirements'
+                            'https://github.com/PythonWoods-Dev/zenzic-vscode#requirements'
                         ));
                     }
                 } else {
@@ -488,7 +512,7 @@ export async function activate(context: vscode.ExtensionContext) {
                     vscode.commands.executeCommand('workbench.action.openSettings', 'zenzic.executablePath');
                 } else if (action === 'Open Docs') {
                     vscode.env.openExternal(vscode.Uri.parse(
-                        'https://github.com/PythonWoods/zenzic-vscode#requirements'
+                        'https://github.com/PythonWoods-Dev/zenzic-vscode#requirements'
                     ));
                 }
             };
@@ -560,7 +584,13 @@ export async function activate(context: vscode.ExtensionContext) {
                 { scheme: 'untitled', language: 'markdown' },
                 { scheme: 'untitled', language: 'mdx' }
             ],
-            outputChannel
+            outputChannel,
+            // Read once at startup; live toggles are forwarded via
+            // workspace/didChangeConfiguration below, no restart needed.
+            initializationOptions: {
+                autoFixOnSave: vscode.workspace.getConfiguration('zenzic').get<boolean>('autoFixOnSave', false),
+                autoRepairLinksOnRename: vscode.workspace.getConfiguration('zenzic').get<boolean>('autoRepairLinksOnRename', false)
+            }
         };
 
         client = new LanguageClient(
@@ -588,6 +618,18 @@ export async function activate(context: vscode.ExtensionContext) {
             statusBarItem!.text = '$(check) Zenzic: Running';
             statusBarItem!.tooltip = createSuccessTooltip(coreVersion, resolvedPath);
             lastErrorPrompt = undefined;
+
+            // Then refine it, without blocking the "server is up" signal on a
+            // second process: the health of the language server is the thing a
+            // person is waiting to see, and the project label is not worth
+            // delaying it by a process start.
+            if (workspaceRoot) {
+                void fetchProjectIdentity(resolvedPath, workspaceRoot).then((identity) => {
+                    if (!statusBarItem || identity === null) { return; }
+                    statusBarItem.text = statusBarText(identity);
+                    statusBarItem.tooltip = createSuccessTooltip(coreVersion, resolvedPath, identity);
+                });
+            }
         } catch (err: unknown) {
             // A1 fix: err is unknown; narrow to Error before accessing .message to
             // avoid producing "Error: undefined" when a non-Error value is thrown.
@@ -657,6 +699,10 @@ export async function activate(context: vscode.ExtensionContext) {
                 description: 'Calculate overall workspace Documentation Quality Score'
             },
             {
+                label: '$(graph) Show Quality Status Panel',
+                description: 'Open the Quality Score / Suppression Cap / Baseline Freshness panel'
+            },
+            {
                 label: '$(gear) Open Settings',
                 description: 'Configure zenzic.executablePath, autoProvision, and trace'
             },
@@ -680,10 +726,12 @@ export async function activate(context: vscode.ExtensionContext) {
             await troubleshoot();
         } else if (selected.label.includes('Compute Global DQS')) {
             await computeDQS();
+        } else if (selected.label.includes('Show Quality Status Panel')) {
+            await showQualityStatusPanel();
         } else if (selected.label.includes('Open Settings')) {
             vscode.commands.executeCommand('workbench.action.openSettings', 'zenzic');
         } else if (selected.label.includes('Open Documentation')) {
-            vscode.env.openExternal(vscode.Uri.parse('https://github.com/PythonWoods/zenzic-vscode#readme'));
+            vscode.env.openExternal(vscode.Uri.parse('https://github.com/PythonWoods-Dev/zenzic-vscode#readme'));
         }
     };
 
@@ -848,12 +896,85 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     };
 
+    // zenzic.reportFindingAsIssue
+    // Opens a prefilled GitHub "new issue" form for the finding under the cursor.
+    //
+    // Deliberately openExternal rather than the GitHub API: no auth prompt, no
+    // token storage, no rate limit, and nothing to fail when offline (the browser
+    // reports it, the editor does not). It also keeps this a thin client — the
+    // extension adds no logic of its own beyond formatting (ADR-075). The user
+    // reviews and submits, which for a defect report is a feature, not friction.
+    const ISSUE_URL_BUDGET = 6000; // GitHub tolerates ~8k; leave real headroom.
+
+    const reportFindingAsIssue = async () => {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            vscode.window.showWarningMessage('Zenzic: No active editor.');
+            return;
+        }
+
+        const cursor = editor.selection.active;
+        const diagnostics = vscode.languages
+            .getDiagnostics(editor.document.uri)
+            .filter(d => d.source === 'zenzic' || d.source === 'Zenzic');
+
+        if (diagnostics.length === 0) {
+            vscode.window.showInformationMessage('Zenzic: No findings in this file to report.');
+            return;
+        }
+
+        // Prefer the finding under the cursor; otherwise let the user pick one,
+        // so the command is still useful when invoked from the palette.
+        let target = diagnostics.find(d => d.range.contains(cursor));
+        if (!target) {
+            const picked = await vscode.window.showQuickPick(
+                diagnostics.map(d => ({
+                    label: `${typeof d.code === 'object' ? d.code.value : d.code ?? '?'} — line ${d.range.start.line + 1}`,
+                    detail: d.message,
+                    diagnostic: d
+                })),
+                { placeHolder: 'Select the Zenzic finding to report' }
+            );
+            if (!picked) { return; }
+            target = picked.diagnostic;
+        }
+
+        const code = typeof target.code === 'object' ? String(target.code.value) : String(target.code ?? 'finding');
+        const relPath = vscode.workspace.asRelativePath(editor.document.uri);
+        const line = target.range.start.line + 1;
+
+        const title = `[${code}] ${relPath}:${line}`;
+        let body =
+            `**Finding:** \`${code}\`\n` +
+            `**Location:** \`${relPath}:${line}\`\n\n` +
+            `**Message:**\n\n> ${target.message}\n\n` +
+            `**Extension version:** ${context.extension.packageJSON.version ?? 'unknown'}\n` +
+            `**VS Code:** ${vscode.version}\n\n` +
+            `---\n\n` +
+            `<!-- Describe what you expected instead. -->\n`;
+
+        // Bound the URL by construction rather than trusting message length: a
+        // finding message can interpolate matched text of unpredictable size.
+        const overhead = `https://github.com/PythonWoods-Dev/zenzic/issues/new?title=${encodeURIComponent(title)}&body=`.length;
+        while (encodeURIComponent(body).length + overhead > ISSUE_URL_BUDGET && body.length > 200) {
+            body = body.slice(0, Math.floor(body.length * 0.8)) + '\n\n… (truncated)\n';
+        }
+
+        const url =
+            `https://github.com/PythonWoods-Dev/zenzic/issues/new` +
+            `?title=${encodeURIComponent(title)}` +
+            `&body=${encodeURIComponent(body)}`;
+
+        await vscode.env.openExternal(vscode.Uri.parse(url));
+    };
+
     context.subscriptions.push(
         vscode.commands.registerCommand('zenzic.restartServer', restartServer),
         vscode.commands.registerCommand('zenzic.startServer', startServer),
         vscode.commands.registerCommand('zenzic.stopServer', stopServer),
         vscode.commands.registerCommand('zenzic.showStatus', showStatus),
-        vscode.commands.registerCommand('zenzic.troubleshoot', troubleshoot)
+        vscode.commands.registerCommand('zenzic.troubleshoot', troubleshoot),
+        vscode.commands.registerCommand('zenzic.reportFindingAsIssue', reportFindingAsIssue)
     );
 
     // ECOSYSTEM-FEAT-002: zenzic.computeDQS
@@ -913,12 +1034,9 @@ export async function activate(context: vscode.ExtensionContext) {
                     }
 
                     try {
-                        const report = JSON.parse(raw) as {
-                            score: number;
-                            status: string;
-                            suppression_debt_pts?: number;
-                            categories?: Array<{ name: string; issues: number }>;
-                        };
+                        const report = JSON.parse(raw) as QualityPanelReport;
+                        lastQualityReport = report;
+                        updateQualityPanel(report);
 
                         const score = report.score ?? 0;
                         const status = report.status ?? 'unknown';
@@ -945,7 +1063,7 @@ export async function activate(context: vscode.ExtensionContext) {
                                 'Score is forced to 0/100 — Z201 is non-suppressible.',
                                 '',
                                 '⚠️  Rotate the exposed credential immediately.',
-                                'Reference: https://zenzic.dev/docs/reference/finding-codes#Z201',
+                                'Reference: https://zenzic.dev/reference/finding-codes/#z201',
                             ].join('\n');
                         } else {
                             const categoryLines = (report.categories ?? [])
@@ -973,10 +1091,38 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('zenzic.computeDQS', computeDQS)
     );
 
+    // ECOSYSTEM-FEAT-003: Quality Status Panel.
+    // Opens the webview with whatever report is cached from the last
+    // zenzic.computeDQS run; if none exists yet, triggers computeDQS once
+    // (the same bridge, not a second one) so the panel is never empty on
+    // first open.
+    const showQualityStatusPanel = async () => {
+        showQualityPanel(context, lastQualityReport, computeDQS);
+        if (!lastQualityReport) {
+            await computeDQS();
+        }
+    };
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('zenzic.showQualityPanel', showQualityStatusPanel)
+    );
+
     context.subscriptions.push(
         vscode.workspace.onDidChangeConfiguration(async (e) => {
             if (e.affectsConfiguration('zenzic.executablePath')) {
                 await restartServer();
+            }
+            if (e.affectsConfiguration('zenzic.autoFixOnSave') && client) {
+                const autoFixOnSave = vscode.workspace.getConfiguration('zenzic').get<boolean>('autoFixOnSave', false);
+                await client.sendNotification('workspace/didChangeConfiguration', {
+                    settings: { zenzic: { autoFixOnSave } }
+                });
+            }
+            if (e.affectsConfiguration('zenzic.autoRepairLinksOnRename') && client) {
+                const autoRepairLinksOnRename = vscode.workspace.getConfiguration('zenzic').get<boolean>('autoRepairLinksOnRename', false);
+                await client.sendNotification('workspace/didChangeConfiguration', {
+                    settings: { zenzic: { autoRepairLinksOnRename } }
+                });
             }
         })
     );

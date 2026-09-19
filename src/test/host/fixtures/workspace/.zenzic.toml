@@ -1,0 +1,5 @@
+# Fixture workspace for the extension-host suite. Deliberately tiny and
+# deliberately broken in places; excluded from this repository's own audit.
+docs_dir = "docs"
+[build_context]
+engine = "standalone"

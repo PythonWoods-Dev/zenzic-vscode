@@ -2,11 +2,33 @@ node_modules/
 out/
 dist/
 .vscode-test/
+coverage/
 *.vsix
 .DS_Store
-.architect/
 .zenzic_cache/
 example/
 
-# AI Control Plane — never commit to version control
-.gemini/
+# CI-only Zenzic Core checkout (sovereign parity dogfooding, see justfile `check`)
+_zenzic_core/
+
+# Internal workspace — never commit to version control.
+# Both are listed even though only one of them exists in this checkout: the
+# protection should not depend on which happens to be present.
+.claude/
+.human/
+
+# Tool caches. Covered by this machine's global gitignore, which is exactly why
+# they are named here: a global gitignore is one developer's configuration, and
+# a repository that depends on it is protected on one machine. The same gap let
+# .mypy_cache/ into the packaged .vsix, where no global gitignore applies.
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Recording scratch directory. docker/README.md tells the operator to create
+# it, and it fills with multi-megabyte MP4 intermediates and probe frames.
+.demo-out/
+
+# Zenzic quality scores — derived local metadata
+.zenzic-score.json
+.zenzic-history.jsonl
