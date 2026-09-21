@@ -28,7 +28,7 @@ SPDX-License-Identifier: Apache-2.0
   <a href="https://github.com/PythonWoods-Dev/zenzic-vscode/releases">
     <img src="https://img.shields.io/github/v/release/PythonWoods-Dev/zenzic-vscode?style=flat-square&label=GitHub%20Release&color=38bdf8" alt="GitHub Release">
   </a>
-  <a href="https://opensource.org/licenses/Apache-2.0">
+  <a href="https://opensource.org/license/Apache-2.0">
     <img src="https://img.shields.io/badge/license-Apache--2.0-0d9488?style=flat-square" alt="License">
   </a>
 </p>
@@ -297,7 +297,7 @@ Zenzic provides a unified quality platform across your entire development lifecy
 
 ## 📄 License
 
-Licensed under the [Apache License, Version 2.0](https://opensource.org/licenses/Apache-2.0).
+Licensed under the [Apache License, Version 2.0](https://opensource.org/license/Apache-2.0).
 Copyright (c) 2026 PythonWoods `<dev@pythonwoods.dev>`.
 
 ---
