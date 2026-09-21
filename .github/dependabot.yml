@@ -8,6 +8,16 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
+    ignore:
+      # `@types/vscode` is not an ordinary devDependency: it must track
+      # `engines.vscode`, which is the minimum VS Code version this extension
+      # declares it runs on. `vsce package` refuses to build when the types
+      # promise APIs the declared floor does not have, so an automated bump of
+      # this package alone can only ever produce a red PR -- which it did, as
+      # #100. Raising the floor to satisfy it would drop every user below the new
+      # floor from the Marketplace listing: a product decision, not a dependency
+      # update. Bump this by hand, together with `engines.vscode`, or not at all.
+      - dependency-name: "@types/vscode"
 
   - package-ecosystem: "github-actions"
     directory: "/"

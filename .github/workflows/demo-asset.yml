@@ -1,0 +1,55 @@
+# SPDX-FileCopyrightText: 2026 PythonWoods <dev@pythonwoods.dev>
+# SPDX-License-Identifier: Apache-2.0
+
+# Measures the shipped demo GIF with scripts/verify_demo_gif.py: glyph size
+# against the README's prose, and the two colours the demo exists to show. It
+# checks the artifact rather than the procedure, so a wrongly produced asset is
+# rejected whichever command produced it.
+#
+# Informational: it reports a result and merging does not wait for it. The check
+# needs ffmpeg and ImageMagick on the runner, and a check that turns red because
+# a dependency is missing teaches people to read red as noise.
+#
+# The verifier's exit codes: 0 the asset may ship, 1 it must not, 2 the
+# instrument could not measure. Either non-zero outcome fails this job.
+
+name: Zenzic VS Code Demo Asset
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - "images/demo.gif"
+      - "scripts/verify_demo_gif.py"
+      - "docker/**"
+      - ".github/workflows/demo-asset.yml"
+  push:
+    branches: [ main ]
+    paths:
+      - "images/demo.gif"
+      - "scripts/verify_demo_gif.py"
+      - "docker/**"
+      - ".github/workflows/demo-asset.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-demo-gif:
+    name: Verify Demo GIF
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Install ffmpeg, ImageMagick and Ghostscript
+        # The self-test draws synthetic text with ImageMagick's `label:`. Without
+        # Ghostscript, ImageMagick 6 cannot resolve a font ("unable to read font")
+        # and draws nothing, and the verifier reports that it could not measure.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ffmpeg imagemagick ghostscript
+
+      - name: Verify the shipped demo GIF
+        run: python3 scripts/verify_demo_gif.py images/demo.gif

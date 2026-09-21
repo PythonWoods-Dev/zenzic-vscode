@@ -14,16 +14,84 @@ justfile
 RELEASE.md
 REUSE.toml
 tsconfig.json
+tsconfig.host-test.json
 esbuild.js
+vitest.config.mts
+# Dev tooling with no runtime purpose. These configure the linters and test
+# runners used to BUILD the extension; a user's install has no linter and no
+# test runner to configure, so they were shipping 5 KB of noise to every seat.
+.markdownlint.json
+.pre-commit-config.yaml
+optimize-gif.js
 eslint.config.mjs
 package-lock.json
 node_modules/**
 .pytest_cache/**
+# The other two tool caches, and the reason they need naming when
+# .pytest_cache did not: all three are invisible to `git status` here because a
+# GLOBAL gitignore covers them, and a global gitignore protects git and nothing
+# else. `vsce package` does not read it. So .mypy_cache/ -- 8.9 MB of type-stub
+# data -- was being packaged into every install, while every manifest and every
+# status command in the repository looked clean. Found by noticing an
+# unexplained 445 KB jump in the VSIX and listing what it actually contained.
+.mypy_cache/**
+.ruff_cache/**
+# Build configuration with no runtime purpose, same category as the linter
+# configs above: a user's install has no npm to configure.
+.npmrc
+# The root-level unit test. `**/*.ts` above already excludes its only file, so
+# this changes nothing today and states the intent rather than relying on a
+# glob that happens to cover it.
+test/**
 *.vsix
 **/*.ts
 **/*.map
 .architect/**
+# Gitignored locally, so a CI build (which packages a clean git checkout)
+# never sees them — but a local `vsce package` does, and would ship internal
+# governance material and a coverage report to every Marketplace user.
+.claude/**
+.gemini/**
+.human/**
+.zenzic-score.json
+.zenzic-history.jsonl
+.DS_Store
+coverage/**
 .zenzic_cache/**
 example/**
+_zenzic_core/**
+# A local Python virtualenv at the repository root. CI never has one here (it
+# syncs the core into _zenzic_core/, excluded above), so CI's VSIX is clean and
+# its 5 MB size guard never fired -- but `vsce package` run on a developer
+# machine that has one would ship every file in it. Found by listing what the
+# packaged VSIX actually contains rather than trusting the guard that had never
+# been given the chance to fail.
+.venv/**
+# Compiled extension-host test code. `tests/**` and `tsconfig.host-test.json`
+# are already excluded above; this is the same material after `tsc`, and it
+# additionally carries a runtime `require('glob')` that resolves only through a
+# devDependency. The suite runs from the working tree, never from the VSIX.
+out/test/**
+# The demo-capture sandbox is build/marketing tooling, not extension runtime.
+# Unlike the entries above it is committed, but a Marketplace user has no use
+# for it and it would ship a Dockerfile inside every install. Being tracked and
+# being packaged are different questions: this file and .gitignore are separate
+# manifests, and neither one implies the other.
+docker/**
+# The recording scratch directory, and the reason it needs its own line: it is
+# in .gitignore, and .gitignore is not .vscodeignore. `vsce package` on a
+# developer machine that has just regenerated the demo packaged 1.8 MB of it --
+# the MP4 intermediate, six probe frames and a duplicate of the GIF -- into
+# every install. Found by hashing what the VSIX actually contains rather than
+# by reading either manifest. Same shape as the .venv/** entry above.
+.demo-out/**
+# The demo asset's verification gate. Build/marketing tooling like docker/**
+# and optimize-gif.js, both excluded above; a Marketplace user has no GIF to
+# verify.
+scripts/**
 ROADMAP.md
-images/demo*.gif
+# images/demo*.gif was excluded here by the v0.23.3 package-optimisation
+# pass, before any such file existed. The demo GIF now exists, and unlike the
+# internal entries above it is public marketing content, so it ships with the
+# package: well under a tenth of the 5 MB CI ceiling on a 256 KB baseline.
+# Deliberate inclusion, not an oversight.

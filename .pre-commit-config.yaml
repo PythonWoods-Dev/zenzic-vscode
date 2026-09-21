@@ -1,0 +1,64 @@
+# SPDX-FileCopyrightText: 2026 PythonWoods <dev@pythonwoods.dev>
+# SPDX-License-Identifier: Apache-2.0
+
+# Segregate stage execution: linters run at commit-time only.
+# The just-verify Final Guard runs at push-time only (stages: [pre-push]).
+default_stages: [pre-commit]
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: cef0300fd0fc4d2a87a85fa2093c6b283ea36f4b  # v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--unsafe]
+      - id: check-json
+      - id: check-toml
+      # Ceiling raised from the 500 KB default, and --enforce-all added.
+      #
+      # 1536 KB, not 500: the real constraint is the Marketplace/CI 5 MB package
+      #    ceiling, which .vscodeignore documents as "well under a tenth" on a
+      #    256 KB baseline. images/demo.gif is 1.08 MB and the packaged VSIX is
+      #    1.27 MB -- comfortably inside 5 MB. The 500 KB default had no
+      #    constraint behind it, and keeping it meant either truncating the demo
+      #    before the moment it exists to show (attempted, rejected) or running a
+      #    gate the repository's own committed content violates.
+      #
+      # --enforce-all because the hook otherwise checks only files being *added*
+      #    to the index, never tracked files that grow. demo.gif went from 430 KB
+      #    to 1.08 MB by modification with the gate installed and passing, and the
+      #    session handoff recorded the 500 KB ceiling as holding while it did not.
+      #    A ceiling nobody can see being skipped is not a ceiling.
+      - id: check-added-large-files
+        args: [--maxkb=1536, --enforce-all]
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: mixed-line-ending
+
+  - repo: https://github.com/fsfe/reuse-tool
+    rev: 9fabf9eb815a57aac116b435e8346c200cdb8604  # v6.2.0
+    hooks:
+      - id: reuse
+
+  - repo: local
+    hooks:
+      - id: zenzic-check
+        name: 🔍 Zenzic Quality Gate (vscode audit)
+        entry: just check
+        language: system
+        pass_filenames: false
+        always_run: true
+
+  # Pre-push Final Guard (lifecycle gate model)
+  # Single entry-point: local ≡ remote. Same `just verify` runs in GHA.
+  # Install with: uvx pre-commit install -t pre-push
+  - repo: local
+    hooks:
+      - id: just-verify
+        name: 🛡️ Zenzic-VSCode Final Guard (just verify)
+        entry: just verify
+        language: system
+        stages: [pre-push]
+        pass_filenames: false
+        always_run: true

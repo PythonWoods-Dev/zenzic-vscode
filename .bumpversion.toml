@@ -41,11 +41,6 @@ filename = "RELEASE.md"
 search = "| **Extension Version** | {current_version} |"
 replace = "| **Extension Version** | {new_version} |"
 
-[[tool.bumpversion.files]]
-filename = "RELEASE.md"
-search = 'git tag -s -m "Release v{current_version}" v{current_version}'
-replace = 'git tag -s -m "Release v{new_version}" v{new_version}'
-
 
 [[tool.bumpversion.files]]
 filename = "RELEASE.md"
@@ -56,3 +51,18 @@ replace = "git push origin v{new_version}"
 filename = ".github/ISSUE_TEMPLATE/bug_report.yml"
 search = 'placeholder: "{current_version}"'
 replace = 'placeholder: "{new_version}"'
+
+[[tool.bumpversion.files]]
+# The supported-version table on the security page. Registered 2026-09-08 after
+# an audit found it unregistered here and in zenzic (zenzic-action already had
+# it): at a tag this would have gone on claiming 0.30.x was current and the new
+# release unsupported, on the one page a user reads when deciding whether to
+# upgrade after a vulnerability (ADR-092).
+# The table writes `0.30.x` in one row and `< 0.30.0` in the next, so the two
+# rows need different placeholders: components for the first, the full version
+# for the second. {current_version} alone would match only half the table.
+filename = "SECURITY.md"
+search = '''| `{current_major}.{current_minor}.x` (current) | ✅ All security fixes |
+| `< {current_version}` | ❌ End of life — no support |'''
+replace = '''| `{new_major}.{new_minor}.x` (current) | ✅ All security fixes |
+| `< {new_version}` | ❌ End of life — no support |'''

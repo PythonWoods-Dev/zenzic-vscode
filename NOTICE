@@ -1,0 +1,48 @@
+# Zenzic for VS Code
+
+Copyright 2026 PythonWoods <dev@pythonwoods.dev>
+
+This product includes software developed by the PythonWoods contributors.
+
+================================================================================
+
+## Bundled Runtime Dependencies
+
+The following packages are bundled directly into `out/extension.js` by esbuild
+(`bundle: true`, `platform: 'node'`) and shipped inside the packaged `.vsix`.
+`node_modules/` itself is excluded from the packaged extension (see
+`.vscodeignore`), so these packages' own `LICENSE` files are not otherwise
+preserved in the distributed artifact — listed here instead.
+
+1. vscode-languageclient (https://github.com/Microsoft/vscode-languageserver-node)
+   Copyright (c) Microsoft Corporation
+   License: MIT
+   Used for: Language Server Protocol client implementation
+
+2. vscode-jsonrpc (https://github.com/Microsoft/vscode-languageserver-node)
+   Copyright (c) Microsoft Corporation
+   License: MIT
+   Used for: Transitive dependency of vscode-languageclient (JSON-RPC transport)
+
+3. vscode-languageserver-protocol (https://github.com/Microsoft/vscode-languageserver-node)
+   Copyright (c) Microsoft Corporation
+   License: MIT
+   Used for: Transitive dependency of vscode-languageclient (LSP message types)
+
+4. vscode-languageserver-textdocument (https://github.com/Microsoft/vscode-languageserver-node)
+   Copyright (c) Microsoft Corporation
+   License: MIT
+   Used for: Transitive dependency of vscode-languageclient (text document model)
+
+5. vscode-languageserver-types (https://github.com/Microsoft/vscode-languageserver-node)
+   Copyright (c) Microsoft Corporation
+   License: MIT
+   Used for: Transitive dependency of vscode-languageclient (shared LSP types)
+
+================================================================================
+
+Full license texts for third-party dependencies can be found in their
+respective project repositories or package installations.
+
+This NOTICE file is provided in accordance with the Apache License 2.0
+requirements for attribution.
